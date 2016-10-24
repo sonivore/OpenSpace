@@ -4,7 +4,7 @@
  *                                                                                       *
  * Copyright (c) 2014 - 2016                                                             *
  *                                                                                       *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this  *
+ *  Permission is hereby granted, free of charge, to any person obtaining a copy of this *
  * software and associated documentation files (the "Software"), to deal in the Software *
  * without restriction, including without limitation the rights to use, copy, modify,    *
  * merge, publish, distribute, sublicense, and/or sell copies of the Software, and to    *
@@ -22,70 +22,56 @@
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                         *
  ****************************************************************************************/
 
-#ifndef __LINEARLRUCACHE_H__
-#define __LINEARLRUCACHE_H__
+#ifndef __KAMELEONVOLUMEREADER_H__
+#define __KAMELEONVOLUMEREADER_H__
 
-#include <glm/glm.hpp>
-#include <list>
-#include <iterator>
+#include <string>
+#include <memory>
+#include <modules/volume/rawvolume.h>
+#include <ghoul/misc/dictionary.h>
+
+#include <ccmc/Kameleon.h>
+#include <ccmc/Model.h>
+#include <ccmc/Interpolator.h>
+#include <ccmc/BATSRUS.h>
+#include <ccmc/ENLIL.h>
+#include <ccmc/CCMCTime.h>
+#include <ccmc/Attribute.h>
+
 
 namespace openspace {
-    
-template <typename ValueType>
-class LinearLruCache {
-public:
-    LinearLruCache(size_t capacity, size_t nIndices)
-        : _tracker()
-        , _cache(nIndices, std::make_pair(nullptr, _tracker.end()))
-        , _capacity(capacity) {};
 
-    bool has(size_t key) {
-        return _cache[key].first != nullptr;
-    };
-    void set(size_t key, ValueType value) {
-        auto prev = _cache[key];
-        if (prev.first != nullptr) {
-            prev.first = value;
-            std::list<size_t>::iterator trackerIter = prev.second;
-            _tracker.splice(_tracker.end(),
-                _tracker,
-                trackerIter);
-        }
-        else {
-            insert(key, value);
-        }
-    };
-    ValueType& use(size_t key) {
-        auto pair = _cache[key];
-        std::list<size_t>::iterator trackerIter = pair.second;
-        _tracker.splice(_tracker.end(),
-            _tracker,
-            trackerIter);
-        return pair.first;
-    };
-    ValueType& get(size_t key) {
-        return _cache[key].first;
-    };
-    void evict() {
-        _cache[_tracker.front()] = make_pair(nullptr, _tracker.end());
-        _tracker.pop_front();
-    };
-    size_t capacity() {
-        return _capacity;
-    };
+class KameleonVolumeReader {
+public:
+    KameleonVolumeReader(const std::string& path);
+    //KameleonMetaData readMetaData();
+
+    std::unique_ptr<RawVolume<float>> readFloatVolume(
+        const glm::uvec3& dimensions,
+        const std::string& variable,
+        const glm::vec3& lowerBound,
+        const glm::vec3& upperBound) const;
+    ghoul::Dictionary readMetaData() const;
+    float minValue(const std::string& variable) const;
+    float maxValue(const std::string& variable) const;
+
+    std::vector<std::string> gridVariableNames() const;
+    std::vector<std::string> gridUnits() const;
+    std::vector<std::string> variableNames() const;
+    std::vector<std::string> variableAttributeNames() const;
+    std::vector<std::string> globalAttributeNames() const;
+
 private:
-    void insert(size_t key, const ValueType& value) {
-        if (_tracker.size() == _capacity) {
-            evict();
-        }
-        auto iter = _tracker.insert(_tracker.end(), key);
-        _cache[key] = std::make_pair(value, iter);
-    };
-    std::list<size_t> _tracker;
-    std::vector<std::pair<ValueType, typename std::list<size_t>::iterator>> _cache;
-    size_t _capacity;
+    static void addAttributeToDictionary(ghoul::Dictionary& dictionary, const std::string& key, ccmc::Attribute& attr);
+    std::string _path;
+    ccmc::Kameleon _kameleon;
+    ccmc::Model* _model;
+    std::unique_ptr<ccmc::Interpolator> _interpolator;
+
 };
 
 }
+
+#include <modules/kameleonvolume/kameleonvolumereader.inl>
 
 #endif

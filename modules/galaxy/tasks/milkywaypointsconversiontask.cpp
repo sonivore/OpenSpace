@@ -1,4 +1,4 @@
-#include <apps/DataConverter/milkywaypointsconversiontask.h>
+#include <modules/galaxy/milkywaypointsconversiontask.h>
 #include <modules/volume/textureslicevolumereader.h>
 #include <modules/volume/rawvolumewriter.h>
 #include <modules/volume/volumesampler.h>

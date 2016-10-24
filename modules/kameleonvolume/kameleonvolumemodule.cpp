@@ -22,62 +22,37 @@
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                         *
  ****************************************************************************************/
 
-#include <iostream>
-#include <string>
-#include <glm/glm.hpp>
+#include <modules/kameleonvolume/kameleonvolumemodule.h>
 
-#include <ghoul/opengl/ghoul_gl.h>
-#include <ghoul/io/texture/texturereader.h>
-#include <ghoul/io/texture/texturereaderdevil.h>
-#include <ghoul/io/texture/texturereaderfreeimage.h>
-#include <ghoul/filesystem/filesystem.h>
-#include <ghoul/ghoul.h>
+#include <openspace/util/factorymanager.h>
 
-#include <openspace/util/progressbar.h>
+#include <ghoul/misc/assert.h>
+#include <vector>
 
-#include <apps/DataConverter/milkywayconversiontask.h>
-#include <apps/DataConverter/milkywaypointsconversiontask.h>
+#include <modules/kameleonvolume/rendering/renderablekameleonvolume.h>
+#include <modules/kameleonvolume/tasks/kameleonmetadatatojsontask.h>
+#include <modules/kameleonvolume/tasks/kameleondocumentationtask.h>
 
-int main(int argc, char** argv) {
-    using namespace openspace;
-    using namespace dataconverter;
+namespace openspace {
 
-    ghoul::initialize();
+KameleonVolumeModule::KameleonVolumeModule() : OpenSpaceModule("KameleonVolume") {}
 
-    #ifdef GHOUL_USE_DEVIL
-        ghoul::io::TextureReader::ref().addReader(std::make_shared<ghoul::io::TextureReaderDevIL>());
-    #endif // GHOUL_USE_DEVIL
-    #ifdef GHOUL_USE_FREEIMAGE
-        ghoul::io::TextureReader::ref().addReader(std::make_shared<ghoul::io::TextureReaderFreeImage>());
-    #endif // GHOUL_USE_FREEIMAGE
+void KameleonVolumeModule::internalInitialize() {
+    auto fRenderable = FactoryManager::ref().factory<Renderable>();
+    ghoul_assert(fRenderable, "No renderable factory existed");
+    fRenderable->registerClass<RenderableKameleonVolume>("RenderableKameleonVolume");
 
-    openspace::ProgressBar pb(100);
-    std::function<void(float)> onProgress = [&](float progress) {
-        pb.print(progress * 100);
-    };
+    auto fTask = FactoryManager::ref().factory<Task>();
+    ghoul_assert(fTask, "No task factory existed");
+    fTask->registerClass<KameleonMetadataToJsonTask>("KameleonMetadataToJsonTask");
+    fTask->registerClass<KameleonDocumentationTask>("KameleonDocumentationTask");
 
-    // TODO: Make the converter configurable using either
-    // config files (json, lua dictionaries),
-    // lua scripts,
-    // or at the very least: a command line interface.
- 
-    MilkyWayConversionTask mwConversionTask(
-        "F:/mw_june2016/volumeslices/img/comp/v003/frames/primary/0100/cam2_main.",
-        ".exr",
-        1385,
-        512,
-        "F:/mw_june2016/mw_512_512_64_june.rawvolume", 
-        glm::vec3(512, 512, 64));
-    
-    //MilkyWayPointsConversionTask mwpConversionTask("F:/mw_june2016/points.off", "F:/mw_june2016/points.off.binary");
+  
+}
 
+std::vector<Documentation> KameleonVolumeModule::documentations() const
+{
+    return std::vector<Documentation>{KameleonMetadataToJsonTask::documentation()};
+}
 
-    mwConversionTask.perform(onProgress);
-    //mwpConversionTask.perform(onProgress);
-
-
-    std::cout << "Done." << std::endl;
-
-    std::cin.get();
-    return 0;
-};
+} // namespace openspace

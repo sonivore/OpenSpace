@@ -22,37 +22,73 @@
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                         *
  ****************************************************************************************/
 
-#include <openspace/util/progressbar.h>
+#include <modules/kameleonvolume/tasks/kameleonmetadatatojsontask.h>
+#include <modules/kameleonvolume/kameleonvolumereader.h>
+#include <string>
+#include <openspace/documentation/verifier.h>
+#include <ghoul/misc/dictionaryjsonformatter.h>
+#include <ghoul/filesystem/filesystem.h>
+#include <fstream>
 
-#include <iomanip>
+namespace {
+    const std::string KeyInput = "Input";
+    const std::string KeyOutput = "Output";
+}
 
 namespace openspace {
 
-ProgressBar::ProgressBar(int end, int width, std::ostream& stream)
-    : _width(width)
-    , _previous(-1)
-    , _end(end)
-    , _stream(stream) 
+KameleonMetadataToJsonTask::KameleonMetadataToJsonTask(const ghoul::Dictionary& dictionary) {
+    openspace::documentation::testSpecificationAndThrow(
+        documentation(),
+        dictionary,
+        "KameleonMetadataToJsonTask"
+    );
+
+    _inputPath = absPath(dictionary.value<std::string>(KeyInput));
+    _outputPath = absPath(dictionary.value<std::string>(KeyOutput));
+}
+
+std::string KameleonMetadataToJsonTask::description() {
+    return "Extract metadata from cdf-file " + _inputPath + " and write as json to " + _outputPath;
+}
+
+void KameleonMetadataToJsonTask::perform(const Task::ProgressCallback & progressCallback) {
+    KameleonVolumeReader reader(_inputPath);
+    ghoul::Dictionary dictionary = reader.readMetaData();
+    progressCallback(0.5f);
+    ghoul::DictionaryJsonFormatter formatter;
+    std::string json = formatter.format(dictionary);
+    std::ofstream output(_outputPath);
+    output << json;
+    progressCallback(1.0f);
+}
+
+Documentation KameleonMetadataToJsonTask::documentation()
 {
-    print(0);
+    using namespace documentation;
+    return {
+        "KameleonMetadataToJsonTask",
+        "kameleon_metadata_to_json_task",
+        {
+            {
+                "Type",
+                new StringEqualVerifier("KameleonMetadataToJsonTask"),
+                "The type of this task"
+            },
+            {
+                KeyInput,
+                new StringAnnotationVerifier("A file path to a cdf file"),
+                "The cdf file to extract data from"
+            },
+            {
+                KeyOutput,
+                new StringAnnotationVerifier("A valid filepath"),
+                "The json file to export data into"
+            }
+        }
+    };
 }
 
-ProgressBar::~ProgressBar() {
-    _stream << "\n";
-}
 
-void ProgressBar::print(int current) {
-    float progress = static_cast<float>(current) / static_cast<float>(_end);
-    int iprogress = static_cast<int>(progress*100.0f);
-    if (iprogress != _previous) {
-        int pos = static_cast<int>(static_cast<float>(_width)* progress);
-        int eqWidth = pos + 1;
-        int spWidth = _width - pos + 2;
-        _stream << "[" << std::setfill('=') << std::setw(eqWidth)
-            << ">" << std::setfill(' ') << std::setw(spWidth)
-            << "] " << std::setfill(' ') << std::setw(3) << iprogress << " %  \r" << std::flush;
-    }
-    _previous = iprogress;
-};
 
 } // namespace openspace

@@ -25,7 +25,7 @@
 include(${OPENSPACE_CMAKE_EXT_DIR}/module_definition.cmake)
 
 set(HEADER_FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/rawvolume.h  
+    ${CMAKE_CURRENT_SOURCE_DIR}/rawvolume.h
     ${CMAKE_CURRENT_SOURCE_DIR}/rawvolumereader.h
     ${CMAKE_CURRENT_SOURCE_DIR}/rawvolumewriter.h  
     ${CMAKE_CURRENT_SOURCE_DIR}/textureslicevolumereader.h

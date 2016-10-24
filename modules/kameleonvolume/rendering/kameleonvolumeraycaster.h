@@ -2,7 +2,7 @@
  *                                                                                       *
  * OpenSpace                                                                             *
  *                                                                                       *
- * Copyright (c) 2014 - 2016                                                             *
+ * Copyright (c) 2014-2016                                                               *
  *                                                                                       *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this  *
  * software and associated documentation files (the "Software"), to deal in the Software *
@@ -22,70 +22,68 @@
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                         *
  ****************************************************************************************/
 
-#ifndef __LINEARLRUCACHE_H__
-#define __LINEARLRUCACHE_H__
+#ifndef __KAMELEONVOLUMERAYCASTER_H__
+#define __KAMELEONVOLUMERAYCASTER_H__
 
-#include <glm/glm.hpp>
-#include <list>
-#include <iterator>
 
-namespace openspace {
-    
-template <typename ValueType>
-class LinearLruCache {
-public:
-    LinearLruCache(size_t capacity, size_t nIndices)
-        : _tracker()
-        , _cache(nIndices, std::make_pair(nullptr, _tracker.end()))
-        , _capacity(capacity) {};
+#include <string>
+#include <vector>
 
-    bool has(size_t key) {
-        return _cache[key].first != nullptr;
-    };
-    void set(size_t key, ValueType value) {
-        auto prev = _cache[key];
-        if (prev.first != nullptr) {
-            prev.first = value;
-            std::list<size_t>::iterator trackerIter = prev.second;
-            _tracker.splice(_tracker.end(),
-                _tracker,
-                trackerIter);
-        }
-        else {
-            insert(key, value);
-        }
-    };
-    ValueType& use(size_t key) {
-        auto pair = _cache[key];
-        std::list<size_t>::iterator trackerIter = pair.second;
-        _tracker.splice(_tracker.end(),
-            _tracker,
-            trackerIter);
-        return pair.first;
-    };
-    ValueType& get(size_t key) {
-        return _cache[key].first;
-    };
-    void evict() {
-        _cache[_tracker.front()] = make_pair(nullptr, _tracker.end());
-        _tracker.pop_front();
-    };
-    size_t capacity() {
-        return _capacity;
-    };
-private:
-    void insert(size_t key, const ValueType& value) {
-        if (_tracker.size() == _capacity) {
-            evict();
-        }
-        auto iter = _tracker.insert(_tracker.end(), key);
-        _cache[key] = std::make_pair(value, iter);
-    };
-    std::list<size_t> _tracker;
-    std::vector<std::pair<ValueType, typename std::list<size_t>::iterator>> _cache;
-    size_t _capacity;
-};
+#include <ghoul/glm.h>
+#include <ghoul/opengl/texture.h>
 
+#include <openspace/rendering/volumeraycaster.h>
+#include <openspace/util/boxgeometry.h>
+#include <openspace/util/blockplaneintersectiongeometry.h>
+#include <openspace/rendering/transferfunction.h>
+
+#include <modules/volume/volumegridtype.h>
+
+namespace ghoul {
+    namespace opengl {
+        class Texture;
+        class ProgramObject;
+    }
 }
 
-#endif
+namespace openspace {
+
+class RenderData;
+class RaycastData;
+
+class KameleonVolumeRaycaster : public VolumeRaycaster {
+public:
+
+    KameleonVolumeRaycaster(
+        std::shared_ptr<ghoul::opengl::Texture> texture,
+        std::shared_ptr<TransferFunction> transferFunction);
+
+    virtual ~KameleonVolumeRaycaster();
+    void initialize();
+    void deinitialize();
+    void renderEntryPoints(const RenderData& data, ghoul::opengl::ProgramObject& program) override;
+    void renderExitPoints(const RenderData& data, ghoul::opengl::ProgramObject& program) override;
+    void preRaycast(const RaycastData& data, ghoul::opengl::ProgramObject& program) override;
+    void postRaycast(const RaycastData& data, ghoul::opengl::ProgramObject& program) override;
+
+    std::string getBoundsVsPath() const override;
+    std::string getBoundsFsPath() const override;
+    std::string getRaycastPath() const override;
+    std::string getHelperPath() const override;
+
+    void setStepSize(float stepSize);
+    void setGridType(VolumeGridType gridType);
+private:
+    std::shared_ptr<ghoul::opengl::Texture> _volumeTexture;
+    std::shared_ptr<TransferFunction> _transferFunction;
+    BoxGeometry _boundingBox;
+    VolumeGridType _gridType;
+
+    std::unique_ptr<ghoul::opengl::TextureUnit> _tfUnit;
+    std::unique_ptr<ghoul::opengl::TextureUnit> _textureUnit;
+    float _stepSize;
+};
+
+} // openspace
+
+#endif  // __KAMELEONVOLUMERAYCASTER_H__ 

@@ -1,7 +1,7 @@
 #ifndef __MILKYWAYPOINTSCONVERSIONTASK_H__
 #define __MILKYWAYPOINTSCONVERSIONTASK_H__
 
-#include <apps/DataConverter/conversiontask.h>
+#include <modules/galaxy/conversiontask.h>
 #include <string>
 #include <glm/glm.hpp>
 #include <functional>
@@ -18,7 +18,7 @@ namespace dataconverter {
  * (float x, float y, float z, float r, float g, float b) * n
  * to a binary (floating point) representation with the same layout.
  */
-class MilkyWayPointsConversionTask : public ConversionTask {
+class MilkyWayPointsConversionTask : public Task {
 public:
     MilkyWayPointsConversionTask(const std::string& inFilename,
                                  const std::string& outFilename);

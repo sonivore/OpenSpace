@@ -1,7 +1,7 @@
 #ifndef __MILKYWAYCONVERSIONTASK_H__
 #define __MILKYWAYCONVERSIONTASK_H__
 
-#include <apps/DataConverter/conversiontask.h>
+#include <openspace/util/task.h>
 #include <string>
 #include <glm/glm.hpp>
 #include <functional>
@@ -16,7 +16,7 @@ namespace dataconverter {
  * Converts a set of exr image slices to a raw volume
  * with floating point RGBA data (32 bit per channel).
  */
-class MilkyWayConversionTask : public ConversionTask {
+class MilkyWayConversionTask : public Task {
 public:
     MilkyWayConversionTask(const std::string& inFilenamePrefix,
                            const std::string& inFilenameSuffix,

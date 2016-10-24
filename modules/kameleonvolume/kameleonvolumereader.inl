@@ -4,10 +4,10 @@
  *                                                                                       *
  * Copyright (c) 2014 - 2016                                                             *
  *                                                                                       *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this  *
+ *  Permission is hereby granted, free of charge, to any person obtaining a copy of this *
  * software and associated documentation files (the "Software"), to deal in the Software *
  * without restriction, including without limitation the rights to use, copy, modify,    *
- * merge, publish, distribute, sublicense, and/or sell copies of the Software, and to    *
+ *  merge, publish, distribute, sublicense, and/or sell copies of the Software, and to   *
  * permit persons to whom the Software is furnished to do so, subject to the following   *
  * conditions:                                                                           *
  *                                                                                       *
@@ -22,70 +22,31 @@
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                         *
  ****************************************************************************************/
 
-#ifndef __LINEARLRUCACHE_H__
-#define __LINEARLRUCACHE_H__
 
-#include <glm/glm.hpp>
-#include <list>
-#include <iterator>
 
 namespace openspace {
-    
-template <typename ValueType>
-class LinearLruCache {
-public:
-    LinearLruCache(size_t capacity, size_t nIndices)
-        : _tracker()
-        , _cache(nIndices, std::make_pair(nullptr, _tracker.end()))
-        , _capacity(capacity) {};
 
-    bool has(size_t key) {
-        return _cache[key].first != nullptr;
-    };
-    void set(size_t key, ValueType value) {
-        auto prev = _cache[key];
-        if (prev.first != nullptr) {
-            prev.first = value;
-            std::list<size_t>::iterator trackerIter = prev.second;
-            _tracker.splice(_tracker.end(),
-                _tracker,
-                trackerIter);
+    //KameleonMetaData KameleonVolumeReader::getMetaData() {
+        /*
+        using GridUnits = std::tuple<std::string, std::string, std::string>;
+        GridUnits units = _kameleonWrapper.getGridUnits();
+        std::string unit0 = std::get<0>(units);
+        std::string unit1 = std::get<1>(units);
+        std::string unit2 = std::get<2>(units);
+
+        glm::vec3 scaling;
+        if (unit0 == 'R' && unit1 == 'R' && unit2 == 'R') {
+            scaling.x = scaling.y = scaling.z = openspace::distanceconstants::EarthRadius;
         }
-        else {
-            insert(key, value);
-        }
-    };
-    ValueType& use(size_t key) {
-        auto pair = _cache[key];
-        std::list<size_t>::iterator trackerIter = pair.second;
-        _tracker.splice(_tracker.end(),
-            _tracker,
-            trackerIter);
-        return pair.first;
-    };
-    ValueType& get(size_t key) {
-        return _cache[key].first;
-    };
-    void evict() {
-        _cache[_tracker.front()] = make_pair(nullptr, _tracker.end());
-        _tracker.pop_front();
-    };
-    size_t capacity() {
-        return _capacity;
-    };
-private:
-    void insert(size_t key, const ValueType& value) {
-        if (_tracker.size() == _capacity) {
-            evict();
-        }
-        auto iter = _tracker.insert(_tracker.end(), key);
-        _cache[key] = std::make_pair(value, iter);
-    };
-    std::list<size_t> _tracker;
-    std::vector<std::pair<ValueType, typename std::list<size_t>::iterator>> _cache;
-    size_t _capacity;
-};
+        if (unit0 == '')
+
+        VolumeMetaData metaData(VolumeMetaData::GridType::Cartesian, scaling );
+        */
+
+
+        //}
+
+
+
 
 }
-
-#endif

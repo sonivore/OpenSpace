@@ -2,7 +2,7 @@
  *                                                                                       *
  * OpenSpace                                                                             *
  *                                                                                       *
- * Copyright (c) 2014 - 2016                                                             *
+ * Copyright (c) 2016                                                                    *
  *                                                                                       *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this  *
  * software and associated documentation files (the "Software"), to deal in the Software *
@@ -21,71 +21,26 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE  *
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                         *
  ****************************************************************************************/
+ 
+#version __CONTEXT__
 
-#ifndef __LINEARLRUCACHE_H__
-#define __LINEARLRUCACHE_H__
+layout(location = 0) in vec4 vertPosition;
 
-#include <glm/glm.hpp>
-#include <list>
-#include <iterator>
+uniform mat4 viewProjection;
 
-namespace openspace {
+out vec3 vPosition;
+out vec4 worldPosition;
+
+#include "PowerScaling/powerScaling_vs.hglsl"
+
+void main() {
+    vPosition = vertPosition.xyz;
+    worldPosition = vertPosition;
     
-template <typename ValueType>
-class LinearLruCache {
-public:
-    LinearLruCache(size_t capacity, size_t nIndices)
-        : _tracker()
-        , _cache(nIndices, std::make_pair(nullptr, _tracker.end()))
-        , _capacity(capacity) {};
+    vec4 position = pscTransform(worldPosition, mat4(1.0));
+    
+    // project the position to view space
+    gl_Position = viewProjection * position;
 
-    bool has(size_t key) {
-        return _cache[key].first != nullptr;
-    };
-    void set(size_t key, ValueType value) {
-        auto prev = _cache[key];
-        if (prev.first != nullptr) {
-            prev.first = value;
-            std::list<size_t>::iterator trackerIter = prev.second;
-            _tracker.splice(_tracker.end(),
-                _tracker,
-                trackerIter);
-        }
-        else {
-            insert(key, value);
-        }
-    };
-    ValueType& use(size_t key) {
-        auto pair = _cache[key];
-        std::list<size_t>::iterator trackerIter = pair.second;
-        _tracker.splice(_tracker.end(),
-            _tracker,
-            trackerIter);
-        return pair.first;
-    };
-    ValueType& get(size_t key) {
-        return _cache[key].first;
-    };
-    void evict() {
-        _cache[_tracker.front()] = make_pair(nullptr, _tracker.end());
-        _tracker.pop_front();
-    };
-    size_t capacity() {
-        return _capacity;
-    };
-private:
-    void insert(size_t key, const ValueType& value) {
-        if (_tracker.size() == _capacity) {
-            evict();
-        }
-        auto iter = _tracker.insert(_tracker.end(), key);
-        _cache[key] = std::make_pair(value, iter);
-    };
-    std::list<size_t> _tracker;
-    std::vector<std::pair<ValueType, typename std::list<size_t>::iterator>> _cache;
-    size_t _capacity;
-};
-
+    gl_Position.z = 1.0;
 }
-
-#endif
