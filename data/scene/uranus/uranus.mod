@@ -3,37 +3,50 @@ return {
     {
         Name = "UranusBarycenter",
         Parent = "SolarSystemBarycenter",
+         -- SceneRadius unit is KM                
+		SceneRadius = 1.0E+6,
+        Transform = {
+            Translation = {
+                Type = "SpiceTranslation",
+                Body = "URANUS BARYCENTER",
+                --Reference = "ECLIPJ2000",
+                Observer = "SUN",
+                Kernels = {
+                    "${OPENSPACE_DATA}/spice/de430_1850-2150.bsp"
+                }
+            },
+        },
     },
 
     -- Uranus module
     {   
         Name = "Uranus",
         Parent = "UranusBarycenter",
+        -- SceneRadius unit is KM                
+		SceneRadius = 3.0E+5,
         Renderable = {
             Type = "RenderablePlanet",
             Frame = "IAU_URANUS",
-            Body = "URANUS BARYCENTER",
+            Body = "URANUS",
             Geometry = {
                 Type = "SimpleSphere",
-                Radius = { 2.5362 , 7 },
+                Radius = { 2.5559, 7 },
                 Segments = 100
             },
             Textures = {
                 Type = "simple",
                 Color = "textures/uranus.jpg",
             },
-            Atmosphere = {
-                Type = "Nishita", -- for example, values missing etc etc
-                MieFactor = 1.0,
-                MieColor = {1.0, 1.0, 1.0}
-            }
         },
         Transform = {
             Translation = {
                 Type = "SpiceTranslation",
                 Body = "URANUS BARYCENTER",
-                Observer = "SUN",
-                Kernels = "${OPENSPACE_DATA}/spice/de430_1850-2150.bsp"
+                --Reference = "ECLIPJ2000",
+                Observer = "URANUS BARYCENTER",
+                Kernels = {
+                    "${OPENSPACE_DATA}/spice/de430_1850-2150.bsp"
+                }
             },
             Rotation = {
                 Type = "SpiceRotation",
@@ -49,7 +62,7 @@ return {
     -- UranusTrail module
     {   
         Name = "UranusTrail",
-        Parent = "UranusBarycenter",
+        Parent = "SolarSystemBarycenter",
         Renderable = {
             Type = "RenderableTrail",
             Body = "URANUS BARYCENTER",

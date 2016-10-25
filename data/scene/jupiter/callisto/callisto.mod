@@ -3,24 +3,21 @@ return {
     {   
         Name = "Callisto",
         Parent = "JupiterBarycenter",
+         -- SceneRadius unit is KM                
+		SceneRadius = 2.0E+4,
         Renderable = {
             Type = "RenderablePlanet",
             Frame = "IAU_CALLISTO", -- should exist. 
             Body = "CALLISTO",
             Geometry = {
                 Type = "SimpleSphere",
-                Radius = { 2.631, 6},
+                Radius = { 2.410, 6},
                 Segments = 100
             },
             Textures = {
                 Type = "simple",
                 Color = "textures/callisto.jpg",
             },
-            Atmosphere = {
-                Type = "Nishita", -- for example, values missing etc etc
-                MieFactor = 1.0,
-                MieColor = {1.0, 1.0, 1.0}
-            }
         },
         Transform = {
             Translation = {

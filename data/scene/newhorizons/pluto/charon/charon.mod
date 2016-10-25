@@ -20,6 +20,8 @@ return {
     {   
         Name = "Charon",
         Parent = "PlutoBarycenter",
+        -- Scene Radius in KM:
+        SceneRadius = 6.0E+3,
         Renderable = {
             Type = "RenderablePlanetProjection",
             Frame = "IAU_CHARON", 

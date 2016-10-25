@@ -3,16 +3,31 @@ return {
     {
         Name = "NeptuneBarycenter",
         Parent = "SolarSystemBarycenter",
+        -- SceneRadius unit is KM                
+		SceneRadius = 1.0E+6,
+        Transform = {
+            Translation = {
+                Type = "SpiceTranslation",
+                Body = "NEPTUNE BARYCENTER",
+                --Reference = "ECLIPJ2000",
+                Observer = "SUN",
+                Kernels = {
+                    "${OPENSPACE_DATA}/spice/de430_1850-2150.bsp"
+                }
+            },
+        },
     },
 
     -- Neptune module
     {   
         Name = "Neptune",
         Parent = "NeptuneBarycenter",
+        -- SceneRadius unit is KM                
+		SceneRadius = 3.0E+5,
         Renderable = {
             Type = "RenderablePlanet",
             Frame = "IAU_NEPTUNE",
-            Body = "NEPTUNE BARYCENTER",
+            Body = "NEPTUNE",
             Geometry = {
                 Type = "SimpleSphere",
                 Radius = { 2.4622 , 7 },
@@ -23,22 +38,31 @@ return {
                 Color = "textures/neptune.jpg",
             },
         },
-        Ephemeris = {
-            Type = "Spice",
-            Body = "NEPTUNE BARYCENTER",
-            Observer = "SUN",
-            Kernels = "${OPENSPACE_DATA}/spice/de430_1850-2150.bsp"
-        },
-        Rotation = {
-            Type = "Spice",
-            Frame = "IAU_NEPTUNE",
-            Reference = "ECLIPJ2000"
+        Transform = {
+            Translation = {
+                Type = "SpiceTranslation",
+                Body = "NEPTUNE BARYCENTER",
+                --Reference = "ECLIPJ2000",
+                Observer = "NEPTUNE BARYCENTER",
+                Kernels = {
+                    "${OPENSPACE_DATA}/spice/de430_1850-2150.bsp"
+                }
+            },
+            Rotation = {
+                Type = "SpiceRotation",
+                SourceFrame = "IAU_NEPTUNE",
+                DestinationFrame = "ECLIPJ2000",
+            },
+            Scale = {
+                Type = "StaticScale",
+                Scale = 1,
+            },
         },
     },
     -- NeptuneTrail module
     {   
         Name = "NeptuneTrail",
-        Parent = "NeptuneBarycenter",
+        Parent = "SolarSystemBarycenter",
         Renderable = {
             Type = "RenderableTrail",
             Body = "NEPTUNE BARYCENTER",

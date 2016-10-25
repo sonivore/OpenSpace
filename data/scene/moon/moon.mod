@@ -3,6 +3,8 @@ return {
     {   
         Name = "Moon",
         Parent = "EarthBarycenter",
+        -- SceneRadius in KM
+        SceneRadius = 2.0E+4,                
         Renderable = {
             Type = "RenderablePlanet",
             Frame = "IAU_MOON",
@@ -32,14 +34,17 @@ return {
             Translation = {
                 Type = "SpiceTranslation",
                 Body = "MOON",
+                --Reference = "ECLIPJ2000",
                 Observer = "EARTH BARYCENTER",
-                Kernels = "${OPENSPACE_DATA}/spice/de430_1850-2150.bsp"
+                Kernels = {
+                    "${OPENSPACE_DATA}/spice/de430_1850-2150.bsp"
+                }
             },
-            Rotation = {
-                Type = "SpiceRotation",
-                SourceFrame = "IAU_MOON",
-                DestinationFrame = "ECLIPJ2000"
-            },
+        },
+        Rotation = {
+            Type = "SpiceRotation",
+            Frame = "IAU_MOON",
+            Reference = "ECLIPJ2000"
         },
     },
     -- MoonTrail module

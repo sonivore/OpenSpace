@@ -13,6 +13,8 @@ return {
     {   
         Name = "Kerberos",
         Parent = "PlutoBarycenter",
+        -- Scene Radius in KM:
+        SceneRadius = 5.0E+3,
         Renderable = {
             Type = "RenderablePlanet",
             Frame = "IAU_PLUTO",

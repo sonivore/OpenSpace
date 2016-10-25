@@ -229,10 +229,10 @@ bool SceneGraph::loadFromFile(const std::string& sceneDescription) {
         if (FileSys.fileExists(moduleFile)) {
             // We have a module file, so it is a direct include
             try {
-                ghoul::Dictionary moduleDictionary;
-                ghoul::lua::loadDictionaryFromFile(moduleFile, moduleDictionary, state);
+                ghoul::Dictionary currentModuleDictionary;
+                ghoul::lua::loadDictionaryFromFile(moduleFile, currentModuleDictionary, state);
                 moduleDictionaries.push_back({
-                    moduleDictionary,
+                    currentModuleDictionary,
                     moduleFile,
                     modulePath,
                     moduleName

@@ -109,6 +109,42 @@ public:
     void addSceneGraphNode(SceneGraphNode* node){
         _graph.addSceneGraphNode(node);
     }
+
+    /**
+    * Returns the name of the scene node referred as the current center of coordinates of the system,
+    * i.e., the camera's parent.
+    */
+    const std::string & sceneName() const;
+
+    /**
+    * Sets the name of the scene node referred as the current center of coordinates of the system,
+    * i.e., the camera's parent.
+    */
+    void setSceneName(const std::string & sceneName);
+
+    void updateSceneName(const Camera* camera);
+
+    /**
+    * Calculates the world position of target from the common node between camera's parent and target.
+    */
+    const glm::dvec3 currentDisplacementPosition(const std::string & cameraParent, 
+        const SceneGraphNode* target) const;
+
+    SceneGraphNode* findCommonParentNode(const std::string & firstPath, const std::string & secondPath) const;
+
+    std::vector<SceneGraphNode*> pathTo(SceneGraphNode* node) const;
+
+    glm::dvec3 pathCollector(const std::vector<SceneGraphNode*> & path, const std::string & commonParentName,
+        const bool inverse) const;
+
+    std::string commonParent(const std::vector<SceneGraphNode*> & t1, const std::vector<SceneGraphNode*> & t2) const;
+
+    void setRelativeOrigin(Camera* camera) const;
+
+    void newCameraOrigin(const std::vector<SceneGraphNode*> & commonParentPath, Camera* camera) const;
+
+    bool isUpdated() const;
+
     /**
      * Returns the Lua library that contains all Lua functions available to change the
      * scene graph. The functions contained are
@@ -126,7 +162,16 @@ private:
 
     void writePropertyDocumentation(const std::string& filename, const std::string& type, const std::string& sceneFilename);
 
+    /**
+    * Calculates the current scene name (new camera's node parent) based on the camera's position
+    * and the former scene name.
+    */
+    std::string currentSceneName(const Camera* camera, std::string _nameOfScene) const;
+
+    std::string _sceneName;
     std::string _focus;
+
+    bool _updated;
 
     // actual scenegraph
     SceneGraph _graph;

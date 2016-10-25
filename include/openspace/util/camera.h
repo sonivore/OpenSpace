@@ -94,9 +94,12 @@ namespace openspace {
         void setRotation(Quat rotation);
         void setScaling(glm::vec2 scaling);
         void setMaxFov(float fov);
-
+        void setParent(std::string parent);
         // Relative mutators
         void rotate(Quat rotation);
+
+    
+        
 
         // Accessors
         // Remove Vec3 from the name when psc is gone
@@ -106,6 +109,8 @@ namespace openspace {
         const Vec3& viewDirectionWorldSpace() const;
         const Vec3& lookUpVectorCameraSpace() const;
         const Vec3& lookUpVectorWorldSpace() const;
+        const std::string parent() const;
+
         const glm::vec2& scaling() const;
         const Mat4& viewRotationMatrix() const;
         const Quat& rotationQuaternion() const;
@@ -184,6 +189,8 @@ namespace openspace {
         SyncData<Quat> _rotation;
         SyncData<glm::vec2> _scaling;
 
+        // Parent of camera, latches onto scenegraph node.
+        std::string _parent;
 
         // _focusPosition to be removed
         Vec3 _focusPosition;

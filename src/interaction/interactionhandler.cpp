@@ -52,6 +52,7 @@ namespace {
     const std::string KeyPosition = "Position";
     const std::string KeyRotation = "Rotation";
 
+    const std::string _mostProbableCameraParent = "SolarSystemBarycenter";
     const std::string MainTemplateFilename = "${OPENSPACE_DATA}/web/keybindings/main.hbs";
     const std::string KeybindingTemplateFilename = "${OPENSPACE_DATA}/web/keybindings/keybinding.hbs";
     const std::string HandlebarsFilename = "${OPENSPACE_DATA}/web/common/handlebars-v4.0.5.js";
@@ -177,7 +178,8 @@ void InteractionHandler::resetCameraDirection() {
     LINFO("Setting camera direction to point at focus node.");
 
     glm::dquat rotation = _camera->rotationQuaternion();
-    glm::dvec3 focusPosition = focusNode()->worldPosition();
+    //glm::dvec3 focusPosition = focusNode()->worldPosition();
+    glm::dvec3 focusPosition = focusNode()->dynamicWorldPosition().dvec3();
     glm::dvec3 cameraPosition = _camera->positionVec3();
     glm::dvec3 lookUpVector = _camera->lookUpVectorWorldSpace();
 
@@ -251,7 +253,8 @@ void InteractionHandler::updateCamera() {
     else {
         if (_camera && focusNode()) {
             _currentInteractionMode->updateCameraStateFromMouseStates(*_camera);
-            _camera->setFocusPositionVec3(focusNode()->worldPosition());
+            //_camera->setFocusPositionVec3(focusNode()->worldPosition());
+            _camera->setFocusPositionVec3(focusNode()->dynamicWorldPosition().dvec3());
         }
     }
 }
@@ -323,6 +326,11 @@ void InteractionHandler::setCameraStateFromDictionary(const ghoul::Dictionary& c
     _camera->setPositionVec3(cameraPosition);
     _camera->setRotation(glm::dquat(
         cameraRotation.x, cameraRotation.y, cameraRotation.z, cameraRotation.w));
+
+    // New dynamicSceneGraph in action (JCC):
+    // Once Scene::currentSceneName and Scene::newCameraOrigin run, parent is updated
+    // to the closest node.
+    _camera->setParent(_mostProbableCameraParent);
 }
 
 ghoul::Dictionary InteractionHandler::getCameraStateDictionary() {

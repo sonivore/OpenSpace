@@ -46,6 +46,7 @@
 #include <openspace/engine/openspaceengine.h>
 #include <openspace/interaction/interactionhandler.h>
 #include <openspace/scene/scene.h>
+#include <openspace/util/setscene.h>
 #include <openspace/util/camera.h>
 #include <openspace/util/time.h>
 #include <openspace/util/screenlog.h>
@@ -412,7 +413,7 @@ void RenderEngine::updateFade() {
     }
 }
 
-void RenderEngine::render(const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix){
+void RenderEngine::render(const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix) {    
     _mainCamera->sgctInternal.setViewMatrix(viewMatrix);
     _mainCamera->sgctInternal.setProjectionMatrix(projectionMatrix);
 
@@ -440,6 +441,14 @@ void RenderEngine::render(const glm::mat4& projectionMatrix, const glm::mat4& vi
     for (auto screenSpaceRenderable : _screenSpaceRenderables) {
         if (screenSpaceRenderable->isEnabled() && screenSpaceRenderable->isReady())
             screenSpaceRenderable->render();
+    }
+}
+
+void RenderEngine::updateDynamicOrigin() {
+    if (_mainCamera && scene()->isUpdated()) {
+        // New DynamicRootGraph system in action:
+        scene()->updateSceneName(_mainCamera);
+        _mainCamera->setParent(scene()->sceneName());
     }
 }
 

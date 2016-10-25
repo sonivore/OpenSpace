@@ -83,7 +83,9 @@ return {
         Name = "NewHorizons",
         -- Parent = "PlutoBarycenter", 
         -- Parent = "JupiterBarycenter", 
-        Parent = "SolarSystemBarycenter", 
+        Parent = "SolarSystemBarycenter",
+         -- SceneRadius unit is KM                
+		SceneRadius = 1.0E+1,
         Renderable = {
             Type = "RenderableModel",
             Body = "NEW HORIZONS",

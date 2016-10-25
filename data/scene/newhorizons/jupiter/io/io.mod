@@ -3,6 +3,8 @@ return {
     {   
         Name = "Io",
         Parent = "JupiterBarycenter",
+        -- SceneRadius unit is KM                
+		SceneRadius = 2.0E+4,
         Renderable = {
             Type = "RenderablePlanetProjection",
             Frame = "IAU_IO", 

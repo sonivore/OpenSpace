@@ -622,6 +622,10 @@ void RenderablePlanet::render(const RenderData& data) {
     _programObject->setUniform("ViewProjection", data.camera.viewProjectionMatrix());
     _programObject->setUniform("ModelTransform", transform);
 
+    // Sun pos
+    _programObject->setUniform("sun_pos", 
+        OsEng.renderEngine().scene()->sceneGraphNode("Sun")->dynamicWorldPosition().vec3());
+
     // Normal Transformation
     glm::mat4 translateObjTrans = glm::translate(glm::mat4(1.0), data.position.vec3());
     glm::mat4 translateCamTrans = glm::translate(glm::mat4(1.0), -data.camera.position().vec3());
@@ -862,9 +866,7 @@ void RenderablePlanet::loadTexture() {
     GLenum err;
     while ((err = glGetError()) != GL_NO_ERROR) {
         const GLubyte * errString = gluErrorString(err);
-        std::stringstream ss;
-        ss << "Error after reading memory 1. OpenGL error: " << errString << std::endl;
-        LERROR(ss.str());
+        LERROR("Error after loading color texture. OpenGL error: " << errString);
     }
 
     if (_hasNightTexture) {
@@ -882,9 +884,7 @@ void RenderablePlanet::loadTexture() {
 
     while ((err = glGetError()) != GL_NO_ERROR) {
         const GLubyte * errString = gluErrorString(err);
-        std::stringstream ss;
-        ss << "Error after reading memory 2. OpenGL error: " << errString << std::endl;
-        LERROR(ss.str());
+        LERROR("Error after loading night texture. OpenGL error: " << errString);
     }
 
     if (_hasReflectanceTexture) {
@@ -902,9 +902,7 @@ void RenderablePlanet::loadTexture() {
 
     while ((err = glGetError()) != GL_NO_ERROR) {
         const GLubyte * errString = gluErrorString(err);
-        std::stringstream ss;
-        ss << "Error after reading memory 3. OpenGL error: " << errString << std::endl;
-        LERROR(ss.str());
+        LERROR("Error after loading reflectance texture. OpenGL error: " << errString);
     }
 
     if (_hasHeightTexture) {
@@ -920,12 +918,10 @@ void RenderablePlanet::loadTexture() {
         }
     }
 
-//    while ((err = glGetError()) != GL_NO_ERROR) {
-//        const GLubyte * errString = gluErrorString(err);
-//        std::stringstream ss;
-//        ss << "Error after reading memory 4. OpenGL error: " << errString << std::endl;
-//        LERROR(ss.str());
-//    }
+    while ((err = glGetError()) != GL_NO_ERROR) {
+        const GLubyte * errString = gluErrorString(err);
+        LERROR("Error after loading height texture. OpenGL error: " << errString);
+    }
 
     if (_hasCloudsTexture) {
         _cloudsTexture = nullptr;
@@ -940,12 +936,11 @@ void RenderablePlanet::loadTexture() {
         }
     }
 
-//    while ((err = glGetError()) != GL_NO_ERROR) {
-//        const GLubyte * errString = gluErrorString(err);
-//        std::stringstream ss;
-//        ss << "Error after reading memory 5. OpenGL error: " << errString << std::endl;
-//        LERROR(ss.str());
-//    }
+    while ((err = glGetError()) != GL_NO_ERROR) {
+        const GLubyte * errString = gluErrorString(err);
+        LERROR("Error after loading clouds texture. OpenGL error: " << errString);
+    }
+
 }
 
 void RenderablePlanet::loadComputationPrograms() {

@@ -3,19 +3,26 @@ return {
     {
         Name = "SolarSystemBarycenter",
         Parent = "SolarSystem",
+        -- SceneRadius unit is KM                
+		SceneRadius = 6.0E+9,
+        Ephemeris = {
+            Type = "Static",
+        },
     },
 
     -- Sun module
     {   
         Name = "Sun",
         Parent = "SolarSystemBarycenter",
+         -- SceneRadius unit is KM                
+		SceneRadius = 7.0E+6,
         Renderable = {
             Type = "RenderablePlanet",
             Frame = "IAU_SUN",
             Body = "SUN", 
             Geometry = {
                 Type = "SimpleSphere",
-                Radius = { 2.783200, 9 },
+                Radius = { 6.957, 8 },
                 Segments = 100
             },
             Textures = {

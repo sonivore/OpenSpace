@@ -58,6 +58,7 @@ public:
     static const std::string KeyName;
     static const std::string KeyParentName;
     static const std::string KeyDependencies;
+    static const std::string KeySceneRadius;
     
     SceneGraphNode();
     ~SceneGraphNode();
@@ -87,6 +88,8 @@ public:
     const glm::dmat3& worldRotationMatrix() const;
     double worldScale() const;
 
+    psc dynamicWorldPosition() const;
+
     SceneGraphNode* parent() const;
     const std::vector<SceneGraphNode*>& children() const;
 
@@ -100,6 +103,9 @@ public:
     void setRenderable(Renderable* renderable);
     const Renderable* renderable() const;
     Renderable* renderable();
+
+    void setSceneRadius(double SceneRadius);
+    const double& sceneRadius() const;
 
     // @TODO Remove once the scalegraph is in effect ---abock
     
@@ -119,6 +125,8 @@ private:
 
     std::vector<SceneGraphNode*> _children;
     SceneGraphNode* _parent;
+
+    double _sceneRadius;
 
     PerformanceRecord _performanceRecord;
 

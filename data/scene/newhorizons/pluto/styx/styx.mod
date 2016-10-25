@@ -13,6 +13,8 @@ return {
     {   
         Name = "Styx",
         Parent = "PlutoBarycenter",
+        -- Scene Radius in KM:
+        SceneRadius = 7.0E+2,
         Renderable = {
             Type = "RenderablePlanet",
             Frame = "IAU_PLUTO",

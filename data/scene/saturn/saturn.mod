@@ -3,37 +3,50 @@ return {
     {
         Name = "SaturnBarycenter",
         Parent = "SolarSystemBarycenter",
+        -- Scene Radius in KM:
+        SceneRadius = 1.0E+6,
+        Transform = {
+            Translation = {
+                Type = "SpiceTranslation",
+                Body = "SATURN BARYCENTER",
+                --Reference = "ECLIPJ2000",
+                Observer = "SUN",
+                Kernels = {
+                    "${OPENSPACE_DATA}/spice/de430_1850-2150.bsp"
+                }
+            },
+        },
     },
 
     -- Saturn module
     {   
         Name = "Saturn",
         Parent = "SaturnBarycenter",
+        -- Scene Radius in KM:
+        SceneRadius = 6.0E+5,
         Renderable = {
             Type = "RenderablePlanet",
             Frame = "IAU_SATURN",
-            Body = "SATURN BARYCENTER",
+            Body = "SATURN",
             Geometry = {
                 Type = "SimpleSphere",
-                Radius = { 5.8232, 7 },
+                Radius = { 6.0268, 7 },
                 Segments = 100
             },
             Textures = {
                 Type = "simple",
                 Color = "textures/saturn.jpg",
             },
-            Atmosphere = {
-                Type = "Nishita", -- for example, values missing etc etc
-                MieFactor = 1.0,
-                MieColor = {1.0, 1.0, 1.0}
-            }
         },
         Transform = {
             Translation = {
                 Type = "SpiceTranslation",
                 Body = "SATURN BARYCENTER",
-                Observer = "SUN",
-                Kernels = "${OPENSPACE_DATA}/spice/de430_1850-2150.bsp"
+                --Reference = "ECLIPJ2000",
+                Observer = "SATURN BARYCENTER",
+                Kernels = {
+                    "${OPENSPACE_DATA}/spice/de430_1850-2150.bsp"
+                }
             },
             Rotation = {
                 Type = "SpiceRotation",
@@ -49,7 +62,8 @@ return {
     -- SaturnTrail module
     {   
         Name = "SaturnTrail",
-        Parent = "SaturnBarycenter",
+        --Parent = "SaturnBarycenter",
+        Parent = "SolarSystemBarycenter",
         Renderable = {
             Type = "RenderableTrail",
             Body = "SATURN BARYCENTER",

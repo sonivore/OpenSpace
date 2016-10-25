@@ -153,6 +153,7 @@ protected:
         DelayedVariable<glm::dvec2, double> velocity;
     };
 
+    std::string _previousSceneName;
     SceneGraphNode* _focusNode = nullptr;
     glm::dvec3 _previousFocusNodePosition;
     glm::dquat _previousFocusNodeRotation;

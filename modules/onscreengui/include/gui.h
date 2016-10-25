@@ -30,6 +30,7 @@
 #include <modules/onscreengui/include/guiperformancecomponent.h>
 #include <modules/onscreengui/include/guipropertycomponent.h>
 #include <modules/onscreengui/include/guiorigincomponent.h>
+#include <modules/onscreengui/include/guicoordsystemcomponent.h>
 #include <modules/onscreengui/include/guitimecomponent.h>
 #include <modules/onscreengui/include/guiiswacomponent.h>
 #include <openspace/scripting/scriptengine.h>
@@ -66,6 +67,7 @@ public:
 //protected:
     GuiHelpComponent _help;
     GuiOriginComponent _origin;
+    GuiCoordSystemComponent _coordSystem;
     GuiPerformanceComponent _performance;
     GuiPropertyComponent _globalProperty;
     GuiPropertyComponent _property;

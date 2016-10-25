@@ -34,6 +34,8 @@
 
 #include <sgct.h>
 
+#include <thread>
+
 sgct::Engine* _sgctEngine;
 
 void mainInitFunc();

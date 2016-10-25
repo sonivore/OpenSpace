@@ -2,7 +2,7 @@ return {
     -- Stars module
     {   
         Name = "Stars",
-        Parent = "Root",
+        Parent = "MilkyWay",
         Renderable = {
             Type = "RenderableStars",
             File = "${OPENSPACE_DATA}/scene/stars/speck/stars.speck",

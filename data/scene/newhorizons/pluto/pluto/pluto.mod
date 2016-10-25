@@ -21,6 +21,8 @@ return {
     {
         Name = "PlutoBarycenter",
         Parent = "SolarSystemBarycenter",
+        -- Scene Radius in KM:
+        SceneRadius = 1.0E+6,
         Transform = {
             Translation = {
                 Type = "SpiceTranslation",
@@ -34,6 +36,8 @@ return {
     {   
         Name = "PlutoProjection",
         Parent = "PlutoBarycenter",
+        -- Scene Radius in KM:
+        SceneRadius = 1.0E+4,
         Renderable = {
             Type = "RenderablePlanetProjection",
             Frame = "IAU_PLUTO",

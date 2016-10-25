@@ -106,6 +106,8 @@ public:
     void updateScreenSpaceRenderables();
     void render(const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix);
 
+    void updateDynamicOrigin();
+
     void renderScreenLog();
     void renderShutdownInformation(float timer, float fullTime);
     void postDraw();
@@ -212,7 +214,6 @@ private:
     RaycasterManager* _raycasterManager;
 
     std::unique_ptr<performance::PerformanceManager> _performanceManager;
-
     std::unique_ptr<Renderer> _renderer;
     RendererImplementation _rendererImplementation;
     ghoul::Dictionary _rendererData;

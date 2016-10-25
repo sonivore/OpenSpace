@@ -24,7 +24,6 @@
 
 // open space includes
 #include <openspace/scene/scenegraphnode.h>
-
 #include <openspace/documentation/documentation.h>
 
 #include <openspace/query/query.h>
@@ -45,6 +44,7 @@
 
 #include <openspace/engine/openspaceengine.h>
 #include <openspace/util/factorymanager.h>
+#include <openspace/util/setscene.h>
 
 #include <cctype>
 #include <chrono>
@@ -66,6 +66,7 @@ namespace openspace {
 const std::string SceneGraphNode::RootNodeName = "Root";
 const std::string SceneGraphNode::KeyName = "Name";
 const std::string SceneGraphNode::KeyParentName = "Parent";
+const std::string SceneGraphNode::KeySceneRadius = "SceneRadius";
 const std::string SceneGraphNode::KeyDependencies = "Dependencies";
 
 SceneGraphNode* SceneGraphNode::createFromDictionary(const ghoul::Dictionary& dictionary){
@@ -85,6 +86,10 @@ SceneGraphNode* SceneGraphNode::createFromDictionary(const ghoul::Dictionary& di
     std::string name;
     dictionary.getValue(KeyName, name);
     result->setName(name);
+
+    double sceneRadius;
+    dictionary.getValue(KeySceneRadius, sceneRadius);
+    result->setSceneRadius(sceneRadius);
 
     if (dictionary.hasValue<ghoul::Dictionary>(KeyRenderable)) {
         ghoul::Dictionary renderableDictionary;
@@ -174,6 +179,7 @@ SceneGraphNode::SceneGraphNode()
     , _renderable(nullptr)
     , _renderableVisible(false)
     , _boundingSphereVisible(false)
+    , _sceneRadius(0.0)
 {
 }
 
@@ -230,6 +236,7 @@ bool SceneGraphNode::deinitialize() {
     _renderableVisible = false;
     _boundingSphereVisible = false;
     _boundingSphere = PowerScaledScalar(0.0, 0.0);
+    _sceneRadius = 0.0;
 
     return true;
 }
@@ -284,9 +291,12 @@ void SceneGraphNode::update(const UpdateData& data) {
     _worldRotationCached = calculateWorldRotation();
     _worldScaleCached = calculateWorldScale();
     // Assumes _worldRotationCached and _worldScaleCached have been calculated for parent
-    _worldPositionCached = calculateWorldPosition();
+    //_worldPositionCached = calculateWorldPosition();
+    _worldPositionCached = dynamicWorldPosition().dvec3();
 
     newUpdateData.modelTransform.translation = worldPosition();
+    //newUpdateData.modelTransform.translation = dynamicWorldPosition().dvec3();
+    //newUpdateData.modelTransform.translation = dynamicWorldPosition();
     newUpdateData.modelTransform.rotation = worldRotationMatrix();
     newUpdateData.modelTransform .scale = worldScale();
 
@@ -347,7 +357,12 @@ void SceneGraphNode::evaluate(const Camera* camera, const psc& parentPosition) {
 }
 
 void SceneGraphNode::render(const RenderData& data, RendererTasks& tasks) {
-    const psc thisPositionPSC = psc::CreatePowerScaledCoordinate(_worldPositionCached.x, _worldPositionCached.y, _worldPositionCached.z);
+    
+    // JCC: Implement a cache sytem to avoid calculate the same path while in the same camera parent.
+    // Just update the displacement vector to the sum.
+    const psc thisPositionPSC = dynamicWorldPosition();
+    
+    //const psc thisPositionPSC = psc::CreatePowerScaledCoordinate(_worldPositionCached.x, _worldPositionCached.y, _worldPositionCached.z);
 
     RenderData newData = {
         data.camera,
@@ -429,6 +444,12 @@ void SceneGraphNode::addChild(SceneGraphNode* child) {
 //    return false;
 //}
 
+void SceneGraphNode::setSceneRadius(double sceneRadius) {
+
+    _sceneRadius = std::move(sceneRadius);
+
+}
+
 glm::dvec3 SceneGraphNode::position() const
 {
     return _translation->position();
@@ -491,6 +512,17 @@ double SceneGraphNode::calculateWorldScale() const {
     else {
         return scale();
     }
+}
+
+psc SceneGraphNode::dynamicWorldPosition() const
+{
+    const Scene * scene = OsEng.renderEngine().scene();
+    glm::dvec3 currentDynamicPosition = scene->currentDisplacementPosition(scene->sceneName(), this);
+    // The next line is not necessary, the position is measured from the parent's node.
+    //currentDynamicPosition -= camera.displacementVector();
+    return PowerScaledCoordinate::CreatePowerScaledCoordinate(currentDynamicPosition.x,
+        currentDynamicPosition.y,
+        currentDynamicPosition.z);
 }
 
 SceneGraphNode* SceneGraphNode::parent() const
@@ -617,6 +649,9 @@ void SceneGraphNode::updateCamera(Camera* camera) const{
 
     //printf("target: %f, %f, %f, %f\n", target.vec4().x, target.vec4().y, target.vec4().z, target.vec4().w);
     
+}
+const double& SceneGraphNode::sceneRadius() const {
+    return _sceneRadius;
 }
 
 }  // namespace openspace

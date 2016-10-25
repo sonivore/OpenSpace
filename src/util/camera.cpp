@@ -49,6 +49,7 @@ namespace openspace {
     Camera::Camera()
         : _maxFov(0.f)
         , _focusPosition()
+        , _parent("SolarSystemBarycenter")        
     {
 
         _scaling = glm::vec2(1.f, 0.f);
@@ -56,7 +57,7 @@ namespace openspace {
         Vec3 eulerAngles(1.0, 1.0, 1.0);
         _rotation = Quat(eulerAngles);
     }
-
+    
     Camera::Camera(const Camera& o)
         : sgctInternal(o.sgctInternal)
         , _focusPosition(o._focusPosition)
@@ -71,6 +72,7 @@ namespace openspace {
     Camera::~Camera() { }
 
     // Mutators
+
     void Camera::setPositionVec3(Vec3 pos) {
         std::lock_guard<std::mutex> _lock(_mutex);
         _position = pos;
@@ -102,6 +104,10 @@ namespace openspace {
         _maxFov = fov;
         _cachedSinMaxFov.isDirty = true;
     }
+    void Camera::setParent(std::string parent)
+    {
+        _parent = parent;
+    }
 
     // Relative mutators
     void Camera::rotate(Quat rotation) {
@@ -115,6 +121,11 @@ namespace openspace {
     }
 
     // Accessors
+
+    const std::string Camera::parent() const
+    {
+        return _parent;
+    }
     const Camera::Vec3& Camera::positionVec3() const {
         return _position;
     }

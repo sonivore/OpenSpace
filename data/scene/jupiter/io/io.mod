@@ -3,6 +3,8 @@ return {
     {   
         Name = "Io",
         Parent = "JupiterBarycenter",
+         -- SceneRadius unit is KM                
+		SceneRadius = 2.0E+4,
         Renderable = {
             Type = "RenderablePlanet",
             Frame = "IAU_IO", -- should exist. 
@@ -16,11 +18,6 @@ return {
                 Type = "simple",
                 Color = "textures/io.jpg",
             },
-            Atmosphere = {
-                Type = "Nishita", -- for example, values missing etc etc
-                MieFactor = 1.0,
-                MieColor = {1.0, 1.0, 1.0}
-            }
         },
         Transform = {
             Translation = {

@@ -444,7 +444,10 @@ void GUI::render() {
     ImGui::Checkbox("Performance", &_performance._isEnabled);
     _origin.render();
     _time.render();
-
+    _coordSystem.render();
+    
+    // New Dynamic Root Scene Graph Added. -- JCC
+    /*
     // These are temporary until the scalegraph is in effect ---abock
     bool toSun = ImGui::Button("Coordinate System to Sun");
     bool toPluto = ImGui::Button("Coordinate System to Pluto");
@@ -475,6 +478,7 @@ void GUI::render() {
             scripting::ScriptEngine::RemoteScripting::Yes
         );
     }
+    */
 
     ImGui::Checkbox("Help", &_help._isEnabled);
 

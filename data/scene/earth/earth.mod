@@ -3,11 +3,26 @@ return {
     {
         Name = "EarthBarycenter",
         Parent = "SolarSystemBarycenter",
+        -- SceneRadius unit is KM                
+		SceneRadius = 4.0E+5, 
+        Transform = {
+            Translation = {
+                Type = "SpiceTranslation",
+                Body = "EARTH BARYCENTER",
+                --Reference = "ECLIPJ2000",
+                Observer = "SUN",
+                Kernels = {
+                    "${OPENSPACE_DATA}/spice/de430_1850-2150.bsp"
+                }
+            },
+        },
     },
     -- Earth module
     {   
         Name = "Earth",
         Parent = "EarthBarycenter",
+        -- SceneRadius unit is KM
+		SceneRadius = 1.0E+5,
         Renderable = {
             Type = "RenderablePlanet",
             Frame = "IAU_EARTH",
@@ -23,18 +38,16 @@ return {
                 Night = "textures/earth_night.jpg",
                 Height = "textures/earth_bluemarble_height.jpg"
             },
-            Atmosphere = {
-                Type = "Nishita", -- for example, values missing etc etc
-                MieFactor = 1.0,
-                MieColor = {1.0, 1.0, 1.0}
-            }
         },
         Transform = {
             Translation = {
                 Type = "SpiceTranslation",
                 Body = "EARTH",
-                Observer = "SUN",
-                Kernels = "${OPENSPACE_DATA}/spice/de430_1850-2150.bsp"
+                --Reference = "ECLIPJ2000",
+                Observer = "EARTH BARYCENTER",
+                Kernels = {
+                    "${OPENSPACE_DATA}/spice/de430_1850-2150.bsp"
+                }
             },
             Rotation = {
                 Type = "SpiceRotation",
@@ -51,10 +64,12 @@ return {
     -- EarthTrail module
     {   
         Name = "EarthTrail",
-        Parent = "EarthBarycenter",
+        --Parent = "EarthBarycenter",
+        Parent = "SolarSystemBarycenter",
         Renderable = {
             Type = "RenderableTrail",
             Body = "EARTH",
+            --Reference = "ECLIPJ2000",
             Frame = "GALACTIC",
             Observer = "SUN",
             RGB = { 0.5, 0.8, 1.0},

@@ -3,6 +3,8 @@ return {
     {
         Name = "JupiterBarycenter",
         Parent = "SolarSystemBarycenter",
+        -- SceneRadius unit is KM                
+        SceneRadius = 2.0E+6,
         Transform = {
             Translation = {
                 Type = "SpiceTranslation",
@@ -16,24 +18,21 @@ return {
     {   
         Name = "Jupiter",
         Parent = "JupiterBarycenter",
+        -- SceneRadius unit is KM
+        SceneRadius = 4.0E+5,
         Renderable = {
             Type = "RenderablePlanet",
             Frame = "IAU_JUPITER",
             Body = "JUPITER BARYCENTER",
             Geometry = {
                 Type = "SimpleSphere",
-                Radius = { 0.71492, 8 },
+                Radius = { 6.9911, 7 },
                 Segments = 200
             },
             Textures = {
                 Type = "simple",
                 Color = "textures/jupiter.jpg",
             },
-            Atmosphere = {
-                Type = "Nishita", -- for example, values missing etc etc
-                MieFactor = 1.0,
-                MieColor = {1.0, 1.0, 1.0}
-            }
         },
         Transform = {
             Translation = {
