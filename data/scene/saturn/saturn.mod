@@ -1,3 +1,5 @@
+SaturnRadius = 6.0268E7;
+
 return {
     -- Saturn barycenter module
     {
@@ -23,14 +25,14 @@ return {
         Name = "Saturn",
         Parent = "SaturnBarycenter",
         -- Scene Radius in KM:
-        SceneRadius = 6.0E+5,
+        SceneRadius = 6.0E+8,
         Renderable = {
             Type = "RenderablePlanet",
             Frame = "IAU_SATURN",
             Body = "SATURN",
             Geometry = {
                 Type = "SimpleSphere",
-                Radius = { 6.0268, 7 },
+                Radius = {SaturnRadius, 0},
                 Segments = 100
             },
             Textures = {
