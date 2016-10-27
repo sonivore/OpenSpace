@@ -42,7 +42,8 @@ Documentation ConfigurationManager::Documentation() {
         {
             ConfigurationManager::KeyConfigScene,
             new StringAnnotationVerifier(
-                "A valid scene file as described in the Scene documentation"),
+                "A valid scene file as described in the Scene documentation"
+            ),
             "The scene description that is used to populate the application after "
             "startup. The scene determines which objects are loaded, the startup "
             "time and other scene-specific settings. More information is provided in "
@@ -301,6 +302,18 @@ Documentation ConfigurationManager::Documentation() {
             "The countdown that the application will wait between pressing ESC and "
             "actually shutting down. If ESC is pressed again in this time, the "
             "shutdown is aborted.",
+            Optional::Yes
+        },
+        {
+            ConfigurationManager::KeyOnScreenTextScaling,
+            new StringInListVerifier({
+                // Values from RenderEngine:updateRenderer
+                "window", "framebuffer"
+            }),
+            "The method for scaling the onscreen text in the window. As the resolution "
+            "of the rendering can be different from the size of the window, the onscreen "
+            "text can either be scaled according to the window size ('window'), or the "
+            "rendering resolution ('framebuffer'). This value defaults to 'window'.",
             Optional::Yes
         },
         {
