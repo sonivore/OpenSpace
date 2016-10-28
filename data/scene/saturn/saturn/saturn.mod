@@ -11,12 +11,9 @@ return {
             Translation = {
                 Type = "SpiceTranslation",
                 Body = "SATURN BARYCENTER",
-                --Reference = "ECLIPJ2000",
                 Observer = "SUN",
-                Kernels = {
-                    "${OPENSPACE_DATA}/spice/de430_1850-2150.bsp"
-                }
-            },
+                Kernels = "${OPENSPACE_DATA}/spice/de430_1850-2150.bsp"
+            }
         },
     },
 
@@ -41,15 +38,6 @@ return {
             },
         },
         Transform = {
-            Translation = {
-                Type = "SpiceTranslation",
-                Body = "SATURN BARYCENTER",
-                --Reference = "ECLIPJ2000",
-                Observer = "SATURN BARYCENTER",
-                Kernels = {
-                    "${OPENSPACE_DATA}/spice/de430_1850-2150.bsp"
-                }
-            },
             Rotation = {
                 Type = "SpiceRotation",
                 SourceFrame = "IAU_SATURN",
@@ -75,7 +63,6 @@ return {
     -- SaturnTrail module
     {   
         Name = "SaturnTrail",
-        --Parent = "SaturnBarycenter",
         Parent = "SolarSystemBarycenter",
         Renderable = {
             Type = "RenderableTrail",
