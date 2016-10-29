@@ -1,8 +1,9 @@
+
 /*****************************************************************************************
  *                                                                                       *
  * OpenSpace                                                                             *
  *                                                                                       *
- * Copyright (c) 2014-2015                                                               *
+ * Copyright (c) 2014-2016                                                               *
  *                                                                                       *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this  *
  * software and associated documentation files (the "Software"), to deal in the Software *
@@ -22,65 +23,39 @@
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                         *
  ****************************************************************************************/
 
-#ifndef __RENDERABLEVOLUMEGL_H__
-#define __RENDERABLEVOLUMEGL_H__
+#include <modules/volume/rendering/volumeclipplanes.h>
+#include <ghoul/misc/dictionary.h>
 
-#include <modules/volume/rendering/renderablevolume.h>
-#include <openspace/util/powerscaledcoordinate.h>
-
-// Forward declare to minimize dependencies
-namespace ghoul {
-    namespace filesystem {
-        class File;
-    }
-    namespace opengl {
-        class ProgramObject;
-        class Texture;
-    }
-}
 
 namespace openspace {
 
-class RenderableVolumeGL: public RenderableVolume {
-public:
-    RenderableVolumeGL(const ghoul::Dictionary& dictionary);
-    ~RenderableVolumeGL();
-    
-    bool initialize() override;
-    bool deinitialize() override;
+VolumeClipPlane::VolumeClipPlane(const ghoul::Dictionary& dictionary)
+    : _normal("normal", "Normal", glm::vec3(1.0, 0.0, 0.0), glm::vec3(-1.0), glm::vec3(1.0))
+    , _offsets("offsets", "Offsets", glm::vec2(-2.0, 0.0), glm::vec2(-2.0, 0.0), glm::vec2(2.0, 1.0))
+{
+    glm::vec3 normal;
+    glm::vec2 offsets;
+    dictionary.getValue("Normal", normal);
+    dictionary.getValue("Offsets", offsets);
 
-    bool isReady() const override;
+    _normal = normal;
+    _offsets = offsets;
+}
 
-    virtual void render(const RenderData& data) override;
-    virtual void update(const UpdateData& data) override;
+void VolumeClipPlane::initialize()
+{
+    addProperty(_normal);
+    addProperty(_offsets);
+}
 
-private:
-    ghoul::Dictionary _hintsDictionary;
+glm::vec3 VolumeClipPlane::normal()
+{
+    return glm::normalize(_normal.value());
+}
 
-    std::string _filename;
+glm::vec2 VolumeClipPlane::offsets()
+{
+    return _offsets;
+}
 
-    std::string _transferFunctionName;
-    std::string _volumeName;
-
-    std::string _transferFunctionPath;
-    std::string _samplerFilename;
-    
-    ghoul::filesystem::File* _transferFunctionFile;
-
-    ghoul::opengl::Texture* _volume;
-    ghoul::opengl::Texture* _transferFunction;
-
-    GLuint _boxArray; 
-    GLuint _vertexPositionBuffer;
-    ghoul::opengl::ProgramObject* _boxProgram;
-    glm::vec3 _boxScaling;
-    psc _pscOffset;
-    float _w;
-    
-    bool _updateTransferfunction;
-    int _id;
-};
-
-} // namespace openspace
-
-#endif
+}
