@@ -57,10 +57,6 @@ namespace {
 
 namespace openspace {
 
-SceneGraph::SceneGraphNodeInternal::~SceneGraphNodeInternal() {
-    delete node;
-}
-
 SceneGraph::SceneGraph()
     : _rootNode(nullptr)
 {}
@@ -70,10 +66,6 @@ SceneGraph::~SceneGraph() {
 }
 
 void SceneGraph::clear() {
-    // Untested ---abock
-    for (SceneGraphNodeInternal* n : _nodes)
-        delete n;
-
     _nodes.clear();
     _rootNode = nullptr;
 }
@@ -311,7 +303,7 @@ bool SceneGraph::loadFromFile(const std::string& sceneDescription) {
                 
                 FileSys.setCurrentDirectory(modulePath);
                 LDEBUGC("Create from dictionary", "Node name: " << nodeName << "  Parent name:" << parentName << "  Path: " << modulePath);
-                SceneGraphNode* node = SceneGraphNode::createFromDictionary(element);
+                std::unique_ptr<SceneGraphNode> node = SceneGraphNode::createFromDictionary(element);
                 if (node == nullptr) {
                     LERROR("Error loading SceneGraphNode '" << nodeName << "' in module '" << moduleName << "'");
                     continue;
@@ -338,9 +330,9 @@ bool SceneGraph::loadFromFile(const std::string& sceneDescription) {
                 }
                 
                 
-                SceneGraphNodeInternal* internalNode = new SceneGraphNodeInternal;
-                internalNode->node = node;
-                _nodes.push_back(internalNode);
+                std::unique_ptr<SceneGraphNodeInternal> internalNode = std::make_unique<SceneGraphNodeInternal>();
+                internalNode->node = std::move(node);
+                _nodes.push_back(std::move(internalNode));
             }
         };
 
@@ -473,7 +465,7 @@ bool SceneGraph::addSceneGraphNode(SceneGraphNode* node) {
         _nodes.begin(),
         _nodes.end(),
         [node](SceneGraphNodeInternal* i) {
-            return i->node == node->parent();
+            return i->node.get() == &node->parent();
         }
     );
 

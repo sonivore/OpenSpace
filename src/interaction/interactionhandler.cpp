@@ -179,7 +179,9 @@ void InteractionHandler::resetCameraDirection() {
 
     glm::dquat rotation = _camera->rotationQuaternion();
     //glm::dvec3 focusPosition = focusNode()->worldPosition();
-    glm::dvec3 focusPosition = focusNode()->dynamicWorldPosition().dvec3();
+    TransformData focusTransform = focusNode()->relativeTransform(_camera->parent());
+
+    glm::dvec3 focusPosition = focusTransform.translation;
     glm::dvec3 cameraPosition = _camera->positionVec3();
     glm::dvec3 lookUpVector = _camera->lookUpVectorWorldSpace();
 
@@ -253,8 +255,6 @@ void InteractionHandler::updateCamera() {
     else {
         if (_camera && focusNode()) {
             _currentInteractionMode->updateCameraStateFromMouseStates(*_camera);
-            //_camera->setFocusPositionVec3(focusNode()->worldPosition());
-            _camera->setFocusPositionVec3(focusNode()->dynamicWorldPosition().dvec3());
         }
     }
 }

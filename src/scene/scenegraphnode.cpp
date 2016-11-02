@@ -46,6 +46,7 @@
 
 #include <cctype>
 #include <chrono>
+#include <memory>
 
 #include "scenegraphnode_doc.inl"
 
@@ -64,24 +65,24 @@ namespace openspace {
 const std::string SceneGraphNode::RootNodeName = "Root";
 const std::string SceneGraphNode::KeyName = "Name";
 const std::string SceneGraphNode::KeyParentName = "Parent";
-const std::string SceneGraphNode::KeySceneRadius = "SceneRadius";
+const std::string SceneGraphNode::KeyAttachmentRadius = "SceneRadius";
 const std::string SceneGraphNode::KeyDependencies = "Dependencies";
 
-SceneGraphNode* SceneGraphNode::createFromDictionary(const ghoul::Dictionary& dictionary){
+std::unique_ptr<SceneGraphNode> SceneGraphNode::createFromDictionary(const ghoul::Dictionary& dictionary){
     openspace::documentation::testSpecificationAndThrow(
         SceneGraphNode::Documentation(),
         dictionary,
         "SceneGraphNode"
     );
 
-    SceneGraphNode* result = new SceneGraphNode;
+    std::unique_ptr<SceneGraphNode> result = std::make_unique<SceneGraphNode>();
 
     std::string name = dictionary.value<std::string>(KeyName);
     result->setName(name);
 
     double sceneRadius;
-    dictionary.getValue(KeySceneRadius, sceneRadius);
-    result->setSceneRadius(sceneRadius);
+    dictionary.getValue(KeyAttachmentRadius, sceneRadius);
+    result->setAttachmentRadius(sceneRadius);
 
     if (dictionary.hasValue<ghoul::Dictionary>(KeyRenderable)) {
         ghoul::Dictionary renderableDictionary;
@@ -93,55 +94,51 @@ SceneGraphNode* SceneGraphNode::createFromDictionary(const ghoul::Dictionary& di
         if (result->_renderable == nullptr) {
             LERROR("Failed to create renderable for SceneGraphNode '"
                    << result->name() << "'");
-            delete result;
             return nullptr;
         }
-        result->addPropertySubOwner(result->_renderable);
+        result->addPropertySubOwner(*result->_renderable);
         LDEBUG("Successfully created renderable for '" << result->name() << "'");
     }
 
     if (dictionary.hasKey(keyTransformTranslation)) {
         ghoul::Dictionary translationDictionary;
         dictionary.getValue(keyTransformTranslation, translationDictionary);
-        result->_transform.translation = 
+        result->_translation = 
             std::unique_ptr<Translation>(Translation::createFromDictionary(translationDictionary));
-        if (result->_transform.translation == nullptr) {
+        if (result->_translation == nullptr) {
             LERROR("Failed to create ephemeris for SceneGraphNode '"
                 << result->name() << "'");
-            delete result;
             return nullptr;
         }
-        result->addPropertySubOwner(result->_transform.translation.get());
+        result->addPropertySubOwner(result->_translation.get());
         LDEBUG("Successfully created ephemeris for '" << result->name() << "'");
     }
 
     if (dictionary.hasKey(keyTransformRotation)) {
         ghoul::Dictionary rotationDictionary;
         dictionary.getValue(keyTransformRotation, rotationDictionary);
-        result->_transform.rotation =
+        result->_rotation =
             std::unique_ptr<Rotation>(Rotation::createFromDictionary(rotationDictionary));
-        if (result->_transform.rotation == nullptr) {
+        if (result->_rotation == nullptr) {
             LERROR("Failed to create rotation for SceneGraphNode '"
                 << result->name() << "'");
-            delete result;
             return nullptr;
         }
-        result->addPropertySubOwner(result->_transform.rotation.get());
+        result->addPropertySubOwner(result->_rotation.get());
         LDEBUG("Successfully created rotation for '" << result->name() << "'");
     }
 
     if (dictionary.hasKey(keyTransformScale)) {
         ghoul::Dictionary scaleDictionary;
         dictionary.getValue(keyTransformScale, scaleDictionary);
-        result->_transform.scale =
+        result->_scale =
             std::unique_ptr<Scale>(Scale::createFromDictionary(scaleDictionary));
-        if (result->_transform.scale == nullptr) {
+        if (result->_scale == nullptr) {
             LERROR("Failed to create scale for SceneGraphNode '"
                 << result->name() << "'");
-            delete result;
             return nullptr;
         }
-        result->addPropertySubOwner(result->_transform.scale.get());
+        result->addPropertySubOwner(result->_scale.get());
         LDEBUG("Successfully created scale for '" << result->name() << "'");
     }
 
@@ -151,15 +148,12 @@ SceneGraphNode* SceneGraphNode::createFromDictionary(const ghoul::Dictionary& di
 }
 
 SceneGraphNode::SceneGraphNode()
-    : _parent(nullptr)
-    , _transform {
-        std::make_unique<StaticTranslation>(),
-        std::make_unique<StaticRotation>(),
-        std::make_unique<StaticScale>()
-    }
+    : _parent()
+    , _translation(std::make_unique<StaticTranslation>())
+    , _rotation(std::make_unique<StaticRotation>())
+    , _scale(std::make_unique<StaticScale>())
     , _performanceRecord({0, 0, 0})
     , _renderable(nullptr)
-    , _renderableVisible(false)
     , _boundingSphereVisible(false)
     , _sceneRadius(0.0)
 {
@@ -174,15 +168,15 @@ bool SceneGraphNode::initialize() {
         _renderable->initialize();
     }
 
-    if (_transform.translation) {
-        _transform.translation->initialize();
+    if (_translation) {
+        _translation->initialize();
     }
 
-    if (_transform.rotation) {
-        _transform.rotation->initialize();
+    if (_rotation) {
+        _rotation->initialize();
     }
-    if (_transform.scale) {
-        _transform.scale->initialize();
+    if (_scale) {
+        _scale->initialize();
     }
 
     return true;
@@ -193,159 +187,93 @@ bool SceneGraphNode::deinitialize() {
 
     if (_renderable) {
         _renderable->deinitialize();
-        delete _renderable;
         _renderable = nullptr;
     }
     _children.clear();
 
     // reset variables
-    _parent = nullptr;
-    _renderableVisible = false;
     _boundingSphereVisible = false;
-    _boundingSphere = PowerScaledScalar(0.0, 0.0);
+    _boundingSphere = 0;
     _sceneRadius = 0.0;
 
     return true;
 }
 
 void SceneGraphNode::update(const UpdateData& data) {
-    if (_transform.translation) {
+    if (_translation) {
         if (data.doPerformanceMeasurement) {
             glFinish();
             auto start = std::chrono::high_resolution_clock::now();
 
-            _transform.translation->update(data);
+            _translation->update(data);
 
             glFinish();
             auto end = std::chrono::high_resolution_clock::now();
             _performanceRecord.updateTimeTranslation = (end - start).count();
         }
         else {
-            _transform.translation->update(data);
+            _translation->update(data);
         }
     }
 
-    if (_transform.rotation) {
+    if (_rotation) {
         if (data.doPerformanceMeasurement) {
             glFinish();
             auto start = std::chrono::high_resolution_clock::now();
 
-            _transform.rotation->update(data);
+            _rotation->update(data);
 
             glFinish();
             auto end = std::chrono::high_resolution_clock::now();
             _performanceRecord.updateTimeRotation = (end - start).count();
         }
         else {
-            _transform.rotation->update(data);
+            _rotation->update(data);
         }
     }
 
-    if (_transform.scale) {
+    if (_scale) {
         if (data.doPerformanceMeasurement) {
             glFinish();
             auto start = std::chrono::high_resolution_clock::now();
 
-            _transform.scale->update(data);
+            _scale->update(data);
 
             glFinish();
             auto end = std::chrono::high_resolution_clock::now();
             _performanceRecord.updateTimeScaling = (end - start).count();
         }
         else {
-            _transform.scale->update(data);
+            _scale->update(data);
         }
     }
-    UpdateData newUpdateData = data;
-
-    _worldRotationCached = calculateWorldRotation();
-    _worldScaleCached = calculateWorldScale();
-    // Assumes _worldRotationCached and _worldScaleCached have been calculated for parent
-    //_worldPositionCached = calculateWorldPosition();
-    _worldPositionCached = dynamicWorldPosition().dvec3();
-
-    newUpdateData.modelTransform.translation = worldPosition();
-    //newUpdateData.modelTransform.translation = dynamicWorldPosition().dvec3();
-    //newUpdateData.modelTransform.translation = dynamicWorldPosition();
-    newUpdateData.modelTransform.rotation = worldRotationMatrix();
-    newUpdateData.modelTransform .scale = worldScale();
 
     if (_renderable && _renderable->isReady()) {
         if (data.doPerformanceMeasurement) {
             glFinish();
             auto start = std::chrono::high_resolution_clock::now();
-
-            _renderable->update(newUpdateData);
+            _renderable->update(data);
 
             glFinish();
             auto end = std::chrono::high_resolution_clock::now();
             _performanceRecord.updateTimeRenderable = (end - start).count();
         }
         else
-            _renderable->update(newUpdateData);
+            _renderable->update(data);
     }
 }
 
-void SceneGraphNode::evaluate(const Camera* camera, const psc& parentPosition) {
-    //const psc thisPosition = parentPosition + _ephemeris->position();
-    //const psc camPos = camera->position();
-    //const psc toCamera = thisPosition - camPos;
-
-    // init as not visible
-    //_boundingSphereVisible = false;
-    _renderableVisible = false;
-
-#ifndef OPENSPACE_VIDEO_EXPORT
-    // check if camera is outside the node boundingsphere
-  /*  if (toCamera.length() > _boundingSphere) {
-        // check if the boudningsphere is visible before avaluating children
-        if (!sphereInsideFrustum(thisPosition, _boundingSphere, camera)) {
-            // the node is completely outside of the camera view, stop evaluating this
-            // node
-            //LFATAL(_nodeName << " is outside of frustum");
-            return;
-        }
-    }
-    */
-#endif
-
-    // inside boudningsphere or parts of the sphere is visible, individual
-    // children needs to be evaluated
-    _boundingSphereVisible = true;
-
-    // this node has an renderable
-    if (_renderable) {
-        //  check if the renderable boundingsphere is visible
-        // _renderableVisible = sphereInsideFrustum(
-        //       thisPosition, _renderable->getBoundingSphere(), camera);
-        _renderableVisible = true;
-    }
-
-    // evaluate all the children, tail-recursive function(?)
-    //for (SceneGraphNode* child : _children)
-    //    child->evaluate(camera, psc());
-}
+void SceneGraphNode::evaluate(const Camera& camera, const psc& parentPosition) {}
 
 void SceneGraphNode::render(const RenderData& data, RendererTasks& tasks) {
-    
-    // JCC: Implement a cache sytem to avoid calculate the same path while in the same camera parent.
-    // Just update the displacement vector to the sum.
-    const psc thisPositionPSC = dynamicWorldPosition();
-    
-    //const psc thisPositionPSC = psc::CreatePowerScaledCoordinate(_worldPositionCached.x, _worldPositionCached.y, _worldPositionCached.z);
-
     RenderData newData = {
         data.camera,
-        thisPositionPSC,
+        *this,
         data.doPerformanceMeasurement,
         data.renderBinMask,
-        _worldPositionCached,
-        _worldRotationCached,
-        _worldScaleCached};
+    };
 
-    //_performanceRecord.renderTime = 0;
-
-    bool visible = _renderableVisible &&
+    bool visible = _renderable != nullptr &&
         _renderable->isVisible() &&
         _renderable->isReady() &&
         _renderable->isEnabled() &&
@@ -365,146 +293,129 @@ void SceneGraphNode::render(const RenderData& data, RendererTasks& tasks) {
         else
             _renderable->render(newData, tasks);
     }
-
-    // evaluate all the children, tail-recursive function(?)
-
-    //for (SceneGraphNode* child : _children)
-    //    child->render(newData);
 }
 
-void SceneGraphNode::postRender(const RenderData& data) {
-    const psc thisPosition = psc::CreatePowerScaledCoordinate(_worldPositionCached.x, _worldPositionCached.y, _worldPositionCached.z);
-    RenderData newData = { data.camera, thisPosition, data.doPerformanceMeasurement, data.renderBinMask, _worldPositionCached};
-
-    //_performanceRecord.renderTime = 0;
-    if (_renderableVisible && _renderable->isVisible() && _renderable->isReady() && _renderable->isEnabled()) {
-        _renderable->postRender(newData);
-    }
+void SceneGraphNode::setParent(SceneGraphNode& parent) {
+    _parent = &parent;
 }
 
-
-
-
-// not used anymore @AA
-//void SceneGraphNode::addNode(SceneGraphNode* child)
-//{
-//    // add a child node and set this node to be the parent
-//    child->setParent(this);
-//    _children.push_back(child);
-//}
-
-void SceneGraphNode::setParent(SceneGraphNode* parent) {
-    _parent = parent;
+void SceneGraphNode::addChild(SceneGraphNode& child) {
+    _children.push_back(&child);
 }
 
-void SceneGraphNode::addChild(SceneGraphNode* child) {
-    _children.push_back(child);
+void SceneGraphNode::setAttachmentRadius(double sceneRadius) {
+    _attachmentRadius = std::move(sceneRadius);
 }
 
-
-//not used anymore @AA
-//bool SceneGraphNode::abandonChild(SceneGraphNode* child) {
-//    std::vector < SceneGraphNode* >::iterator it = std::find(_children.begin(), _children.end(), child);
-//
-//    if (it != _children.end()){
-//        _children.erase(it);
-//        return true;
-//    }
-//
-//    return false;
-//}
-
-void SceneGraphNode::setSceneRadius(double sceneRadius) {
-
-    _sceneRadius = std::move(sceneRadius);
-
-}
-
-glm::dvec3 SceneGraphNode::position() const
+glm::dvec3 SceneGraphNode::translation() const
 {
-    return _transform.translation->position();
+    return _translation->position();
 }
 
-const glm::dmat3& SceneGraphNode::rotationMatrix() const
+const glm::mat3& SceneGraphNode::rotation() const
 {
-    return _transform.rotation->matrix();
+    return _rotation->matrix();
 }
+
+const glm::mat3& SceneGraphNode::inverseRotation() const
+{
+    return _rotation->matrix();
+}
+
 
 double SceneGraphNode::scale() const
 {
-    return _transform.scale->scaleValue();
+    return _scale->scaleValue();
 }
 
-glm::dvec3 SceneGraphNode::worldPosition() const
-{
-    return _worldPositionCached;
+int SceneGraphNode::depth() const {
+    int d = 0;
+    for (const SceneGraphNode* current = this; current != nullptr; current = &current->parent(), d++);
+    return d;
 }
 
-const glm::dmat3& SceneGraphNode::worldRotationMatrix() const
-{
-    return _worldRotationCached;
-}
+TransformData SceneGraphNode::relativeTransform(const SceneGraphNode& observer) const {
+    glm::vec3 thisTranslation = glm::vec3(0);
+    glm::mat3 thisRotation = glm::mat3(1.0);
+    float thisScale = 1.0;
 
-double SceneGraphNode::worldScale() const
-{
-    return _worldScaleCached;
-}
+    glm::vec3 observerTranslation = glm::vec3(0);
+    glm::mat3 observerRotation = glm::mat3(1.0);
+    float observerScale = 1.0;
 
-glm::dvec3 SceneGraphNode::calculateWorldPosition() const {
-    // recursive up the hierarchy if there are parents available
-    if (_parent) {
-        return
-            _parent->calculateWorldPosition() +
-            _parent->worldRotationMatrix() *
-            _parent->worldScale() *
-            position();
+    int thisDepth = depth();
+    int observerDepth = observer.depth();
+
+    const SceneGraphNode* thisAncestor = this;
+    const SceneGraphNode* observerAncestor = &observer;
+
+    if (thisDepth - observerDepth > 0) {
+        // This node is deeper down in scene graph than the reference node
+        for (int i = 0; i < thisDepth - observerDepth; i++) {
+            thisTranslation = thisAncestor->rotation() * thisTranslation;
+            thisTranslation *= thisAncestor->scale();
+            thisTranslation += thisAncestor->translation();
+
+            thisScale *= thisAncestor->scale();
+            thisRotation *= thisAncestor->rotation();
+
+            thisAncestor = &thisAncestor->parent();
+        }
+    } else {
+        // The reference node is deeper down in scene graph than this node
+        for (int i = 0; i < observerDepth - thisDepth; i++) {
+            observerRotation *= observerAncestor->inverseRotation();
+            observerScale /= observerAncestor->scale();
+
+            observerTranslation -= observerAncestor->translation();
+            observerTranslation /= observerAncestor->scale();
+            observerTranslation = observerAncestor->inverseRotation() * observerTranslation;
+
+            observerAncestor = &observerAncestor->parent();
+        }
     }
-    else {
-        return position();
+
+    while (thisAncestor != observerAncestor) {
+        thisTranslation = thisAncestor->rotation() * thisTranslation;
+        thisTranslation *= thisAncestor->scale();
+        thisTranslation += thisAncestor->translation();
+
+        thisScale *= thisAncestor->scale();
+        thisRotation *= thisAncestor->rotation();
+
+        observerRotation *= observerAncestor->inverseRotation();
+        observerScale /= observerAncestor->scale();
+
+        observerTranslation -= observerAncestor->translation();
+        observerTranslation /= observerAncestor->scale();
+        observerTranslation = observerAncestor->inverseRotation() * observerTranslation;
+
+        thisAncestor = &thisAncestor->parent();
+        observerAncestor = &observerAncestor->parent();
     }
+
+    TransformData td;
+    td.translation = thisTranslation + observerTranslation;
+    td.rotation = thisRotation * observerRotation;
+    td.scale = thisScale * observerScale;
+    return td;
 }
 
-glm::dmat3 SceneGraphNode::calculateWorldRotation() const {
-    // recursive up the hierarchy if there are parents available
-    if (_parent) {
-        return rotationMatrix() * _parent->calculateWorldRotation();
+
+
+SceneGraphNode& SceneGraphNode::parent() const {
+    if (_parent == nullptr) {
+        throw SceneGraph::SceneGraphError("The root node has no parent");
     }
-    else {
-        return rotationMatrix();
-    }
+    return *_parent;
 }
 
-double SceneGraphNode::calculateWorldScale() const {
-    // recursive up the hierarchy if there are parents available
-    if (_parent) {
-        return _parent->calculateWorldScale() * scale();
-    }
-    else {
-        return scale();
-    }
-}
-
-psc SceneGraphNode::dynamicWorldPosition() const
-{
-    const Scene * scene = OsEng.renderEngine().scene();
-    glm::dvec3 currentDynamicPosition = scene->currentDisplacementPosition(scene->sceneName(), this);
-    // The next line is not necessary, the position is measured from the parent's node.
-    //currentDynamicPosition -= camera.displacementVector();
-    return PowerScaledCoordinate::CreatePowerScaledCoordinate(currentDynamicPosition.x,
-        currentDynamicPosition.y,
-        currentDynamicPosition.z);
-}
-
-SceneGraphNode* SceneGraphNode::parent() const
-{
-    return _parent;
-}
 const std::vector<SceneGraphNode*>& SceneGraphNode::children() const{
     return _children;
 }
 
 // bounding sphere
-PowerScaledScalar SceneGraphNode::calculateBoundingSphere(){
+float SceneGraphNode::calculateBoundingSphere(){
     // set the bounding sphere to 0.0
     _boundingSphere = 0.0;
     /*
@@ -530,7 +441,7 @@ PowerScaledScalar SceneGraphNode::calculateBoundingSphere(){
     */
     // if has a renderable, use that boundingsphere
     if (_renderable ) {
-        PowerScaledScalar renderableBS = _renderable->getBoundingSphere();
+        float renderableBS = _renderable->getBoundingSphere();
         if(renderableBS > _boundingSphere)
             _boundingSphere = renderableBS;
     }
@@ -539,87 +450,35 @@ PowerScaledScalar SceneGraphNode::calculateBoundingSphere(){
     return _boundingSphere;
 }
 
-PowerScaledScalar SceneGraphNode::boundingSphere() const{
+float SceneGraphNode::boundingSphere() const{
     return _boundingSphere;
 }
 
-// renderable
-void SceneGraphNode::setRenderable(Renderable* renderable) {
-    _renderable = renderable;
+void SceneGraphNode::setRenderable(std::unique_ptr<Renderable> renderable) {
+    _renderable = std::move(renderable);
 }
 
-const Renderable* SceneGraphNode::renderable() const
-{
-    return _renderable;
+const Renderable& SceneGraphNode::renderable() const {
+    return *_renderable;
 }
 
-Renderable* SceneGraphNode::renderable() {
-    return _renderable;
+Renderable& SceneGraphNode::renderable() {
+    return *_renderable;
 }
 
-// private helper methods
-bool SceneGraphNode::sphereInsideFrustum(const psc& s_pos, const PowerScaledScalar& s_rad,
-                                         const Camera* camera)
-{
-    // direction the camera is looking at in power scale
-    psc psc_camdir = psc(glm::vec3(camera->viewDirectionWorldSpace()));
-
-    // the position of the camera, moved backwards in the view direction to encapsulate
-    // the sphere radius
-    psc U = camera->position() - psc_camdir * s_rad * (1.0 / camera->sinMaxFov());
-
-    // the vector to the object from the new position
-    psc D = s_pos - U;
-
-    const double a = psc_camdir.angle(D);
-    if (a < camera->maxFov()) {
-        // center is inside K''
-        D = s_pos - camera->position();
-        if (D.length() * psc_camdir.length() * camera->sinMaxFov()
-            <= -psc_camdir.dot(D)) {
-            // center is inside K'' and inside K'
-            return D.length() <= s_rad;
-        } else {
-            // center is inside K'' and outside K'
-            return true;
-        }
-    } else {
-        // outside the maximum angle
-        return false;
-    }
-}
-
-SceneGraphNode* SceneGraphNode::childNode(const std::string& name)
-{
+std::shared_ptr<SceneGraphNode> SceneGraphNode::find(const std::string& name) {
     if (this->name() == name)
-        return this;
+        return std::shared_ptr(this);
     else
         for (SceneGraphNode* it : _children) {
-            SceneGraphNode* tmp = it->childNode(name);
+            SceneGraphNode* tmp = it->find(name);
             if (tmp != nullptr)
                 return tmp;
         }
     return nullptr;
 }
 
-void SceneGraphNode::updateCamera(Camera* camera) const{
 
-    psc origin(worldPosition());
-    //int i = 0;
-    // the camera position
-    
-    psc relative = camera->position();
-    psc focus = camera->focusPosition();
-    psc relative_focus = relative - focus;
-
-    psc target = origin + relative_focus;
-    
-    camera->setPosition(target);
-    camera->setFocusPosition(origin);
-
-    //printf("target: %f, %f, %f, %f\n", target.vec4().x, target.vec4().y, target.vec4().z, target.vec4().w);
-    
-}
 const double& SceneGraphNode::sceneRadius() const {
     return _sceneRadius;
 }

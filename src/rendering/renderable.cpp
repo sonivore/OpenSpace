@@ -118,12 +118,12 @@ Renderable::Renderable(const ghoul::Dictionary& dictionary)
 
 Renderable::~Renderable() {}
 
-void Renderable::setBoundingSphere(PowerScaledScalar boundingSphere) {
-    boundingSphere_ = std::move(boundingSphere);
+void Renderable::setBoundingSphere(float boundingSphere) {
+    _boundingSphere = boundingSphere;
 }
 
-PowerScaledScalar Renderable::getBoundingSphere() {
-    return boundingSphere_;
+float Renderable::getBoundingSphere() {
+    return _boundingSphere;
 }
 
 void Renderable::update(const UpdateData&) {}
@@ -133,19 +133,6 @@ void Renderable::render(const RenderData& data, RendererTasks&) {
 }
 
 void Renderable::render(const RenderData& data) {}
-
-void Renderable::postRender(const RenderData& data) {}
-
-void Renderable::setPscUniforms(
-    ghoul::opengl::ProgramObject& program, 
-    const Camera& camera,
-    const PowerScaledCoordinate& position) 
-{
-    program.setUniform("campos", camera.position().vec4());
-    program.setUniform("objpos", position.vec4());
-    program.setUniform("camrot", glm::mat4(camera.viewRotationMatrix()));
-    program.setUniform("scaling", camera.scaling());
-}
 
 Renderable::RenderBin Renderable::renderBin() const {
     return _renderBin;

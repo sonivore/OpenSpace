@@ -24,6 +24,7 @@
 
 #include <openspace/interaction/interactionmode.h>
 #include <openspace/interaction/interactionhandler.h>
+#include <openspace/util/updatestructures.h>
 
 #include <openspace/engine/openspaceengine.h>
 #include <openspace/query/query.h>
@@ -176,8 +177,8 @@ void InteractionMode::setFocusNode(SceneGraphNode* focusNode) {
 
     if (_focusNode != nullptr) {
         //_previousFocusNodePosition = _focusNode->worldPosition();
-        _previousFocusNodePosition = _focusNode->dynamicWorldPosition().dvec3();
-        _previousFocusNodeRotation = glm::quat_cast(_focusNode->worldRotationMatrix());
+        //_previousFocusNodePosition = _focusNode->dynamicWorldPosition().dvec3();
+        //_previousFocusNodeRotation = glm::quat_cast(_focusNode->worldRotationMatrix());
     }
 }
 
@@ -378,16 +379,19 @@ void OrbitalInteractionMode::updateCameraStateFromMouseStates(Camera& camera) {
         dvec3 camPos = camera.positionVec3();
         
         // Follow focus nodes movement
-        glm::dvec3 centerPos = _focusNode->dynamicWorldPosition().dvec3();
+
+        TransformData focusTransform = _focusNode->relativeTransform(camera.parent());
+        glm::dvec3 centerPos = focusTransform.translation;
+
         dvec3 focusNodeDiff = centerPos - _previousFocusNodePosition;
 
         _previousFocusNodePosition = centerPos;
-        camPos                    += focusNodeDiff;
+        camPos += focusNodeDiff;
 
         dquat totalRotation     = camera.rotationQuaternion();
         dvec3 directionToCenter = normalize(centerPos - camPos);
         dvec3 lookUp            = camera.lookUpVectorWorldSpace();
-        double boundingSphere   = _focusNode->boundingSphere().lengthf();
+        double boundingSphere   = _focusNode->boundingSphere();
         dvec3 camDirection      = camera.viewDirectionWorldSpace();
 
         // Declare other variables used in interaction calculations

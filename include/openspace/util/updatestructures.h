@@ -43,7 +43,6 @@ struct TransformData {
 };
 
 struct UpdateData {
-    TransformData modelTransform;
     double time;
     double delta;
     bool isTimeJump;
@@ -53,12 +52,9 @@ struct UpdateData {
 
 struct RenderData {
     const Camera& camera;
-    // psc position to be removed in favor of the double precision position defined in
-    // the translation in transform.
-    psc position;
+    const SceneGraphNode& node;
     bool doPerformanceMeasurement;
     int renderBinMask;
-    TransformData modelTransform;
 };
 
 struct RaycasterTask {

@@ -172,12 +172,6 @@ void Scene::render(const RenderData& data, RendererTasks& tasks) {
     }
 }
 
-void Scene::postRender(const RenderData& data) {
-    for (SceneGraphNode* node : _graph.nodes()) {
-        node->postRender(data);
-    }
-}
-
 void Scene::scheduleLoadSceneFile(const std::string& sceneDescriptionFilePath) {
     _sceneGraphToLoad = sceneDescriptionFilePath;
 }
@@ -244,21 +238,6 @@ bool Scene::loadSceneInternal(const std::string& sceneDescriptionFilePath) {
         }
     }
 
-    // update the position of all nodes
-    // TODO need to check this; unnecessary? (ab)
-    for (SceneGraphNode* node : _graph.nodes()) {
-        try {
-            node->update({
-                glm::dvec3(0),
-                glm::dmat3(1),
-                1,
-                Time::ref().j2000Seconds() });
-        }
-        catch (const ghoul::RuntimeError& e) {
-            LERRORC(e.component, e.message);
-        }
-    }
-
     for (auto it = _graph.nodes().rbegin(); it != _graph.nodes().rend(); ++it)
         (*it)->calculateBoundingSphere();
 
@@ -297,153 +276,6 @@ bool Scene::loadSceneInternal(const std::string& sceneDescriptionFilePath) {
     return true;
 }
 
-//void Scene::loadModules(
-//    const std::string& directory, 
-//    const ghoul::Dictionary& dictionary) 
-//{
-//    // Struct containing dependencies and nodes
-//    LoadMaps m;
-//
-//    // Get the common directory
-//    std::string commonDirectory(_defaultCommonDirectory);
-//    dictionary.getValue(constants::scenegraph::keyCommonFolder, commonDirectory);
-//    FileSys.registerPathToken(_commonModuleToken, commonDirectory);
-//
-//    lua_State* state = ghoul::lua::createNewLuaState();
-//    OsEng.scriptEngine()->initializeLuaState(state);
-//
-//    LDEBUG("Loading common module folder '" << commonDirectory << "'");
-//    // Load common modules into LoadMaps struct
-//    loadModule(m, FileSys.pathByAppendingComponent(directory, commonDirectory), state);
-//
-//    // Load the rest of the modules into LoadMaps struct
-//    ghoul::Dictionary moduleDictionary;
-//    if (dictionary.getValue(constants::scenegraph::keyModules, moduleDictionary)) {
-//        std::vector<std::string> keys = moduleDictionary.keys();
-//        std::sort(keys.begin(), keys.end());
-//        for (const std::string& key : keys) {
-//            std::string moduleFolder;
-//            if (moduleDictionary.getValue(key, moduleFolder)) {
-//                loadModule(m, FileSys.pathByAppendingComponent(directory, moduleFolder), state);
-//            }
-//        }
-//    }
-//
-//    // Load and construct scenegraphnodes from LoadMaps struct
-//    loadNodes(SceneGraphNode::RootNodeName, m);
-//
-//    // Remove loaded nodes from dependency list
-//    for(const auto& name: m.loadedNodes) {
-//        m.dependencies.erase(name);
-//    }
-//
-//    // Check to see what dependencies are not resolved.
-//    for(auto& node: m.dependencies) {
-//        LWARNING(
-//            "'" << node.second << "'' not loaded, parent '" 
-//            << node.first << "' not defined!");
-//    }
-//}
-
-//void Scene::loadModule(LoadMaps& m,const std::string& modulePath, lua_State* state) {
-//    auto pos = modulePath.find_last_of(ghoul::filesystem::FileSystem::PathSeparator);
-//    if (pos == modulePath.npos) {
-//        LERROR("Bad format for module path: " << modulePath);
-//        return;
-//    }
-//
-//    std::string fullModule = modulePath + modulePath.substr(pos) + _moduleExtension;
-//    LDEBUG("Loading nodes from: " << fullModule);
-//
-//    ghoul::filesystem::Directory oldDirectory = FileSys.currentDirectory();
-//    FileSys.setCurrentDirectory(modulePath);
-//
-//    ghoul::Dictionary moduleDictionary;
-//    ghoul::lua::loadDictionaryFromFile(fullModule, moduleDictionary, state);
-//    std::vector<std::string> keys = moduleDictionary.keys();
-//    for (const std::string& key : keys) {
-//        if (!moduleDictionary.hasValue<ghoul::Dictionary>(key)) {
-//            LERROR("SceneGraphElement '" << key << "' is not a table in module '"
-//                                         << fullModule << "'");
-//            continue;
-//        }
-//        
-//        ghoul::Dictionary element;
-//        std::string nodeName;
-//        std::string parentName;
-//
-//        moduleDictionary.getValue(key, element);
-//        element.setValue(constants::scenegraph::keyPathModule, modulePath);
-//
-//        element.getValue(constants::scenegraphnode::keyName, nodeName);
-//        element.getValue(constants::scenegraphnode::keyParentName, parentName);
-//
-//        m.nodes[nodeName] = element;
-//        m.dependencies.emplace(parentName,nodeName);
-//    }
-//
-//    FileSys.setCurrentDirectory(oldDirectory);
-//}
-
-//void Scene::loadNodes(const std::string& parentName, LoadMaps& m) {
-//    auto eqRange = m.dependencies.equal_range(parentName);
-//    for (auto it = eqRange.first; it != eqRange.second; ++it) {
-//        auto node = m.nodes.find((*it).second);
-//        loadNode(node->second);
-//        loadNodes((*it).second, m);
-//    }
-//    m.loadedNodes.emplace_back(parentName);
-//}
-//
-//void Scene::loadNode(const ghoul::Dictionary& dictionary) {
-//    SceneGraphNode* node = SceneGraphNode::createFromDictionary(dictionary);
-//    if(node) {
-//        _allNodes.emplace(node->name(), node);
-//        _nodes.push_back(node);
-//    }
-//}
-
-//void SceneGraph::loadModule(const std::string& modulePath) {
-//    auto pos = modulePath.find_last_of(ghoul::filesystem::FileSystem::PathSeparator);
-//    if (pos == modulePath.npos) {
-//        LERROR("Bad format for module path: " << modulePath);
-//        return;
-//    }
-//
-//    std::string fullModule = modulePath + modulePath.substr(pos) + _moduleExtension;
-//    LDEBUG("Loading modules from: " << fullModule);
-//
-//    ghoul::filesystem::Directory oldDirectory = FileSys.currentDirectory();
-//    FileSys.setCurrentDirectory(modulePath);
-//
-//    ghoul::Dictionary moduleDictionary;
-//    ghoul::lua::loadDictionaryFromFile(fullModule, moduleDictionary);
-//    std::vector<std::string> keys = moduleDictionary.keys();
-//    for (const std::string& key : keys) {
-//        if (!moduleDictionary.hasValue<ghoul::Dictionary>(key)) {
-//            LERROR("SceneGraphElement '" << key << "' is not a table in module '"
-//                                         << fullModule << "'");
-//            continue;
-//        }
-//        
-//        ghoul::Dictionary element;
-//        moduleDictionary.getValue(key, element);
-//
-//        element.setValue(constants::scenegraph::keyPathModule, modulePath);
-//
-//        //each element in this new dictionary becomes a scenegraph node. 
-//        SceneGraphNode* node = SceneGraphNode::createFromDictionary(element);
-//
-//        _allNodes.emplace(node->name(), node);
-//        _nodes.push_back(node);
-//    }
-//
-//    FileSys.setCurrentDirectory(oldDirectory);
-//
-//    // Print the tree
-//    //printTree(_root);
-//}
-
 SceneGraphNode* Scene::root() const {
     return _graph.rootNode();
 }
@@ -472,6 +304,7 @@ void Scene::updateSceneName(const Camera* camera) {
     _sceneName = currentSceneName(camera, _sceneName);
 }
 
+/*
 std::string Scene::currentSceneName(const Camera* camera, std::string _nameOfScene) const {
     if (camera == nullptr || _nameOfScene.empty()) {
         LERROR("Camera object not allocated or empty name scene passed to the method.");
@@ -493,8 +326,9 @@ std::string Scene::currentSceneName(const Camera* camera, std::string _nameOfSce
     // Traverses the scenetree to find a scene we are within. 
     while (_distance > node->sceneRadius()) {
         if (node->parent() != nullptr) {
-            node          = node->parent();
-            _distance     = DistanceToObject::ref().distanceCalc(camera->positionVec3(),
+            node = node->parent();
+            _distance = DistanceToObject::ref().distanceCalc(
+                camera->positionVec3(),
                 node->dynamicWorldPosition().dvec3());
         } else {
             break;
@@ -562,121 +396,7 @@ const glm::dvec3 Scene::currentDisplacementPosition(const std::string & cameraPa
         LERROR("Target scenegraph node is null.");
         return glm::dvec3(0.0, 0.0, 0.0);
     }
-}
-
-SceneGraphNode* Scene::findCommonParentNode(const std::string & firstPath, const std::string & secondPath) const {
-    if (firstPath.empty() || secondPath.empty()) {
-        LERROR("Empty scenegraph node name passed to the method.");
-        return sceneGraphNode(_parentOfAllNodes); // This choice is controversal. Better to avoid a crash.
-    }
-    
-    std::string strCommonParent = commonParent(pathTo(sceneGraphNode(firstPath)), 
-        pathTo(sceneGraphNode(secondPath)));
-
-    return sceneGraphNode(strCommonParent);
-}
-
-std::vector<SceneGraphNode*> Scene::pathTo(SceneGraphNode* node) const {
-    std::vector<SceneGraphNode*> path;
-
-    if (node == nullptr) {
-        LERROR("Invalid (null) scenegraph node name passed to pathTo() method.");
-        return path;
-    }
-        
-    while (node->parent() != nullptr) {
-        path.push_back(node);
-        node = node->parent();
-    }
-    path.push_back(node);
-
-    return path;
-}
-
-std::string Scene::commonParent(const std::vector<SceneGraphNode*> & t1, const std::vector<SceneGraphNode*> & t2) const {
-    if (t1.empty() && t2.empty()) {
-        LERROR("Empty paths passed to commonParent method.");
-        return _parentOfAllNodes;
-    }
-
-    std::string commonParentReturn(_mostProbableSceneName);
-    int iterator = 0;
-    int min = std::min(t1.size(), t2.size());
-    int iteratorT1 = t1.size() - 1;
-    int iteratorT2 = t2.size() - 1;
-    while (iterator < min && t1[iteratorT1]->name() == t2[iteratorT2]->name()) {
-        commonParentReturn = t1[iteratorT1]->name();
-        --iteratorT1;
-        --iteratorT2;
-        iterator++;
-    }
-    /*while (iterator < min && t1.back()->name() == t2.back()->name()) {
-        commonParentReturn = t1.back()->name();
-        t1.pop_back();
-        t2.pop_back();
-        iterator++;
-    }*/
-    
-    return commonParentReturn;
-}
-
-glm::dvec3 Scene::pathCollector(const std::vector<SceneGraphNode*> & path, const std::string & commonParentName, 
-    const bool inverse) const {
-    if (path.empty() || commonParentName.empty()) {
-        LERROR("Empty path or common parent name passed to pathCollector method.");
-        return glm::dvec3();
-    }
-
-    SceneGraphNode* firstElement = path.front();
-    glm::dvec3 collector(path.back()->position());
-
-    int depth = 0;
-    // adds all elements to the collector, continues untill commomParent is found.
-    while (firstElement->name() != commonParentName) {
-        if (inverse)
-            collector = collector - firstElement->position();
-        else
-            collector = collector + firstElement->position();
-        
-        firstElement = path[++depth];
-    }
-
-    return collector;
-}
-/* not in use now */
-void Scene::setRelativeOrigin(Camera* camera) const {
-    if (camera == nullptr) {
-        LERROR("Camera object not allocated. Relative origin not set.");
-        return;
-    }
-    assert(!camera->parent().empty());
-    SceneGraphNode * cameraParentNode             = sceneGraphNode(camera->parent());
-    std::vector<SceneGraphNode*> cameraParentPath = pathTo(cameraParentNode);
-
-    newCameraOrigin(cameraParentPath, camera);
-}
-/* Not in use now */
-void Scene::newCameraOrigin(const std::vector<SceneGraphNode*> & commonParentPath, Camera* camera) const {
-    if (commonParentPath.empty() || camera == nullptr) {
-        LERROR("Empty common parent path or not allocated camera passed to newCameraOrigin method.");
-        return;
-    }
-    glm::dvec3 displacementVector = camera->positionVec3();
-    if (commonParentPath.size() > 1) { // <1 if in root system. 
-        glm::dvec3 tempDvector;
-        for (auto i = commonParentPath.size() - 1; i > 0; i--) {
-            tempDvector        = commonParentPath[i - 1]->worldPosition() - commonParentPath[i]->worldPosition();
-            displacementVector = displacementVector - tempDvector;
-        }
-    }
-
-    //Move the camera to the position of the common parent (The new origin)
-    //Then add the distance from the displacementVector to get the camera into correct position
-    glm::dvec3 origin = commonParentPath[0]->position();    
-    //camera->setDisplacementVector(displacementVector);
-    glm::dvec3 newOrigin(origin + displacementVector);
-    camera->setPositionVec3(newOrigin);
-}
+}*/
 
 bool Scene::isUpdated() const {
     return _updated;
@@ -828,44 +548,6 @@ void Scene::writePropertyDocumentation(const std::string& filename, const std::s
             << "\t<body>\n"
             << "</html>\n";
 
-        /*
-
-        html << "<html>\n"
-             << "\t<head>\n"
-             << "\t\t<title>Properties</title>\n"
-             << "\t</head>\n"
-             << "<body>\n"
-             << "<table cellpadding=3 cellspacing=0 border=1>\n"
-             << "\t<caption>Properties</caption>\n\n"
-             << "\t<thead>\n"
-             << "\t\t<tr>\n"
-             << "\t\t\t<th>ID</th>\n"
-             << "\t\t\t<th>Type</th>\n"
-             << "\t\t\t<th>Description</th>\n"
-             << "\t\t</tr>\n"
-             << "\t</thead>\n"
-             << "\t<tbody>\n";
-
-        for (SceneGraphNode* node : _graph.nodes()) {
-            for (properties::Property* p : node->propertiesRecursive()) {
-                html << "\t\t<tr>\n"
-                     << "\t\t\t<td>" << p->fullyQualifiedIdentifier() << "</td>\n"
-                     << "\t\t\t<td>" << p->className() << "</td>\n"
-                     << "\t\t\t<td>" << p->guiName() << "</td>\n"
-                     << "\t\t</tr>\n";
-            }
-
-            if (!node->propertiesRecursive().empty()) {
-                html << "\t<tr><td style=\"line-height: 10px;\" colspan=3></td></tr>\n";
-            }
-
-        }
-
-        html << "\t</tbody>\n"
-             << "</table>\n"
-             << "</html>;";
-
-        */
         file << html.str();
     }
     else

@@ -60,88 +60,64 @@ public:
     static const std::string KeyName;
     static const std::string KeyParentName;
     static const std::string KeyDependencies;
-    static const std::string KeySceneRadius;
+    static const std::string KeyAttachmentRadius;
     
     SceneGraphNode();
     ~SceneGraphNode();
 
-    static SceneGraphNode* createFromDictionary(const ghoul::Dictionary& dictionary);
+    static std::unique_ptr<SceneGraphNode> createFromDictionary(const ghoul::Dictionary& dictionary);
 
     bool initialize();
     bool deinitialize();
 
     void update(const UpdateData& data);
-    void evaluate(const Camera* camera, const psc& parentPosition = psc());
+    void evaluate(const Camera& camera, const psc& parentPosition = psc());
     void render(const RenderData& data, RendererTasks& tasks);
-    void postRender(const RenderData& data);
-    void updateCamera(Camera* camera) const;
 
-    //void addNode(SceneGraphNode* child);
+    void addChild(SceneGraphNode& child);
+    void setParent(SceneGraphNode& parent);
 
-    void addChild(SceneGraphNode* child);
-    void setParent(SceneGraphNode* parent);
-    //bool abandonChild(SceneGraphNode* child);
-
-    glm::dvec3 position() const;
-    const glm::dmat3& rotationMatrix() const;
+    glm::dvec3 translation() const;
+    const glm::mat3& rotation() const;
     double scale() const;
+    const glm::mat3& inverseRotation() const;
+    int depth() const;
 
-    glm::dvec3 worldPosition() const;
-    const glm::dmat3& worldRotationMatrix() const;
-    double worldScale() const;
+    TransformData relativeTransform(const SceneGraphNode& reference) const;
 
-    psc dynamicWorldPosition() const;
-
-    SceneGraphNode* parent() const;
+    SceneGraphNode& parent() const;
     const std::vector<SceneGraphNode*>& children() const;
 
-    PowerScaledScalar calculateBoundingSphere();
-    PowerScaledScalar boundingSphere() const;
+    float calculateBoundingSphere();
+    float boundingSphere() const;
 
-    SceneGraphNode* childNode(const std::string& name);
+    SceneGraphNode* find(const std::string& name);
 
     const PerformanceRecord& performanceRecord() const { return _performanceRecord; }
 
-    void setRenderable(Renderable* renderable);
-    const Renderable* renderable() const;
-    Renderable* renderable();
+    const Renderable& renderable() const;
+    Renderable& renderable();
+    void setRenderable(std::unique_ptr<Renderable> renderable);
 
-    void setSceneRadius(double SceneRadius);
-    const double& sceneRadius() const;
-
+    void setAttachmentRadius(double attachmentRadius);
+    double attachmentRadius() const;
+   
     static documentation::Documentation Documentation();
 
 private:
-    bool sphereInsideFrustum(const psc& s_pos, const PowerScaledScalar& s_rad, const Camera* camera);
-
-    glm::dvec3 calculateWorldPosition() const;
-    glm::dmat3 calculateWorldRotation() const;
-    double calculateWorldScale() const;
-
     std::vector<SceneGraphNode*> _children;
     SceneGraphNode* _parent;
 
-    double _sceneRadius;
+    double _attachmentRadius;
+    bool _boundingSphereVisible;
+    float _boundingSphere;
 
     PerformanceRecord _performanceRecord;
 
-    Renderable* _renderable;
-    bool _renderableVisible;
-
-    bool _boundingSphereVisible;
-    PowerScaledScalar _boundingSphere;
-
-    // Transformation defined by ephemeris, rotation and scale
-    struct {
-        std::unique_ptr<Translation> translation;
-        std::unique_ptr<Rotation> rotation;
-        std::unique_ptr<Scale> scale;
-    } _transform;
-
-    // Cached transform data
-    glm::dvec3 _worldPositionCached;
-    glm::dmat3 _worldRotationCached;
-    double _worldScaleCached;
+    std::unique_ptr<Renderable> _renderable;
+    std::unique_ptr<Translation> _translation;
+    std::unique_ptr<Rotation> _rotation;
+    std::unique_ptr<Scale> _scale;
 };
 
 } // namespace openspace

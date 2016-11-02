@@ -69,8 +69,6 @@ public:
     void scheduleLoadSceneFile(const std::string& sceneDescriptionFilePath);
     void clearSceneGraph();
 
-    void loadModule(const std::string& modulePath);
-
     /*
      * Updates all SceneGraphNodes relative positions
      */
@@ -138,10 +136,6 @@ public:
         const bool inverse) const;
 
     std::string commonParent(const std::vector<SceneGraphNode*> & t1, const std::vector<SceneGraphNode*> & t2) const;
-
-    void setRelativeOrigin(Camera* camera) const;
-
-    void newCameraOrigin(const std::vector<SceneGraphNode*> & commonParentPath, Camera* camera) const;
 
     bool isUpdated() const;
 

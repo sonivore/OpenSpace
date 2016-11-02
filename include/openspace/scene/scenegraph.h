@@ -27,12 +27,19 @@
 
 #include <vector>
 #include <string>
+#include <ghoul/misc/exception.h>
+#include <memory>
+
 namespace openspace {
 
 class SceneGraphNode;
 
 class SceneGraph {
 public:
+    struct SceneGraphError : public ghoul::RuntimeError {
+        explicit SceneGraphError(std::string message) : ghoul::RuntimeError(message) {}
+    };
+
     SceneGraph();
     ~SceneGraph();
 
@@ -50,9 +57,7 @@ public:
 
 private:
     struct SceneGraphNodeInternal {
-        ~SceneGraphNodeInternal();
-
-        SceneGraphNode* node = nullptr;
+        std::unique_ptr<SceneGraphNode> node;
         // From nodes that are dependent on this one
         std::vector<SceneGraphNodeInternal*> incomingEdges;
         // To nodes that this node depends on
@@ -65,7 +70,7 @@ private:
     SceneGraphNodeInternal* nodeByName(const std::string& name);
 
     SceneGraphNode* _rootNode;
-    std::vector<SceneGraphNodeInternal*> _nodes;
+    std::vector<std::unique_ptr<SceneGraphNodeInternal>> _nodes;
     std::vector<SceneGraphNode*> _topologicalSortedNodes;
 };
 

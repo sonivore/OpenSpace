@@ -59,7 +59,7 @@ public:
         Overlay = 8
     };
 
-    static Renderable* createFromDictionary(const ghoul::Dictionary& dictionary);
+    static std::unique_ptr<Renderable> createFromDictionary(const ghoul::Dictionary& dictionary);
 
     // constructors & destructor
     Renderable();
@@ -72,12 +72,11 @@ public:
     virtual bool isReady() const = 0;
     bool isEnabled() const;
 
-    void setBoundingSphere(PowerScaledScalar boundingSphere);
-    PowerScaledScalar getBoundingSphere();
+    void setBoundingSphere(float boundingSphere);
+    float getBoundingSphere();
 
     virtual void render(const RenderData& data);
     virtual void render(const RenderData& data, RendererTasks& rendererTask);
-    virtual void postRender(const RenderData& data);
     virtual void update(const UpdateData& data);
 
     RenderBin renderBin() const;
@@ -90,8 +89,6 @@ public:
     bool getInterval(double& start, double& end);
     
     void onEnabledChange(std::function<void(bool)> callback);
-
-    static void setPscUniforms(ghoul::opengl::ProgramObject& program, const Camera& camera, const PowerScaledCoordinate& position);
 
     static openspace::Documentation Documentation();
 
