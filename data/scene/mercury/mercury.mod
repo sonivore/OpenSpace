@@ -11,7 +11,6 @@ return {
             Translation = {
                 Type = "SpiceTranslation",
                 Body = "MERCURY BARYCENTER",
-                --Reference = "ECLIPJ2000",
                 Observer = "SUN",
                 Kernels = {
                     "${OPENSPACE_DATA}/spice/de430_1850-2150.bsp"

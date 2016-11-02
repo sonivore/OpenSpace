@@ -2,6 +2,8 @@ return {
     {
         Name = "Iapetus",
         Parent = "SaturnBarycenter",
+        -- Scene Radius in KM:
+        SceneRadius = 7.0E+3,
         Renderable = {
             Type = "RenderablePlanet",
             Frame = "IAU_IAPETUS",

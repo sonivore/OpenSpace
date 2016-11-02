@@ -109,8 +109,6 @@ public:
     void setSceneRadius(double SceneRadius);
     const double& sceneRadius() const;
 
-    // @TODO Remove once the scalegraph is in effect ---abock
-    
     static documentation::Documentation Documentation();
 
 private:

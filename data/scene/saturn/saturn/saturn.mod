@@ -6,7 +6,7 @@ return {
         Name = "SaturnBarycenter",
         Parent = "SolarSystemBarycenter",
         -- Scene Radius in KM:
-        SceneRadius = 1.0E+6,
+        SceneRadius = 4.0E+6,
         Transform = {
             Translation = {
                 Type = "SpiceTranslation",
@@ -38,6 +38,15 @@ return {
             },
         },
         Transform = {
+            Translation = {
+                Type = "SpiceTranslation",
+                Body = "SATURN BARYCENTER",
+                --Reference = "ECLIPJ2000",
+                Observer = "SATURN BARYCENTER",
+                Kernels = {
+                    "${OPENSPACE_DATA}/spice/de430_1850-2150.bsp"
+                }
+            },
             Rotation = {
                 Type = "SpiceRotation",
                 SourceFrame = "IAU_SATURN",
@@ -54,9 +63,8 @@ return {
         Parent = "Saturn",
         Renderable = {
             Type = "RenderableRings",
-            Frame = "IAU_SATURN",
             Texture = "textures/saturn_rings.png",
-            Size = { 0.140220, 9.0 },
+            Size = 140220000,
             Offset = { 74500 / 140445.100671159, 1.0 } -- min / max extend
 
         },

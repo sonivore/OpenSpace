@@ -2,6 +2,8 @@ return {
     {
         Name = "Tethys",
         Parent = "SaturnBarycenter",
+        -- Scene Radius in KM:
+        SceneRadius = 5.0E+3,
         Renderable = {
             Type = "RenderablePlanet",
             Frame = "IAU_TETHYS",

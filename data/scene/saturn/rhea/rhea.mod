@@ -2,6 +2,8 @@ return {
     {
         Name = "Rhea",
         Parent = "SaturnBarycenter",
+        -- Scene Radius in KM:
+        SceneRadius = 8.0E+3,
         Renderable = {
             Type = "RenderablePlanet",
             Frame = "IAU_RHEA",

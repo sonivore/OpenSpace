@@ -9,7 +9,6 @@ return {
             Translation = {
                 Type = "SpiceTranslation",
                 Body = "VENUS BARYCENTER",
-                --Reference = "ECLIPJ2000",
                 Observer = "SUN",
                 Kernels = {
                     "${OPENSPACE_DATA}/spice/de430_1850-2150.bsp"
@@ -17,7 +16,6 @@ return {
             },
         },
     },
-
     -- Venus module
     {   
         Name = "Venus",

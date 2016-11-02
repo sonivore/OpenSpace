@@ -2,6 +2,8 @@ return {
     {
         Name = "Titan",
         Parent = "SaturnBarycenter",
+        -- Scene Radius in KM:
+        SceneRadius = 2.5E+4,
         Renderable = {
             Type = "RenderablePlanet",
             Frame = "IAU_TITAN",

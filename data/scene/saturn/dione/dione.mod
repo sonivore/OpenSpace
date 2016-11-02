@@ -2,6 +2,8 @@ return {
     {
         Name = "Dione",
         Parent = "SaturnBarycenter",
+        -- Scene Radius in KM:
+        SceneRadius = 5.5E+3,
         Renderable = {
             Type = "RenderablePlanet",
             Frame = "IAU_DIONE",

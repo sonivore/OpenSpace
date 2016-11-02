@@ -2,6 +2,8 @@ return {
     {
         Name = "Enceladus",
         Parent = "SaturnBarycenter",
+        -- Scene Radius in KM:
+        SceneRadius = 2.5E+3,
         Renderable = {
             Type = "RenderablePlanet",
             Frame = "IAU_ENCELADUS",

@@ -43,7 +43,6 @@ return {
             Translation = {
                 Type = "SpiceTranslation",
                 Body = "EARTH",
-                --Reference = "ECLIPJ2000",
                 Observer = "EARTH BARYCENTER",
                 Kernels = {
                     "${OPENSPACE_DATA}/spice/de430_1850-2150.bsp"
