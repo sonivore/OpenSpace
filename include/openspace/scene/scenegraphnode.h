@@ -71,11 +71,12 @@ public:
     bool deinitialize();
 
     void update(const UpdateData& data);
-    void evaluate(const Camera& camera, const psc& parentPosition = psc());
     void render(const RenderData& data, RendererTasks& tasks);
 
-    void addChild(SceneGraphNode& child);
+    void addChild(std::unique_ptr<SceneGraphNode> child);
+    void removeChild(SceneGraphNode& node);
     void setParent(SceneGraphNode& parent);
+    void clearChildren();
 
     glm::dvec3 translation() const;
     const glm::mat3& rotation() const;
@@ -86,12 +87,14 @@ public:
     TransformData relativeTransform(const SceneGraphNode& reference) const;
 
     SceneGraphNode& parent() const;
-    const std::vector<SceneGraphNode*>& children() const;
+    const std::vector<std::unique_ptr<SceneGraphNode>>& children() const;
+    std::vector<SceneGraphNode*> allNodes();
 
     float calculateBoundingSphere();
     float boundingSphere() const;
 
     SceneGraphNode* find(const std::string& name);
+    void traverse(std::function<void(SceneGraphNode& node)> fn);
 
     const PerformanceRecord& performanceRecord() const { return _performanceRecord; }
 
@@ -105,7 +108,7 @@ public:
     static documentation::Documentation Documentation();
 
 private:
-    std::vector<SceneGraphNode*> _children;
+    std::vector<std::unique_ptr<SceneGraphNode>> _children;
     SceneGraphNode* _parent;
 
     double _attachmentRadius;

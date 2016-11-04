@@ -43,6 +43,7 @@ namespace openspace {
 
 class Camera;
 class SceneGraphNode;
+class Scene;
 
 namespace interaction {
 
@@ -57,8 +58,9 @@ public:
     void deinitialize();
 
     // Mutators
-    void setFocusNode(SceneGraphNode* node);
-    void setCamera(Camera* camera);
+    void setScene(Scene& scene);
+    void setFocusNode(SceneGraphNode& node);
+    void setCamera(Camera& camera);
     void resetCameraDirection();
 
     // Interaction mode setters
@@ -102,7 +104,7 @@ public:
 
     void saveCameraStateToFile(const std::string& filepath);
     void restoreCameraStateFromFile(const std::string& filepath);
-    void writeKeyboardDocumentation(const std::string& type, const std::string& file);
+    void writeKeyboardDocumentation(const std::string& type, const std::string& file, const std::string& scene);
 
 private:
     void setInteractionMode(std::shared_ptr<InteractionMode> interactionMode);
@@ -113,6 +115,7 @@ private:
 
     std::unique_ptr<InputState> _inputState;
     Camera* _camera;
+    Scene* _scene;
 
     std::shared_ptr<InteractionMode> _currentInteractionMode;
 
@@ -120,7 +123,7 @@ private:
     std::shared_ptr<OrbitalInteractionMode::MouseStates> _mouseStates;
 
     // Properties
-    properties::StringProperty _origin;
+    properties::StringProperty _focus;
     properties::StringProperty _coordinateSystem;
 
     properties::BoolProperty _rotationalFriction;

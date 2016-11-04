@@ -64,7 +64,7 @@ Documentation Renderable::Documentation() {
     };
 }
 
-Renderable* Renderable::createFromDictionary(const ghoul::Dictionary& dictionary) {
+std::unique_ptr<Renderable> Renderable::createFromDictionary(const ghoul::Dictionary& dictionary) {
     // The name is passed down from the SceneGraphNode
     std::string name;
     bool success = dictionary.getValue(SceneGraphNode::KeyName, name);
@@ -75,17 +75,18 @@ Renderable* Renderable::createFromDictionary(const ghoul::Dictionary& dictionary
     std::string renderableType = dictionary.value<std::string>(KeyType);
 
     auto factory = FactoryManager::ref().factory<Renderable>();
-    Renderable* result = factory->create(renderableType, dictionary);
+    std::unique_ptr<Renderable> result = std::unique_ptr<Renderable>(factory->create(renderableType, dictionary));
     if (result == nullptr) {
         LERROR("Failed to create a Renderable object of type '" << renderableType << "'");
         return nullptr;
     }
 
-    return result;
+    return std::move(result);
 }
 
 Renderable::Renderable()
-    : _enabled("enabled", "Is Enabled", true)
+    : _node(nullptr)
+    , _enabled("enabled", "Is Enabled", true)
     , _renderBin(RenderBin::Opaque)
     , _startTime("")
     , _endTime("")
@@ -162,6 +163,10 @@ bool Renderable::getInterval(double& start, double& end) {
     }
     else
         return false;
+}
+
+void Renderable::setSceneGraphNode(SceneGraphNode& node) {
+    _node = &node;
 }
 
 bool Renderable::isReady() const {

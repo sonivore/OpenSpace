@@ -30,7 +30,7 @@ namespace luascriptfunctions {
  * setOrigin():
  * Set the origin of the camera
  */
-int setOrigin(lua_State* L) {
+int setFocusNode(lua_State* L) {
     using ghoul::lua::luaTypeToString;
 
     int nArguments = lua_gettop(L);
@@ -43,7 +43,7 @@ int setOrigin(lua_State* L) {
 
     std::string s = luaL_checkstring(L, -1);
 
-    SceneGraphNode* node = sceneGraphNode(s);
+    SceneGraphNode* node = OsEng.renderEngine().scene()->sceneGraphNode(s);
     if (!node) {
         LWARNINGC(
             "lua.setOrigin",
@@ -52,7 +52,7 @@ int setOrigin(lua_State* L) {
         return 0;
     }
 
-    OsEng.interactionHandler().setFocusNode(node);
+    OsEng.interactionHandler().setFocusNode(*node);
 
     return 0;
 }

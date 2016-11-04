@@ -52,7 +52,6 @@ struct UpdateData {
 
 struct RenderData {
     const Camera& camera;
-    const SceneGraphNode& node;
     bool doPerformanceMeasurement;
     int renderBinMask;
 };

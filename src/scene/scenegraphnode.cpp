@@ -143,7 +143,8 @@ std::unique_ptr<SceneGraphNode> SceneGraphNode::createFromDictionary(const ghoul
     }
 
     LDEBUG("Successfully created SceneGraphNode '"
-                   << result->name() << "'");
+        << result->name() << "'");
+
     return result;
 }
 
@@ -155,7 +156,7 @@ SceneGraphNode::SceneGraphNode()
     , _performanceRecord({0, 0, 0})
     , _renderable(nullptr)
     , _boundingSphereVisible(false)
-    , _sceneRadius(0.0)
+    , _attachmentRadius(0.0)
 {
 }
 
@@ -167,18 +168,15 @@ bool SceneGraphNode::initialize() {
     if (_renderable) {
         _renderable->initialize();
     }
-
     if (_translation) {
         _translation->initialize();
     }
-
     if (_rotation) {
         _rotation->initialize();
     }
     if (_scale) {
         _scale->initialize();
     }
-
     return true;
 }
 
@@ -189,15 +187,16 @@ bool SceneGraphNode::deinitialize() {
         _renderable->deinitialize();
         _renderable = nullptr;
     }
-    _children.clear();
+    clearChildren();
 
     // reset variables
     _boundingSphereVisible = false;
     _boundingSphere = 0;
-    _sceneRadius = 0.0;
+    _attachmentRadius = 0.0;
 
     return true;
 }
+
 
 void SceneGraphNode::update(const UpdateData& data) {
     if (_translation) {
@@ -261,14 +260,15 @@ void SceneGraphNode::update(const UpdateData& data) {
         else
             _renderable->update(data);
     }
-}
 
-void SceneGraphNode::evaluate(const Camera& camera, const psc& parentPosition) {}
+    for (auto& child : _children) {
+        child->update(data);
+    }
+}
 
 void SceneGraphNode::render(const RenderData& data, RendererTasks& tasks) {
     RenderData newData = {
         data.camera,
-        *this,
         data.doPerformanceMeasurement,
         data.renderBinMask,
     };
@@ -290,8 +290,12 @@ void SceneGraphNode::render(const RenderData& data, RendererTasks& tasks) {
             auto end = std::chrono::high_resolution_clock::now();
             _performanceRecord.renderTime = (end - start).count();
         }
-        else
+        else {
             _renderable->render(newData, tasks);
+        }
+    }
+    for (auto& child : _children) {
+        child->render(newData, tasks);
     }
 }
 
@@ -299,8 +303,21 @@ void SceneGraphNode::setParent(SceneGraphNode& parent) {
     _parent = &parent;
 }
 
-void SceneGraphNode::addChild(SceneGraphNode& child) {
-    _children.push_back(&child);
+void SceneGraphNode::addChild(std::unique_ptr<SceneGraphNode> child) {
+    _children.push_back(std::move(child));
+}
+
+void SceneGraphNode::removeChild(SceneGraphNode& child) {
+    auto foundChild = std::find_if(_children.begin(), _children.end(), [&child] (auto& c) {
+        return *child == c->get();
+    });
+    if (foundChild != _children.end()) {
+        _children.erase(foundChild);
+    }
+}
+
+void SceneGraphNode::clearChildren() {
+    _children.clear();
 }
 
 void SceneGraphNode::setAttachmentRadius(double sceneRadius) {
@@ -410,43 +427,32 @@ SceneGraphNode& SceneGraphNode::parent() const {
     return *_parent;
 }
 
-const std::vector<SceneGraphNode*>& SceneGraphNode::children() const{
+const std::vector<std::unique_ptr<SceneGraphNode>>& SceneGraphNode::children() const{
     return _children;
+}
+
+std::vector<SceneGraphNode*> SceneGraphNode::allNodes()
+{
+    std::vector<SceneGraphNode*> nodes;
+    nodes.push_back(this);
+    for (auto &child : _children) {
+        std::vector<SceneGraphNode*> allChildNodes = child->allNodes();
+        nodes.insert(nodes.end(), allChildNodes.begin(), allChildNodes.end());
+    }
+    return nodes;
 }
 
 // bounding sphere
 float SceneGraphNode::calculateBoundingSphere(){
-    // set the bounding sphere to 0.0
     _boundingSphere = 0.0;
-    /*
-    This is not how to calculate a bounding sphere, better to leave it at 0 if not a
-    renderable. --KB
-    if (!_children.empty()) {  // node
-        PowerScaledScalar maxChild;
 
-        // loop though all children and find the one furthest away/with the largest
-        // bounding sphere
-        for (size_t i = 0; i < _children.size(); ++i) {
-            // when positions is dynamic, change this part to fins the most distant
-            // position
-            //PowerScaledScalar child = _children.at(i)->position().length()
-            //            + _children.at(i)->calculateBoundingSphere();
-            PowerScaledScalar child = _children.at(i)->calculateBoundingSphere();
-            if (child > maxChild) {
-                maxChild = child;
-            }
-        }
-        _boundingSphere += maxChild;
-    } 
-    */
     // if has a renderable, use that boundingsphere
-    if (_renderable ) {
+    if (_renderable) {
         float renderableBS = _renderable->getBoundingSphere();
         if(renderableBS > _boundingSphere)
             _boundingSphere = renderableBS;
     }
-    //LINFO("Bounding Sphere of '" << name() << "': " << _boundingSphere);
-    
+        
     return _boundingSphere;
 }
 
@@ -456,6 +462,7 @@ float SceneGraphNode::boundingSphere() const{
 
 void SceneGraphNode::setRenderable(std::unique_ptr<Renderable> renderable) {
     _renderable = std::move(renderable);
+    _renderable->setSceneGraphNode(*this);
 }
 
 const Renderable& SceneGraphNode::renderable() const {
@@ -466,21 +473,28 @@ Renderable& SceneGraphNode::renderable() {
     return *_renderable;
 }
 
-std::shared_ptr<SceneGraphNode> SceneGraphNode::find(const std::string& name) {
-    if (this->name() == name)
-        return std::shared_ptr(this);
-    else
-        for (SceneGraphNode* it : _children) {
-            SceneGraphNode* tmp = it->find(name);
-            if (tmp != nullptr)
-                return tmp;
-        }
+void SceneGraphNode::traverse(std::function<void(SceneGraphNode&node)> fn) {
+    fn(*this);
+    for (auto& child : _children) {
+        child->traverse(fn);
+    }
+}
+
+SceneGraphNode* SceneGraphNode::find(const std::string& name) {
+    if (this->name() == name) {
+        return this;
+    }
+    for (const auto& child : _children) {
+        SceneGraphNode* tmp = child->find(name);
+        if (tmp != nullptr)
+            return tmp;
+    }
     return nullptr;
 }
 
 
-const double& SceneGraphNode::sceneRadius() const {
-    return _sceneRadius;
+double SceneGraphNode::attachmentRadius() const {
+    return _attachmentRadius;
 }
 
 }  // namespace openspace

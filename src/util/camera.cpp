@@ -125,6 +125,10 @@ namespace openspace {
         return sgctInternal.projectionMatrix();
     }
 
+    const glm::mat4 & Camera::cameraMatrix() const {
+        return sgctInternal.viewMatrix();
+    }
+
     void Camera::invalidateCache() {
         //_cachedViewDirection.isDirty = true;
         //_cachedLookupVector.isDirty = true;

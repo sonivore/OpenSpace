@@ -84,11 +84,7 @@ namespace {
 
 namespace openspace {
 
-Scene::Scene() : 
-    _focus(SceneGraphNode::RootNodeName),
-    _sceneName(_mostProbableSceneName),
-    _updated(false)
-{}
+Scene::Scene() {}
 
 Scene::~Scene() {
     deinitialize();
@@ -100,13 +96,34 @@ bool Scene::initialize() {
 }
 
 bool Scene::deinitialize() {
-    clearSceneGraph();
+    clear();
     return true;
 }
+void Scene::writeKeyboardDocumentation(const std::string& sceneFilename) {
+    // After loading the scene, the keyboard bindings have been set
+    const std::string KeyboardShortcutsType =
+        ConfigurationManager::KeyKeyboardShortcuts + "." +
+        ConfigurationManager::PartType;
+
+    const std::string KeyboardShortcutsFile =
+        ConfigurationManager::KeyKeyboardShortcuts + "." +
+        ConfigurationManager::PartFile;
+
+
+    std::string type;
+    std::string file;
+    bool hasType = OsEng.configurationManager().getValue(KeyboardShortcutsType, type);
+    bool hasFile = OsEng.configurationManager().getValue(KeyboardShortcutsFile, file);
+
+    if (hasType && hasFile) {
+        OsEng.interactionHandler().writeKeyboardDocumentation(type, file, sceneFilename);
+    }
+}
+
 
 void Scene::update(const UpdateData& data) {
     if (!_sceneGraphToLoad.empty()) {
-        OsEng.renderEngine().scene()->clearSceneGraph();
+        clear();
         try {          
             loadSceneInternal(_sceneGraphToLoad);
 
@@ -114,30 +131,9 @@ void Scene::update(const UpdateData& data) {
             // TODO: Decide if it belongs in the scene and/or how it gets reloaded
             OsEng.interactionHandler().setInteractionMode("Orbital");
 
-            // After loading the scene, the keyboard bindings have been set
-            const std::string KeyboardShortcutsType =
-                ConfigurationManager::KeyKeyboardShortcuts + "." +
-                ConfigurationManager::PartType;
+            writeKeybindingsDocumentation();
 
-            const std::string KeyboardShortcutsFile =
-                ConfigurationManager::KeyKeyboardShortcuts + "." +
-                ConfigurationManager::PartFile;
-
-
-            std::string type;
-            std::string file;
-            bool hasType = OsEng.configurationManager().getValue(
-                KeyboardShortcutsType, type
-            );
-            
-            bool hasFile = OsEng.configurationManager().getValue(
-                KeyboardShortcutsFile, file
-            );
-            
-            if (hasType && hasFile) {
-                OsEng.interactionHandler().writeKeyboardDocumentation(type, file);
-            }
-
+           
             LINFO("Loaded " << _sceneGraphToLoad);
             _sceneGraphToLoad = "";
         }
@@ -148,48 +144,26 @@ void Scene::update(const UpdateData& data) {
         }
     }
 
-    for (SceneGraphNode* node : _graph.nodes()) {
-        try {
-            node->update(data);
-        }
-        catch (const ghoul::RuntimeError& e) {
-            LERRORC(e.component, e.what());
-        }
+    try {
+        _rootNode->update(data);
+    } catch (const ghoul::RuntimeError& e) {
+        LERRORC(e.component, e.what());
     }
 
-    _updated = true;
-}
-
-void Scene::evaluate(Camera* camera) {
-    for (SceneGraphNode* node : _graph.nodes())
-        node->evaluate(camera);
-    //_root->evaluate(camera);
 }
 
 void Scene::render(const RenderData& data, RendererTasks& tasks) {
-    for (SceneGraphNode* node : _graph.nodes()) {
-        node->render(data, tasks);
-    }
+    _rootNode->render(data, tasks);
+    
 }
 
 void Scene::scheduleLoadSceneFile(const std::string& sceneDescriptionFilePath) {
     _sceneGraphToLoad = sceneDescriptionFilePath;
 }
 
-void Scene::clearSceneGraph() {
+void Scene::clear() {
     LINFO("Clearing current scene graph");
-    // deallocate the scene graph. Recursive deallocation will occur
-    _graph.clear();
-    //if (_root) {
-    //    _root->deinitialize();
-    //    delete _root;
-    //    _root = nullptr;
-    //}
-
- //   _nodes.erase(_nodes.begin(), _nodes.end());
- //   _allNodes.erase(_allNodes.begin(), _allNodes.end());
-
-    _focus.clear();
+    _rootNode->clearChildren();
 }
 
 bool Scene::loadSceneInternal(const std::string& sceneDescriptionFilePath) {
@@ -247,26 +221,13 @@ bool Scene::loadSceneInternal(const std::string& sceneDescriptionFilePath) {
         OsEng.interactionHandler().setCameraStateFromDictionary(cameraDictionary);
     }
 
-    // If a PropertyDocumentationFile was specified, generate it now
-    const std::string KeyPropertyDocumentationType =
-        ConfigurationManager::KeyPropertyDocumentation + '.' +
-        ConfigurationManager::PartType;
 
-    const std::string KeyPropertyDocumentationFile =
-        ConfigurationManager::KeyPropertyDocumentation + '.' +
-        ConfigurationManager::PartFile;
 
-    const bool hasType = OsEng.configurationManager().hasKey(KeyPropertyDocumentationType);
-    const bool hasFile = OsEng.configurationManager().hasKey(KeyPropertyDocumentationFile);
-    if (hasType && hasFile) {
-        std::string propertyDocumentationType;
-        OsEng.configurationManager().getValue(KeyPropertyDocumentationType, propertyDocumentationType);
-        std::string propertyDocumentationFile;
-        OsEng.configurationManager().getValue(KeyPropertyDocumentationFile, propertyDocumentationFile);
 
-        propertyDocumentationFile = absPath(propertyDocumentationFile);
-        writePropertyDocumentation(propertyDocumentationFile, propertyDocumentationType, sceneDescriptionFilePath);
-    }
+
+    writePropertyDocumentation(sceneDescriptionFilePath);
+    writeKeyboardDocumentation(sceneDescriptionFilePath);
+
 
 
     OsEng.runPostInitializationScripts(sceneDescriptionFilePath);
@@ -276,7 +237,7 @@ bool Scene::loadSceneInternal(const std::string& sceneDescriptionFilePath) {
     return true;
 }
 
-SceneGraphNode* Scene::root() const {
+SceneGraphNode& Scene::root() const {
     return _graph.rootNode();
 }
     
@@ -398,19 +359,37 @@ const glm::dvec3 Scene::currentDisplacementPosition(const std::string & cameraPa
     }
 }*/
 
-bool Scene::isUpdated() const {
-    return _updated;
-}
 
-void Scene::writePropertyDocumentation(const std::string& filename, const std::string& type, const std::string& sceneFilename) {
+void Scene::writePropertyDocumentation(const std::string& sceneFilename) {
+
+    // If a PropertyDocumentationFile was specified, generate it now
+    const std::string KeyPropertyDocumentationType =
+        ConfigurationManager::KeyPropertyDocumentation + '.' +
+        ConfigurationManager::PartType;
+
+    const std::string KeyPropertyDocumentationFile =
+        ConfigurationManager::KeyPropertyDocumentation + '.' +
+        ConfigurationManager::PartFile;
+
+    std::string propertyDocumentationType;
+    if (!OsEng.configurationManager().getValue(KeyPropertyDocumentationType, propertyDocumentationType)) {
+        return;
+    }
+    std::string propertyDocumentationFile;
+    if (!OsEng.configurationManager().getValue(KeyPropertyDocumentationFile, propertyDocumentationFile)) {
+        return;
+    }
+
+    propertyDocumentationFile = absPath(propertyDocumentationFile);
+    
     LDEBUG("Writing documentation for properties");
-    if (type == "text") {
+    if (propertyDocumentationType == "text") {
         std::ofstream file;
         file.exceptions(~std::ofstream::goodbit);
-        file.open(filename);
+        file.open(propertyDocumentationFile);
 
         using properties::Property;
-        for (SceneGraphNode* node : _graph.nodes()) {
+        _rootNode->traverse([&file](auto& node) {
             std::vector<Property*> properties = node->propertiesRecursive();
             if (!properties.empty()) {
                 file << node->name() << std::endl;
@@ -422,12 +401,12 @@ void Scene::writePropertyDocumentation(const std::string& filename, const std::s
 
                 file << std::endl;
             }
-        }
+        });
     }
-    else if (type == "html") {
+    else if (propertyDocumentationType == "html") {
         std::ofstream file;
         file.exceptions(~std::ofstream::goodbit);
-        file.open(filename);
+        file.open(propertyDocumentationFile);
 
 
         std::ifstream handlebarsInput(absPath(HandlebarsFilename));
@@ -462,7 +441,7 @@ void Scene::writePropertyDocumentation(const std::string& filename, const std::s
 
         // Create JSON
         std::function<std::string(properties::PropertyOwner*)> createJson =
-            [&createJson](properties::PropertyOwner* owner) -> std::string 
+            [&createJson](properties::PropertyOwner* owner) -> std::string
         {
             std::stringstream json;
             json << "{";
@@ -500,7 +479,7 @@ void Scene::writePropertyDocumentation(const std::string& filename, const std::s
 
         std::stringstream json;
         json << "[";
-        auto nodes = _graph.nodes();
+        std::vector<SceneGraphNode*> nodes = _rootNode->allNodes();
         for (SceneGraphNode* node : nodes) {
             json << createJson(node);
             if (node != nodes.back()) {
@@ -514,7 +493,8 @@ void Scene::writePropertyDocumentation(const std::string& filename, const std::s
         for (const char& c : json.str()) {
             if (c == '\'') {
                 jsonString += "\\'";
-            } else {
+            }
+            else {
                 jsonString += c;
             }
         }
@@ -549,9 +529,9 @@ void Scene::writePropertyDocumentation(const std::string& filename, const std::s
             << "</html>\n";
 
         file << html.str();
-    }
-    else
+    } else {
         LERROR("Undefined type '" << type << "' for Property documentation");
+    }
 }
 
 scripting::LuaLibrary Scene::luaLibrary() {

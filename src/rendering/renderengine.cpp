@@ -91,6 +91,7 @@
 #define RENDERER_ABUFFER 1
 
 #include "renderengine_lua.inl"
+#undef max;
 
 namespace {
     const std::string _loggerCat = "RenderEngine";
@@ -204,7 +205,7 @@ bool RenderEngine::initialize() {
     setRendererFromString(renderingMethod);
 
     // init camera and set temporary position and scaling
-    _mainCamera = new Camera();
+    _mainCamera = new Camera(_sceneGraph->root());
 
     OsEng.interactionHandler().setCamera(_mainCamera);
     if (_renderer) {
@@ -465,14 +466,6 @@ void RenderEngine::render(const glm::mat4& projectionMatrix, const glm::mat4& vi
     for (auto screenSpaceRenderable : _screenSpaceRenderables) {
         if (screenSpaceRenderable->isEnabled() && screenSpaceRenderable->isReady())
             screenSpaceRenderable->render();
-    }
-}
-
-void RenderEngine::updateDynamicOrigin() {
-    if (_mainCamera && scene()->isUpdated()) {
-        // New DynamicRootGraph system in action:
-        scene()->updateSceneName(_mainCamera);
-        _mainCamera->setParent(scene()->sceneName());
     }
 }
 

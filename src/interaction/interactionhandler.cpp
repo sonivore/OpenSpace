@@ -33,9 +33,12 @@
 #include <openspace/util/time.h>
 #include <openspace/util/keys.h>
 
+#include <openspace/scene/scale.h>
+
 #include <ghoul/filesystem/filesystem.h>
 #include <ghoul/logging/logmanager.h>
 #include <ghoul/misc/interpolator.h>
+
 
 #include <glm/gtx/quaternion.hpp>
 
@@ -68,7 +71,7 @@ namespace interaction {
 
 // InteractionHandler
 InteractionHandler::InteractionHandler()
-    : _origin("origin", "Origin", "")
+    : _focus("focus", "Focus", "")
     , _coordinateSystem("coordinateSystem", "Coordinate System", "")
     , _rotationalFriction("rotationalFriction", "Rotational Friction", true)
     , _horizontalFriction("horizontalFriction", "Horizontal Friction", true)
@@ -78,13 +81,13 @@ InteractionHandler::InteractionHandler()
 {
     setName("Interaction");
 
-    _origin.onChange([this]() {
-        SceneGraphNode* node = sceneGraphNode(_origin.value());
+    _focus.onChange([this]() {
+        SceneGraphNode* node = sceneGraphNode(_focus.value());
         if (!node) {
-            LWARNING("Could not find a node in scenegraph called '" << _origin.value() << "'");
+            LWARNING("Could not find a node in scenegraph called '" << _focus.value() << "'");
             return;
         }
-        setFocusNode(node);
+        setFocusNode(*node);
         resetCameraDirection();
     });
 
@@ -133,7 +136,7 @@ InteractionHandler::InteractionHandler()
     });
 
     // Add the properties
-    addProperty(_origin);
+    addProperty(_focus);
     addProperty(_coordinateSystem);
 
     addProperty(_rotationalFriction);
@@ -166,12 +169,12 @@ void InteractionHandler::deinitialize() {
     OsEng.parallelConnection().connectionEvent()->unsubscribe("interactionHandler");
 }
 
-void InteractionHandler::setFocusNode(SceneGraphNode* node) {
+void InteractionHandler::setFocusNode(SceneGraphNode& node) {
     _currentInteractionMode->setFocusNode(node);
 }
 
-void InteractionHandler::setCamera(Camera* camera) {
-    _camera = camera;
+void InteractionHandler::setCamera(Camera& camera) {
+    _camera = &camera;
 }
 
 void InteractionHandler::resetCameraDirection() {
@@ -182,8 +185,8 @@ void InteractionHandler::resetCameraDirection() {
     TransformData focusTransform = focusNode()->relativeTransform(_camera->parent());
 
     glm::dvec3 focusPosition = focusTransform.translation;
-    glm::dvec3 cameraPosition = _camera->positionVec3();
-    glm::dvec3 lookUpVector = _camera->lookUpVectorWorldSpace();
+    glm::dvec3 cameraPosition = _camera->position();
+    glm::dvec3 lookUpVector = glm::vec3(0.0, 1.0, 0.0); //_camera->lookUpVectorWorldSpace(); TODO: Get rid of world space properly.
 
     glm::dvec3 directionToFocusNode = glm::normalize(focusPosition - cameraPosition);
 
@@ -209,11 +212,15 @@ void InteractionHandler::setInteractionMode(std::shared_ptr<InteractionMode> int
     // Focus node is passed over from the previous interaction mode
     SceneGraphNode* focusNode = _currentInteractionMode->focusNode();
 
+    if (focusNode == nullptr) {
+        return;
+    }
+
     // Set the interaction mode
     _currentInteractionMode = interactionMode;
 
     // Update the focusnode for the new interaction mode
-    _currentInteractionMode->setFocusNode(focusNode);
+    _currentInteractionMode->setFocusNode(*focusNode);
 }
 
 void InteractionHandler::setInteractionMode(const std::string& interactionModeKey) {
@@ -322,15 +329,18 @@ void InteractionHandler::setCameraStateFromDictionary(const ghoul::Dictionary& c
     }
 
     // Set state
-    setFocusNode(node);
-    _camera->setPositionVec3(cameraPosition);
+    setFocusNode(*node);
+    _camera->setPosition(cameraPosition);
     _camera->setRotation(glm::dquat(
         cameraRotation.x, cameraRotation.y, cameraRotation.z, cameraRotation.w));
 
     // New dynamicSceneGraph in action (JCC):
     // Once Scene::currentSceneName and Scene::newCameraOrigin run, parent is updated
     // to the closest node.
-    _camera->setParent(_mostProbableCameraParent);
+
+
+    _scene->root();
+    _camera->setParent(_scene->root());
 }
 
 ghoul::Dictionary InteractionHandler::getCameraStateDictionary() {
@@ -338,7 +348,7 @@ ghoul::Dictionary InteractionHandler::getCameraStateDictionary() {
     glm::dquat quat;
     glm::dvec4 cameraRotation;
 
-    cameraPosition = _camera->positionVec3();
+    cameraPosition = _camera->position();
     quat = _camera->rotationQuaternion();
     cameraRotation = glm::dvec4(quat.w, quat.x, quat.y, quat.z);
 
@@ -362,7 +372,7 @@ void InteractionHandler::saveCameraStateToFile(const std::string& filepath) {
         
         std::ofstream ofs(fullpath.c_str());
         
-        glm::dvec3 p = _camera->positionVec3();
+        glm::dvec3 p = _camera->position();
         glm::dquat q = _camera->rotationQuaternion();
 
         ofs << "return {" << std::endl;
@@ -418,7 +428,7 @@ void InteractionHandler::bindKey(Key key, KeyModifier modifier, std::string lua)
 }
 
     
-void InteractionHandler::writeKeyboardDocumentation(const std::string& type, const std::string& file)
+void InteractionHandler::writeKeyboardDocumentation(const std::string& type, const std::string& file, const std::string& scene)
 {
     if (type == "text") {
         std::ofstream f;

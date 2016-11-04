@@ -69,6 +69,8 @@ public:
     virtual bool initialize() = 0;
     virtual bool deinitialize() = 0;
 
+    void setSceneGraphNode(SceneGraphNode& node);
+    
     virtual bool isReady() const = 0;
     bool isEnabled() const;
 
@@ -96,8 +98,9 @@ protected:
     properties::BoolProperty _enabled;
     
 private:
+    SceneGraphNode* _node;
     RenderBin _renderBin;
-    PowerScaledScalar boundingSphere_;
+    float _boundingSphere;
     std::string _startTime;
     std::string _endTime;
     bool _hasTimeInterval;

@@ -234,7 +234,7 @@ int addSceneGraphNode(lua_State* L) {
         return 0;
     }
 
-    SceneGraphNode* node = SceneGraphNode::createFromDictionary(d);
+    std::unique_ptr<SceneGraphNode> node = SceneGraphNode::createFromDictionary(d);
     
     std::string parent = d.value<std::string>(SceneGraphNode::KeyParentName);
     SceneGraphNode* parentNode = OsEng.renderEngine().scene()->sceneGraphNode(parent);
@@ -245,9 +245,9 @@ int addSceneGraphNode(lua_State* L) {
         );
         return 0;
     }
-    node->setParent(parentNode);
+
+    parentNode->addChild(std::move(node));
     node->initialize();
-    OsEng.renderEngine().scene()->sceneGraph().addSceneGraphNode(node);
         
     return 0;
 }
@@ -268,9 +268,8 @@ int removeSceneGraphNode(lua_State* L) {
         return 0;
     }
 
-    OsEng.renderEngine().scene()->sceneGraph().removeSceneGraphNode(node);
     node->deinitialize();
-    delete node;
+    node->parent().removeChild(node);
 
     return 1;
 }

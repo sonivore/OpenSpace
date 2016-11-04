@@ -172,14 +172,8 @@ InteractionMode::~InteractionMode() {
 
 }
 
-void InteractionMode::setFocusNode(SceneGraphNode* focusNode) {
-    _focusNode = focusNode;
-
-    if (_focusNode != nullptr) {
-        //_previousFocusNodePosition = _focusNode->worldPosition();
-        //_previousFocusNodePosition = _focusNode->dynamicWorldPosition().dvec3();
-        //_previousFocusNodeRotation = glm::quat_cast(_focusNode->worldRotationMatrix());
-    }
+void InteractionMode::setFocusNode(SceneGraphNode& focusNode) {
+    _focusNode = &focusNode;
 }
 
 SceneGraphNode* InteractionMode::focusNode() {
@@ -215,7 +209,7 @@ void KeyframeInteractionMode::updateCameraStateFromMouseStates(Camera& camera) {
     }
 
     if (nextKeyframe == _keyframes.begin()) {
-        camera.setPositionVec3(_keyframes[0]._position);
+        camera.setPosition(_keyframes[0]._position);
         camera.setRotation(_keyframes[0]._rotation);
         return;
     }
@@ -226,7 +220,7 @@ void KeyframeInteractionMode::updateCameraStateFromMouseStates(Camera& camera) {
 
     double t = (now - prevTime) / (nextTime - prevTime);
 
-    camera.setPositionVec3(prevKeyframe->_position * (1 - t) + nextKeyframe->_position * t);
+    camera.setPosition(prevKeyframe->_position * (1 - t) + nextKeyframe->_position * t);
     camera.setRotation(glm::slerp(prevKeyframe->_rotation, nextKeyframe->_rotation, t));
 }
 
@@ -376,7 +370,7 @@ void OrbitalInteractionMode::updateCameraStateFromMouseStates(Camera& camera) {
         // JCC: Distance from camera's parent node to camera is now the current position of the camera.
         
         // Read the current state of the camera and focus node
-        dvec3 camPos = camera.positionVec3();
+        dvec3 camPos = camera.position();
         
         // Follow focus nodes movement
 
@@ -390,9 +384,9 @@ void OrbitalInteractionMode::updateCameraStateFromMouseStates(Camera& camera) {
 
         dquat totalRotation     = camera.rotationQuaternion();
         dvec3 directionToCenter = normalize(centerPos - camPos);
-        dvec3 lookUp            = camera.lookUpVectorWorldSpace();
+        dvec3 lookUp = glm::vec3(0.0, 1.0, 0.0); // camera.lookUpVectorWorldSpace(); TODO: get rid of world space?
         double boundingSphere   = _focusNode->boundingSphere();
-        dvec3 camDirection      = camera.viewDirectionWorldSpace();
+        dvec3 camDirection = glm::vec3(0.0, 0.0, 1.0); // = camera.viewDirectionWorldSpace(); TODO: get rid of world space?
 
         // Declare other variables used in interaction calculations
         double minHeightAboveBoundingSphere = 1;
@@ -463,7 +457,7 @@ void OrbitalInteractionMode::updateCameraStateFromMouseStates(Camera& camera) {
         //std::cout << "****** CameraPos after calc: " << glm::vec3(camPos) << " *******" << std::endl;
 
         // Update the camera state
-        camera.setPositionVec3(camPos);
+        camera.setPosition(camPos);
         camera.setRotation(globalCameraRotation * localCameraRotation);
     }
 }
@@ -482,7 +476,7 @@ GlobeBrowsingInteractionMode::~GlobeBrowsingInteractionMode() {
 
 }
 
-void GlobeBrowsingInteractionMode::setFocusNode(SceneGraphNode* focusNode) {
+void GlobeBrowsingInteractionMode::setFocusNode(SceneGraphNode& focusNode) {
     InteractionMode::setFocusNode(focusNode);
 
 #ifdef OPENSPACE_MODULE_GLOBEBROWSING_ENABLED

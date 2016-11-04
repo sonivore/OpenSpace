@@ -51,11 +51,6 @@ SceneGraphNode* sceneGraphNode(const std::string& name) {
     return graph->sceneGraphNode(name);
 }
 
-Renderable* renderable(const std::string& name) {
-    SceneGraphNode* node = sceneGraphNode(name);
-    return node->renderable();
-}
-
 properties::Property* property(const std::string& uri) {
     properties::Property* globalProp = OsEng.globalPropertyOwner().property(uri);
     if (globalProp) {

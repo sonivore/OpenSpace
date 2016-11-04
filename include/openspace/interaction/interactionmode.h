@@ -89,7 +89,7 @@ public:
     ~InteractionMode();
 
     // Mutators
-    virtual void setFocusNode(SceneGraphNode* focusNode);
+    virtual void setFocusNode(SceneGraphNode& focusNode);
 
     // Accessors
     SceneGraphNode* focusNode();
@@ -229,7 +229,7 @@ public:
     GlobeBrowsingInteractionMode(std::shared_ptr<MouseStates> mouseStates);
     ~GlobeBrowsingInteractionMode();
 
-    virtual void setFocusNode(SceneGraphNode* focusNode);
+    virtual void setFocusNode(SceneGraphNode& focusNode);
     //virtual void update(Camera& camera, const InputState& inputState, double deltaTime);
     virtual void updateCameraStateFromMouseStates(Camera& camera);
 

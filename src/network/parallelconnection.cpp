@@ -985,7 +985,7 @@ const std::string& ParallelConnection::hostName() {
 void ParallelConnection::sendCameraKeyframe() {
     //create a keyframe with current position and orientation of camera
     datamessagestructures::CameraKeyframe kf;
-    kf._position = OsEng.interactionHandler().camera()->positionVec3();
+    kf._position = OsEng.interactionHandler().camera()->position();
     kf._rotation = OsEng.interactionHandler().camera()->rotationQuaternion();
 
     //timestamp as current runtime of OpenSpace instance

@@ -66,7 +66,7 @@ namespace openspace {
         static const glm::dvec3 _VIEW_DIRECTION_CAMERA_SPACE;
         static const glm::dvec3 _LOOKUP_VECTOR_CAMERA_SPACE;
     public:
-        Camera(const std::shared_ptr<SceneGraphNode> parent);
+        Camera(SceneGraphNode& parent);
         Camera(const Camera& o);
         ~Camera();
 
@@ -86,9 +86,39 @@ namespace openspace {
         const SceneGraphNode& parent() const;
         const glm::dquat& rotationQuaternion() const;
 
+        /**
+         * Return a matrix transforming an object from node's
+         * coordinate system to the camera coordinate system
+         */
         const glm::mat4& viewMatrix(const SceneGraphNode& node) const;
+        /**
+         * Return a matrix transforming an object from the camera
+         * coordinate system to the projection coordinate system
+         */
         const glm::mat4& projectionMatrix() const;
+        /**
+         * Return the combination of the viewMatrix and projectionMatrix
+         */
         const glm::mat4& viewProjectionMatrix(const SceneGraphNode& node) const;
+
+        /**
+         * Return a matrix transforming an object from the camera rig coordinate
+         * system to the camera coordinate system
+         */
+        const glm::mat4& cameraMatrix() const;
+
+        /**
+         * Return a matrix transforming an object from node's
+         * coordinate system to the camera rig's coordinate system
+         */
+        const glm::mat4& cameraRigMatrix(const SceneGraphNode& node);
+
+        /**
+         * Return a matrix transforming an object from the camera rig coordinate
+         * system to the projection coordinate system.
+         * Combination of camera matrix and projection matrix.
+         */
+        const glm::mat4& cameraProjectionMatrix() const;
 
         void invalidateCache();
 
@@ -127,11 +157,9 @@ namespace openspace {
 
         std::vector<Syncable*> getSyncables();
     private:
-
         SyncData<glm::dvec3> _position;
         SyncData<glm::dquat> _rotation;
 
-        // Parent of camera, latches onto scenegraph node.
         SceneGraphNode* _parent;
 
         // Cached data

@@ -54,7 +54,7 @@ public:
     ~Scene();
 
     /**
-     * Initalizes the SceneGraph by loading modules from the ${SCENEPATH} directory
+     * Initalizes the Scene
      */
     bool initialize();
 
@@ -67,15 +67,19 @@ public:
      * Load the scenegraph from the provided folder
      */
     void scheduleLoadSceneFile(const std::string& sceneDescriptionFilePath);
-    void clearSceneGraph();
+
+    /**
+     * Clear Scene graph
+     */
+    void clear();
 
     /*
-     * Updates all SceneGraphNodes relative positions
+     * Update all SceneGraphNodes relative positions
      */
     void update(const UpdateData& data);
 
     /*
-     * Evaluates if the SceneGraphNodes are visible to the provided camera
+     * Evaluate if the SceneGraphNodes are visible to the provided camera
      */
     void evaluate(Camera* camera);
 
@@ -85,14 +89,9 @@ public:
     void render(const RenderData& data, RendererTasks& tasks);
 
     /*
-    * Post-Render visible SceneGraphNodes using the provided camera
-    */
-    void postRender(const RenderData& data);
-
-    /*
      * Returns the root SceneGraphNode
      */
-    SceneGraphNode* root() const;
+    SceneGraphNode& root() const;
 
     /**
      * Return the scenegraph node with the specified name or <code>nullptr</code> if that
@@ -100,44 +99,10 @@ public:
      */
     SceneGraphNode* sceneGraphNode(const std::string& name) const;
 
+    /**
+     * Return all scene graph nodes
+     */
     std::vector<SceneGraphNode*> allSceneGraphNodes() const;
-
-    SceneGraph& sceneGraph();
-
-    void addSceneGraphNode(SceneGraphNode* node){
-        _graph.addSceneGraphNode(node);
-    }
-
-    /**
-    * Returns the name of the scene node referred as the current center of coordinates of the system,
-    * i.e., the camera's parent.
-    */
-    const std::string & sceneName() const;
-
-    /**
-    * Sets the name of the scene node referred as the current center of coordinates of the system,
-    * i.e., the camera's parent.
-    */
-    void setSceneName(const std::string & sceneName);
-
-    void updateSceneName(const Camera* camera);
-
-    /**
-    * Calculates the world position of target from the common node between camera's parent and target.
-    */
-    const glm::dvec3 currentDisplacementPosition(const std::string & cameraParent, 
-        const SceneGraphNode* target) const;
-
-    SceneGraphNode* findCommonParentNode(const std::string & firstPath, const std::string & secondPath) const;
-
-    std::vector<SceneGraphNode*> pathTo(SceneGraphNode* node) const;
-
-    glm::dvec3 pathCollector(const std::vector<SceneGraphNode*> & path, const std::string & commonParentName,
-        const bool inverse) const;
-
-    std::string commonParent(const std::vector<SceneGraphNode*> & t1, const std::vector<SceneGraphNode*> & t2) const;
-
-    bool isUpdated() const;
 
     /**
      * Returns the Lua library that contains all Lua functions available to change the
@@ -149,50 +114,18 @@ public:
      */
     static scripting::LuaLibrary luaLibrary();
 
+    /**
+     * Return the documentaiton of the scene
+     */
     static documentation::Documentation Documentation();
 
 private:
     bool loadSceneInternal(const std::string& sceneDescriptionFilePath);
-
-    void writePropertyDocumentation(const std::string& filename, const std::string& type, const std::string& sceneFilename);
-
-    /**
-    * Calculates the current scene name (new camera's node parent) based on the camera's position
-    * and the former scene name.
-    */
-    std::string currentSceneName(const Camera* camera, std::string _nameOfScene) const;
-
-    std::string _sceneName;
-    std::string _focus;
-
-    bool _updated;
-
-    // actual scenegraph
-    SceneGraph _graph;
-    //SceneGraphNode* _root;
-    //std::vector<SceneGraphNode*> _nodes;
-    //std::map<std::string, SceneGraphNode*> _allNodes;
+    void writeKeyboardDocumentation(const std::string& sceneFilename);
+    void writePropertyDocumentation(const std::string& sceneFilename);
 
     std::string _sceneGraphToLoad;
-
-    std::mutex _programUpdateLock;
-    std::set<ghoul::opengl::ProgramObject*> _programsToUpdate;
-    std::vector<std::unique_ptr<ghoul::opengl::ProgramObject>> _programs;
-
-    typedef std::map<std::string, ghoul::Dictionary> NodeMap;
-    typedef std::multimap<std::string, std::string> DependencyMap;
-    typedef std::vector<std::string> LoadedList;
-
-    struct LoadMaps {
-        NodeMap nodes;
-        DependencyMap dependencies;
-        LoadedList loadedNodes;
-    };
-
-    void loadModules(const std::string& directory, const ghoul::Dictionary& dictionary);
-    void loadModule(LoadMaps& m,const std::string& modulePath, lua_State* state);
-    void loadNodes(const std::string& parentName, LoadMaps& m);
-    void loadNode(const ghoul::Dictionary& dictionary);
+    std::unique_ptr<SceneGraphNode> _rootNode;
 };
 
 } // namespace openspace

@@ -31,6 +31,7 @@
 #include <openspace/rendering/renderable.h>
 #include <openspace/rendering/volumeraycaster.h>
 #include <openspace/scene/scene.h>
+#include <openspace/scene/scenegraphnode.h>
 #include <openspace/util/camera.h>
 #include <openspace/util/updatestructures.h>
 #include <openspace/performance/performancemeasurement.h>
@@ -50,7 +51,6 @@ namespace {
     const std::string _loggerCat = "ABufferRenderer";
     const std::string BoundsFragmentShaderPath = "${SHADERS}/abuffer/boundsabuffer.frag";
     const std::string RenderFragmentShaderPath = "${SHADERS}/abuffer/renderabuffer.frag";
-    const std::string PostRenderFragmentShaderPath = "${SHADERS}/abuffer/postrenderabuffer.frag";
     const int MaxRaycasters = 32;
     const int MaxLayers = 32;
     const int MaxAverageLayers = 8;
@@ -266,7 +266,7 @@ void ABufferRenderer::render(float blackoutFactor, bool doPerformanceMeasurement
         static_cast<int>(Renderable::RenderBin::Transparent) |
         static_cast<int>(Renderable::RenderBin::Overlay);
 
-    RenderData data{ *_camera, psc(), doPerformanceMeasurements, renderBinMask };
+    RenderData data{ *_camera, doPerformanceMeasurements, renderBinMask };
     RendererTasks tasks;
     _scene->render(data, tasks);
     _blackoutFactor = blackoutFactor;
@@ -297,7 +297,7 @@ void ABufferRenderer::render(float blackoutFactor, bool doPerformanceMeasurement
     // TEMPORARY GAMMA CORRECTION.
 
     float gamma = 1.0;
-    glm::vec3 cameraPos = data.camera.position().vec3();
+    glm::vec3 cameraPos = data.camera.position();
     float maxComponent = std::max(std::max(std::abs(cameraPos.x), std::abs(cameraPos.y)), std::abs(cameraPos.z));
     float logDistance = std::log(glm::length(cameraPos / maxComponent) * maxComponent) / std::log(10);
 
@@ -329,8 +329,6 @@ void ABufferRenderer::render(float blackoutFactor, bool doPerformanceMeasurement
     }
 
     _resolveProgram->deactivate();
-
-    _scene->postRender(data);
 
     _mainColorTextureUnit = nullptr;
     _mainDepthTextureUnit = nullptr;
@@ -565,7 +563,6 @@ void ABufferRenderer::updateRendererData() {
 
     ghoul::Dictionary dict;
     dict.setValue("fragmentRendererPath", std::string(RenderFragmentShaderPath));
-    dict.setValue("postFragmentRendererPath", std::string(PostRenderFragmentShaderPath));
     dict.setValue("maxLayers", MaxLayers);
     dict.setValue("maxTotalFragments", MaxLayers * _resolution.x * _resolution.y);
 
