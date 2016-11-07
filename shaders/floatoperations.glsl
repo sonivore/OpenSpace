@@ -33,7 +33,8 @@ vec4 zNormalize(vec4 vector) {
  * Supporting huge vectors, where the square of any of the components is too large to represent as a float. 
  */
 float safeLength(vec4 v) {
-    float m = max(max(max(abs(v.x), abs(v.y)), abs(v.z)), abs(v.w));
+    vec4 absV = abs(v);
+    float m = max(max(max(absV.x, absV.y), absV.z), absV.w);
     if (m > 0.0) {
         return length(v / m) * m;
     } else {
@@ -42,7 +43,8 @@ float safeLength(vec4 v) {
 }
 
 float safeLength(vec3 v) {
-    float m = max(max(abs(v.x), abs(v.y)), abs(v.z));
+    vec3 absV = abs(v);
+    float m = max(max(absV.x, absV.y), absV.z);
     if (m > 0.0) {
         return length(v / m) * m;
     } else {
@@ -51,7 +53,8 @@ float safeLength(vec3 v) {
 }
 
 float safeLength(vec2 v) {
-    float m = max(abs(v.x), abs(v.y));
+    vec2 absV = abs(v);
+    float m = max(absV.x, absV.y);
     if (m > 0.0) {
         return length(v / m) * m;
     } else {
@@ -64,6 +67,7 @@ float safeLength(vec2 v) {
  * Supporting huge vectors, where the square of any of the components is too large to represent as a float. 
  */
 vec3 safeNormalize(vec3 v) {
-    float m = max(max(abs(v.x), abs(v.y)), abs(v.z));
+    vec3 absV = abs(v);
+    float m = max(max(absV.x, absV.y), absV.z);
     return normalize(v / m);
 }
