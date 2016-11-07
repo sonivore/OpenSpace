@@ -29,9 +29,9 @@
 #include "abufferfragment.glsl"
 #include "abufferresources.glsl"
 #include "fragment.glsl"
-#include "PowerScaling/powerScalingMath.hglsl"
 #include "blending.glsl"
 #include "rand.glsl"
+#include "floatoperations.glsl"
 
 layout (location = 0) out vec4 finalColor;
 

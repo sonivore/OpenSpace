@@ -22,8 +22,8 @@
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                         *
  ****************************************************************************************/
 
-#include "PowerScaling/powerScalingMath.hglsl"
 #include <#{fragmentPath}>
+#include "floatoperations.glsl"
 
 out vec4 _out_color_;
 
