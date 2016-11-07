@@ -99,8 +99,7 @@ std::unique_ptr<SceneGraphNode> SceneGraphNode::createFromDictionary(const ghoul
     if (dictionary.hasKey(keyTransformTranslation)) {
         ghoul::Dictionary translationDictionary;
         dictionary.getValue(keyTransformTranslation, translationDictionary);
-        result->_translation = 
-            std::unique_ptr<Translation>(Translation::createFromDictionary(translationDictionary));
+        result->_translation = Translation::createFromDictionary(translationDictionary);
         if (result->_translation == nullptr) {
             LERROR("Failed to create ephemeris for SceneGraphNode '"
                 << result->name() << "'");
@@ -113,8 +112,7 @@ std::unique_ptr<SceneGraphNode> SceneGraphNode::createFromDictionary(const ghoul
     if (dictionary.hasKey(keyTransformRotation)) {
         ghoul::Dictionary rotationDictionary;
         dictionary.getValue(keyTransformRotation, rotationDictionary);
-        result->_rotation =
-            std::unique_ptr<Rotation>(Rotation::createFromDictionary(rotationDictionary));
+        result->_rotation = Rotation::createFromDictionary(rotationDictionary);
         if (result->_rotation == nullptr) {
             LERROR("Failed to create rotation for SceneGraphNode '"
                 << result->name() << "'");
@@ -127,8 +125,7 @@ std::unique_ptr<SceneGraphNode> SceneGraphNode::createFromDictionary(const ghoul
     if (dictionary.hasKey(keyTransformScale)) {
         ghoul::Dictionary scaleDictionary;
         dictionary.getValue(keyTransformScale, scaleDictionary);
-        result->_scale =
-            std::unique_ptr<Scale>(Scale::createFromDictionary(scaleDictionary));
+        result->_scale = Scale::createFromDictionary(scaleDictionary);
         if (result->_scale == nullptr) {
             LERROR("Failed to create scale for SceneGraphNode '"
                 << result->name() << "'");
