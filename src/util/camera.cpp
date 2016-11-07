@@ -46,14 +46,17 @@ namespace openspace {
     const glm::dvec3 Camera::_VIEW_DIRECTION_CAMERA_SPACE = glm::dvec3(0, 0, -1);
     const glm::dvec3 Camera::_LOOKUP_VECTOR_CAMERA_SPACE = glm::dvec3(0, 1, 0);
 
-    Camera::Camera(SceneGraphNode& parent)
-        : _parent(&parent)
+    Camera::Camera(Scene& scene, SceneGraphNode& parent)
+        : _scene(&scene)
+        , _parent(&parent)
         , _position(glm::vec3(0.0))
         , _rotation(glm::quat(glm::vec3(0.0)))
     {}
     
     Camera::Camera(const Camera& o)
         : sgctInternal(o.sgctInternal)
+        , _scene(o._scene)
+        , _parent(o._parent)
         , _position(o._position)
         , _rotation(o._rotation)
     {}
@@ -102,19 +105,7 @@ namespace openspace {
     }
 
     const glm::mat4& Camera::viewMatrix(const SceneGraphNode & node) const {
-        TransformData relativeTransform = node.relativeTransform(parent());
-
-        glm::mat4 nodeToCameraParent = 
-            glm::translate(glm::mat4(1.0), glm::vec3(relativeTransform.translation)) * // Translation
-            glm::mat4(relativeTransform.rotation) *                                    // Rotation
-            glm::scale(glm::mat4(1.0), glm::vec3(relativeTransform.scale));            // Scaling
-
- 
-        glm::mat4 cameraParentToCamera =
-            glm::mat4_cast(glm::quat(glm::inverse(glm::dquat(_rotation)))) *
-            glm::translate(glm::mat4(1.0), -1.0f * glm::vec3(glm::dvec3(_position)));
-
-        return sgctInternal.viewMatrix() * cameraParentToCamera * nodeToCameraParent;
+        return cameraMatrix() * cameraRigMatrix(node);
     }
 
     const glm::mat4& Camera::viewProjectionMatrix(const SceneGraphNode& node) const {
@@ -125,8 +116,32 @@ namespace openspace {
         return sgctInternal.projectionMatrix();
     }
 
-    const glm::mat4 & Camera::cameraMatrix() const {
+    const glm::mat4& Camera::cameraMatrix() const {
         return sgctInternal.viewMatrix();
+    }
+
+    const glm::mat4& Camera::cameraRigMatrix(const SceneGraphNode& node) const {
+            TransformData relativeTransform = node.relativeTransform(parent());
+
+            glm::mat4 nodeToCameraParent =
+                glm::translate(glm::mat4(1.0), glm::vec3(relativeTransform.translation)) * // Translation
+                glm::mat4(relativeTransform.rotation) *                                    // Rotation
+                glm::scale(glm::mat4(1.0), glm::vec3(relativeTransform.scale));            // Scaling
+
+
+            glm::mat4 cameraParentToCamera =
+                glm::mat4_cast(glm::quat(glm::inverse(glm::dquat(_rotation)))) *
+                glm::translate(glm::mat4(1.0), -1.0f * glm::vec3(glm::dvec3(_position)));
+
+            return cameraParentToCamera * nodeToCameraParent;
+    }
+
+    const glm::mat4& Camera::cameraProjectionMatrix() const {
+        return sgctInternal.viewProjectionMatrix();
+    }
+
+    Scene* Camera::scene() const {
+        return _scene;
     }
 
     void Camera::invalidateCache() {

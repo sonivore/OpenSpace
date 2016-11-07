@@ -36,7 +36,6 @@
 
 
 #include <ghoul/opengl/textureunit.h>
-#include <openspace/rendering/volume.h>
 #include <openspace/rendering/renderer.h>
 #include <openspace/rendering/raycasterlistener.h>
 #include <openspace/util/updatestructures.h>
@@ -66,8 +65,6 @@ public:
     void initialize() override;
     void deinitialize() override;
 
-    void setCamera(Camera* camera) override;
-    void setScene(Scene* scene) override;
     void setResolution(glm::ivec2 res) override;
     void setNAaSamples(int nAaSamples) override;
 
@@ -75,7 +72,7 @@ public:
     void postRaycast(const RaycasterTask& raycasterTask);
 
     void update();
-    void render(float blackoutFactor, bool doPerformanceMeasurements) override;
+    void render(Camera& camera, float blackoutFactor, bool doPerformanceMeasurements) override;
 
 
     /**

@@ -130,9 +130,6 @@ void Scene::update(const UpdateData& data) {
             // Reset the InteractionManager to Orbital/default mode
             // TODO: Decide if it belongs in the scene and/or how it gets reloaded
             OsEng.interactionHandler().setInteractionMode("Orbital");
-
-            writeKeybindingsDocumentation();
-
            
             LINFO("Loaded " << _sceneGraphToLoad);
             _sceneGraphToLoad = "";
@@ -196,10 +193,12 @@ bool Scene::loadSceneInternal(const std::string& sceneDescriptionFilePath) {
     );
 
 
-    _graph.loadFromFile(sceneDescriptionFilePath);
+    //_graph.loadFromFile(sceneDescriptionFilePath); TODO: actually load scene.
+
+    std::vector<SceneGraphNode*> nodes = _rootNode->allNodes();
 
     // Initialize all nodes
-    for (SceneGraphNode* node : _graph.nodes()) {
+    for (SceneGraphNode* node : nodes) {
         try {
             bool success = node->initialize();
             if (success)
@@ -212,7 +211,7 @@ bool Scene::loadSceneInternal(const std::string& sceneDescriptionFilePath) {
         }
     }
 
-    for (auto it = _graph.nodes().rbegin(); it != _graph.nodes().rend(); ++it)
+    for (auto it = nodes.rbegin(); it != nodes.rend(); ++it)
         (*it)->calculateBoundingSphere();
 
     // Read the camera dictionary and set the camera state
@@ -221,146 +220,28 @@ bool Scene::loadSceneInternal(const std::string& sceneDescriptionFilePath) {
         OsEng.interactionHandler().setCameraStateFromDictionary(cameraDictionary);
     }
 
-
-
-
-
     writePropertyDocumentation(sceneDescriptionFilePath);
     writeKeyboardDocumentation(sceneDescriptionFilePath);
 
-
-
     OsEng.runPostInitializationScripts(sceneDescriptionFilePath);
-
     OsEng.enableBarrier();
 
     return true;
 }
 
 SceneGraphNode& Scene::root() const {
-    return _graph.rootNode();
+    return *_rootNode;
 }
     
 SceneGraphNode* Scene::sceneGraphNode(const std::string& name) const {
-    return _graph.sceneGraphNode(name);
+    return _rootNode->find(name);
 }
 
 std::vector<SceneGraphNode*> Scene::allSceneGraphNodes() const {
-    return _graph.nodes();
+    return _rootNode->allNodes();
 }
 
-SceneGraph& Scene::sceneGraph() {
-    return _graph;
-}
-
-const std::string & Scene::sceneName() const {
-    return _sceneName;
-}
-
-void Scene::setSceneName(const std::string & sceneName) {
-    _sceneName = sceneName;
-}
-
-void Scene::updateSceneName(const Camera* camera) {
-    _sceneName = currentSceneName(camera, _sceneName);
-}
-
-/*
-std::string Scene::currentSceneName(const Camera* camera, std::string _nameOfScene) const {
-    if (camera == nullptr || _nameOfScene.empty()) {
-        LERROR("Camera object not allocated or empty name scene passed to the method.");
-        return _mostProbableSceneName; // This choice is controversal. Better to avoid a crash.
-    }
-    const SceneGraphNode* node = sceneGraphNode(_nameOfScene);
-
-    if (node == nullptr) {
-        std::stringstream ss;
-        ss << "There is no scenegraph node with name: " << _nameOfScene;
-        LERROR(ss.str());
-        return _mostProbableSceneName;
-    }
-
-    //Starts in the last scene we kow we were in, checks if we are still inside, if not check parent, continue until we are inside a scene
-    double _distance = DistanceToObject::ref().distanceCalc(camera->positionVec3(), 
-        node->dynamicWorldPosition().dvec3());
-
-    // Traverses the scenetree to find a scene we are within. 
-    while (_distance > node->sceneRadius()) {
-        if (node->parent() != nullptr) {
-            node = node->parent();
-            _distance = DistanceToObject::ref().distanceCalc(
-                camera->positionVec3(),
-                node->dynamicWorldPosition().dvec3());
-        } else {
-            break;
-        }
-    }
-
-    _nameOfScene = node->name();
-    std::vector<SceneGraphNode*> childrenScene(node->children());
-    size_t nrOfChildren = childrenScene.size();
-
-    //Check if we are inside a child scene of the current scene. 
-    bool outsideAllChildScenes = false;
-
-    while (!childrenScene.empty() && !outsideAllChildScenes) {
-        for (size_t i = 0; i < nrOfChildren; ++i) {
-            SceneGraphNode * childNode = childrenScene.at(i);
-            double _childDistance      = DistanceToObject::ref().distanceCalc(camera->positionVec3(),
-                childNode->dynamicWorldPosition().dvec3());            
-            
-            // Set the new scene that we are inside the scene radius.
-            if (_childDistance < childNode->sceneRadius()) {
-                node          = childNode;
-                childrenScene = node->children();
-                _nameOfScene  = node->name();
-                nrOfChildren  = childrenScene.size();
-                break;
-            }
-
-            if (nrOfChildren - 1 == i) {
-                outsideAllChildScenes = true;
-            }
-        }
-    }
-
-    return _nameOfScene;
-}
-const glm::dvec3 Scene::currentDisplacementPosition(const std::string & cameraParent,
-    const SceneGraphNode* target) const {
-    if (target != nullptr) {
-
-        std::vector<SceneGraphNode*> cameraPath;
-        std::vector<SceneGraphNode*> targetPath;
-
-        SceneGraphNode* cameraParentNode = sceneGraphNode(cameraParent);
-        SceneGraphNode* commonParentNode;
-        std::vector<SceneGraphNode*> commonParentPath;
-
-        //Find common parent for camera and object
-        std::string commonParentName(cameraParent);  // initiates to camera parent in case 
-                                                     // other path is not found
-        cameraPath = pathTo(cameraParentNode);
-        targetPath = pathTo(sceneGraphNode(target->name()));
-
-        commonParentNode = findCommonParentNode(cameraParent, target->name());
-        commonParentPath = pathTo(commonParentNode);
-
-        //Find the path from the camera to the common parent
-
-        glm::dvec3 collectorCamera(pathCollector(cameraPath, commonParentNode->name(), true));
-        glm::dvec3 collectorTarget(pathCollector(targetPath, commonParentNode->name(), false));
-
-        return collectorTarget + collectorCamera;
-    }
-    else {
-        LERROR("Target scenegraph node is null.");
-        return glm::dvec3(0.0, 0.0, 0.0);
-    }
-}*/
-
-
-void Scene::writePropertyDocumentation(const std::string& sceneFilename) {
+void Scene::writePropertyDocumentation(const std::string& sceneDescriptionFilePath) {
 
     // If a PropertyDocumentationFile was specified, generate it now
     const std::string KeyPropertyDocumentationType =
@@ -390,9 +271,9 @@ void Scene::writePropertyDocumentation(const std::string& sceneFilename) {
 
         using properties::Property;
         _rootNode->traverse([&file](auto& node) {
-            std::vector<Property*> properties = node->propertiesRecursive();
+            std::vector<Property*> properties = node.propertiesRecursive();
             if (!properties.empty()) {
-                file << node->name() << std::endl;
+                file << node.name() << std::endl;
 
                 for (Property* p : properties) {
                     file << p->fullyQualifiedIdentifier() << ":   " <<
@@ -515,7 +396,7 @@ void Scene::writePropertyDocumentation(const std::string& sceneFilename) {
             << "\t<script>\n"
             << "var propertyOwners = JSON.parse('" << jsonString << "');\n"
             << "var version = [" << OPENSPACE_VERSION_MAJOR << ", " << OPENSPACE_VERSION_MINOR << ", " << OPENSPACE_VERSION_PATCH << "];\n"
-            << "var sceneFilename = '" << sceneFilename << "';\n"
+            << "var sceneFilename = '" << sceneDescriptionFilePath << "';\n"
             << "var generationTime = '" << Time::now().ISO8601() << "';\n"
             << jsContent << "\n"
             << "\t</script>\n"
@@ -530,7 +411,7 @@ void Scene::writePropertyDocumentation(const std::string& sceneFilename) {
 
         file << html.str();
     } else {
-        LERROR("Undefined type '" << type << "' for Property documentation");
+        LERROR("Undefined type '" << propertyDocumentationType << "' for Property documentation");
     }
 }
 

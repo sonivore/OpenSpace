@@ -224,7 +224,7 @@ void ABufferRenderer::update() {
 }
 
     
-void ABufferRenderer::render(float blackoutFactor, bool doPerformanceMeasurements) {
+void ABufferRenderer::render(Camera& camera, float blackoutFactor, bool doPerformanceMeasurements) {
     PerfMeasure("ABufferRenderer::render");
 
 
@@ -356,14 +356,6 @@ void ABufferRenderer::postRaycast(const RaycasterTask& raycasterTask) {
     const RaycastData& raycastData = _raycastData[&raycaster];
 
     raycaster.postRaycast(raycastData, *_resolveProgram);
-}
-
-void ABufferRenderer::setScene(Scene* scene) {
-    _scene = scene;
-}
-
-void ABufferRenderer::setCamera(Camera* camera) {
-    _camera = camera;
 }
 
 void ABufferRenderer::setResolution(glm::ivec2 res) {

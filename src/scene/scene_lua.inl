@@ -268,8 +268,13 @@ int removeSceneGraphNode(lua_State* L) {
         return 0;
     }
 
+    SceneGraphNode* parent = node->parent();
+    if (!parent) {
+        LERRORC("removeSceneGraphNode", "Cannot remove scene graph root");
+    }
+
     node->deinitialize();
-    node->parent().removeChild(node);
+    parent->removeChild(*node);
 
     return 1;
 }

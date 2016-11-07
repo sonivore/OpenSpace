@@ -36,20 +36,19 @@ namespace openspace {
 
 class Rotation : public properties::PropertyOwner {
 public:
-    static Rotation* createFromDictionary(const ghoul::Dictionary& dictionary);
+    static std::unique_ptr<Rotation> createFromDictionary(const ghoul::Dictionary& dictionary);
 
     Rotation(const ghoul::Dictionary& dictionary);
     virtual ~Rotation();
     virtual bool initialize();
-    const glm::dmat3& matrix() const;
+    virtual const glm::dmat3& matrix() const = 0;
+    virtual const glm::dmat3& inverseMatrix() const;
     virtual void update(const UpdateData& data);
 
     static openspace::Documentation Documentation();
 
 protected:
     Rotation();
-
-    glm::dmat3 _matrix;
 };
 
 }  // namespace openspace

@@ -65,13 +65,11 @@ public:
     void updateResolution();
     void updateRaycastData();
     
-    void setCamera(Camera* camera) override;
-    void setScene(Scene* scene) override;
     void setResolution(glm::ivec2 res) override;
     void setNAaSamples(int nAaSamples) override;
 
     void update() override;
-    void render(float blackoutFactor, bool doPerformanceMeasurements) override;
+    void render(Camera& camera, float blackoutFactor, bool doPerformanceMeasurements) override;
     
     /**
      * Update render data
@@ -102,7 +100,6 @@ private:
     bool _dirtyResolution;
 
     Camera* _camera;
-    Scene* _scene;
     glm::vec2 _resolution;
     int _nAaSamples;
 

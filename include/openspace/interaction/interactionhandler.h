@@ -124,7 +124,6 @@ private:
 
     // Properties
     properties::StringProperty _focus;
-    properties::StringProperty _coordinateSystem;
 
     properties::BoolProperty _rotationalFriction;
     properties::BoolProperty _horizontalFriction;

@@ -53,10 +53,7 @@ namespace {
 namespace openspace {
 
 FramebufferRenderer::FramebufferRenderer()
-    : _camera(nullptr)
-    , _scene(nullptr)
-    , _resolution(glm::vec2(0)) {
-}
+    : _resolution(glm::vec2(0)) {}
 
 FramebufferRenderer::~FramebufferRenderer() {}
 
@@ -309,7 +306,7 @@ void FramebufferRenderer::updateRaycastData() {
     _dirtyRaycastData = false;
 }
 
-void FramebufferRenderer::render(float blackoutFactor, bool doPerformanceMeasurements) {
+void FramebufferRenderer::render(Camera& camera, float blackoutFactor, bool doPerformanceMeasurements) {
     std::unique_ptr<performance::PerformanceMeasurement> perf;
     if (doPerformanceMeasurements) {
         perf = std::make_unique<performance::PerformanceMeasurement>(
@@ -318,8 +315,6 @@ void FramebufferRenderer::render(float blackoutFactor, bool doPerformanceMeasure
         );
     }
     
-    if (!_scene)
-        return;
     if (!_camera)
         return;
 
@@ -337,14 +332,16 @@ void FramebufferRenderer::render(float blackoutFactor, bool doPerformanceMeasure
     glBindFramebuffer(GL_FRAMEBUFFER, _mainFramebuffer);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    Scene* scene = camera.scene();
+    
     data.renderBinMask = static_cast<int>(Renderable::RenderBin::Background);
-    _scene->render(data, tasks);
+    scene->render(data, tasks);
     data.renderBinMask = static_cast<int>(Renderable::RenderBin::Opaque);
-    _scene->render(data, tasks);
+    scene->render(data, tasks);
     data.renderBinMask = static_cast<int>(Renderable::RenderBin::Transparent);
-    _scene->render(data, tasks);
+    scene->render(data, tasks);
     data.renderBinMask = static_cast<int>(Renderable::RenderBin::Overlay);
-    _scene->render(data, tasks);
+    scene->render(data, tasks);
 
     for (const RaycasterTask& raycasterTask : tasks.raycasterTasks) {
         VolumeRaycaster* raycaster = raycasterTask.raycaster;
@@ -437,14 +434,6 @@ void FramebufferRenderer::render(float blackoutFactor, bool doPerformanceMeasure
     glBindVertexArray(0);
 
     _resolveProgram->deactivate();
-}
-
-void FramebufferRenderer::setScene(Scene* scene) {
-    _scene = scene;
-}
-
-void FramebufferRenderer::setCamera(Camera* camera) {
-    _camera = camera;
 }
 
 void FramebufferRenderer::setResolution(glm::ivec2 res) {

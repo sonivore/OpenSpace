@@ -36,10 +36,6 @@
 #include <ghoul/opengl/programobject.h>
 #include <ghoul/opengl/shaderobject.h>
 
-#include <modules/base/translation/statictranslation.h>
-#include <modules/base/rotation/staticrotation.h>
-#include <modules/base/scale/staticscale.h>
-
 #include <openspace/engine/openspaceengine.h>
 #include <openspace/util/factorymanager.h>
 #include <openspace/util/setscene.h>
@@ -150,9 +146,9 @@ std::unique_ptr<SceneGraphNode> SceneGraphNode::createFromDictionary(const ghoul
 
 SceneGraphNode::SceneGraphNode()
     : _parent()
-    , _translation(std::make_unique<StaticTranslation>())
-    , _rotation(std::make_unique<StaticRotation>())
-    , _scale(std::make_unique<StaticScale>())
+    , _translation(nullptr)
+    , _rotation(nullptr)
+    , _scale(nullptr)
     , _performanceRecord({0, 0, 0})
     , _renderable(nullptr)
     , _boundingSphereVisible(false)
@@ -309,7 +305,7 @@ void SceneGraphNode::addChild(std::unique_ptr<SceneGraphNode> child) {
 
 void SceneGraphNode::removeChild(SceneGraphNode& child) {
     auto foundChild = std::find_if(_children.begin(), _children.end(), [&child] (auto& c) {
-        return *child == c->get();
+        return &child == c.get();
     });
     if (foundChild != _children.end()) {
         _children.erase(foundChild);
@@ -326,28 +322,40 @@ void SceneGraphNode::setAttachmentRadius(double sceneRadius) {
 
 glm::dvec3 SceneGraphNode::translation() const
 {
+    if (!_translation) {
+        return glm::dvec3(0.0);
+    }
     return _translation->position();
 }
 
 const glm::mat3& SceneGraphNode::rotation() const
 {
+    if (!_rotation) {
+        return glm::dmat3(1.0);
+    }
     return _rotation->matrix();
 }
 
 const glm::mat3& SceneGraphNode::inverseRotation() const
 {
-    return _rotation->matrix();
+    if (!_rotation) {
+        return glm::dmat3(1.0);
+    }
+    return glm::inverse(_rotation->matrix());
 }
 
 
 double SceneGraphNode::scale() const
 {
+    if (!_scale) {
+        return 1.0;
+    }
     return _scale->scaleValue();
 }
 
 int SceneGraphNode::depth() const {
     int d = 0;
-    for (const SceneGraphNode* current = this; current != nullptr; current = &current->parent(), d++);
+    for (const SceneGraphNode* current = this; current != nullptr; current = current->parent(), d++);
     return d;
 }
 
@@ -376,7 +384,7 @@ TransformData SceneGraphNode::relativeTransform(const SceneGraphNode& observer) 
             thisScale *= thisAncestor->scale();
             thisRotation *= thisAncestor->rotation();
 
-            thisAncestor = &thisAncestor->parent();
+            thisAncestor = thisAncestor->parent();
         }
     } else {
         // The reference node is deeper down in scene graph than this node
@@ -388,7 +396,7 @@ TransformData SceneGraphNode::relativeTransform(const SceneGraphNode& observer) 
             observerTranslation /= observerAncestor->scale();
             observerTranslation = observerAncestor->inverseRotation() * observerTranslation;
 
-            observerAncestor = &observerAncestor->parent();
+            observerAncestor = observerAncestor->parent();
         }
     }
 
@@ -407,8 +415,8 @@ TransformData SceneGraphNode::relativeTransform(const SceneGraphNode& observer) 
         observerTranslation /= observerAncestor->scale();
         observerTranslation = observerAncestor->inverseRotation() * observerTranslation;
 
-        thisAncestor = &thisAncestor->parent();
-        observerAncestor = &observerAncestor->parent();
+        thisAncestor = thisAncestor->parent();
+        observerAncestor = observerAncestor->parent();
     }
 
     TransformData td;
@@ -420,11 +428,8 @@ TransformData SceneGraphNode::relativeTransform(const SceneGraphNode& observer) 
 
 
 
-SceneGraphNode& SceneGraphNode::parent() const {
-    if (_parent == nullptr) {
-        throw SceneGraph::SceneGraphError("The root node has no parent");
-    }
-    return *_parent;
+SceneGraphNode* SceneGraphNode::parent() const {
+    return _parent;
 }
 
 const std::vector<std::unique_ptr<SceneGraphNode>>& SceneGraphNode::children() const{

@@ -66,7 +66,7 @@ namespace openspace {
         static const glm::dvec3 _VIEW_DIRECTION_CAMERA_SPACE;
         static const glm::dvec3 _LOOKUP_VECTOR_CAMERA_SPACE;
     public:
-        Camera(SceneGraphNode& parent);
+        Camera(Scene& scene, SceneGraphNode& parent);
         Camera(const Camera& o);
         ~Camera();
 
@@ -85,6 +85,8 @@ namespace openspace {
         const glm::dvec3& lookUpVectorCameraSpace() const;
         const SceneGraphNode& parent() const;
         const glm::dquat& rotationQuaternion() const;
+
+        Scene* scene() const;
 
         /**
          * Return a matrix transforming an object from node's
@@ -106,12 +108,12 @@ namespace openspace {
          * system to the camera coordinate system
          */
         const glm::mat4& cameraMatrix() const;
-
+        
         /**
          * Return a matrix transforming an object from node's
          * coordinate system to the camera rig's coordinate system
          */
-        const glm::mat4& cameraRigMatrix(const SceneGraphNode& node);
+        const glm::mat4& cameraRigMatrix(const SceneGraphNode& node) const;
 
         /**
          * Return a matrix transforming an object from the camera rig coordinate
@@ -160,6 +162,7 @@ namespace openspace {
         SyncData<glm::dvec3> _position;
         SyncData<glm::dquat> _rotation;
 
+        Scene* _scene;
         SceneGraphNode* _parent;
 
         // Cached data

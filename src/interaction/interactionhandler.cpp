@@ -72,7 +72,6 @@ namespace interaction {
 // InteractionHandler
 InteractionHandler::InteractionHandler()
     : _focus("focus", "Focus", "")
-    , _coordinateSystem("coordinateSystem", "Coordinate System", "")
     , _rotationalFriction("rotationalFriction", "Rotational Friction", true)
     , _horizontalFriction("horizontalFriction", "Horizontal Friction", true)
     , _verticalFriction("verticalFriction", "Vertical Friction", true)
@@ -91,9 +90,6 @@ InteractionHandler::InteractionHandler()
         resetCameraDirection();
     });
 
-    _coordinateSystem.onChange([this]() {
-        OsEng.renderEngine().changeViewPoint(_coordinateSystem.value());
-    });
 
     // Create the interactionModes
     _inputState = std::make_unique<InputState>();
@@ -137,7 +133,6 @@ InteractionHandler::InteractionHandler()
 
     // Add the properties
     addProperty(_focus);
-    addProperty(_coordinateSystem);
 
     addProperty(_rotationalFriction);
     addProperty(_horizontalFriction);

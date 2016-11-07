@@ -86,7 +86,7 @@ public:
 
     TransformData relativeTransform(const SceneGraphNode& reference) const;
 
-    SceneGraphNode& parent() const;
+    SceneGraphNode* parent() const;
     const std::vector<std::unique_ptr<SceneGraphNode>>& children() const;
     std::vector<SceneGraphNode*> allNodes();
 

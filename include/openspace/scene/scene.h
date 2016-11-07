@@ -126,6 +126,7 @@ private:
 
     std::string _sceneGraphToLoad;
     std::unique_ptr<SceneGraphNode> _rootNode;
+    std::vector<std::unique_ptr<Camera>> _cameras;
 };
 
 } // namespace openspace

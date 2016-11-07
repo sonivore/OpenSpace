@@ -35,6 +35,8 @@
 
 
 #include <openspace/performance/performancemanager.h>
+#include <openspace/rendering/raycastermanager.h>
+#include <openspace/rendering/renderer.h>
 
 namespace ghoul {
 namespace fontrendering {
@@ -54,8 +56,6 @@ class Camera;
 class SyncBuffer;
 
 class Scene;
-class Renderer;
-class RaycasterManager;
 class ScreenLog;
 class ScreenSpaceRenderable;
 
@@ -83,15 +83,16 @@ public:
     static const std::vector<FrametimeType> FrametimeTypes;
 
     RenderEngine();
-    ~RenderEngine();
+    ~RenderEngine() = default;
     
     bool initialize();
     bool deinitialize();
 
-    void setSceneGraph(Scene* sceneGraph);
-    Scene* scene();
-
+    void setScene(Scene* scene);
+    Scene* scene() const;
+    void setCamera(Camera* camera);
     Camera* camera() const;
+
     Renderer* renderer() const;
     RendererImplementation rendererImplementation() const;
     RaycasterManager& raycasterManager();
@@ -105,8 +106,6 @@ public:
     void updateRenderer();
     void updateScreenSpaceRenderables();
     void render(const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix);
-
-    void updateDynamicOrigin();
 
     void renderScreenLog();
     void renderShutdownInformation(float timer, float fullTime);
@@ -184,9 +183,6 @@ public:
      */
     static scripting::LuaLibrary luaLibrary();
 
-    // This is a temporary method to change the origin of the coordinate system ---abock
-    void changeViewPoint(std::string origin);
-
     // Temporary fade functionality
     void startFading(int direction, float fadeDuration);
 
@@ -212,9 +208,9 @@ private:
 
     void renderInformation();
 
-    Camera* _mainCamera;
-    Scene* _sceneGraph;
-    RaycasterManager* _raycasterManager;
+    Scene* _scene;
+    Camera* _camera;
+    std::unique_ptr<RaycasterManager> _raycasterManager;
 
     std::unique_ptr<performance::PerformanceManager> _performanceManager;
     std::unique_ptr<Renderer> _renderer;

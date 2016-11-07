@@ -54,6 +54,7 @@ class SettingsEngine;
 class TimeManager;
 class SyncEngine;
 class ParallelConnection;
+class Scene;
 
 namespace interaction { class InteractionHandler; }
 namespace gui { class GUI; }
@@ -92,6 +93,7 @@ public:
     ghoul::fontrendering::FontManager& fontManager();
     DownloadManager& downloadManager();
     TimeManager& timeManager();
+    Scene* scene();
 
 #ifdef OPENSPACE_MODULE_ONSCREENGUI_ENABLED
     gui::GUI& gui();
@@ -161,6 +163,7 @@ private:
     std::unique_ptr<ParallelConnection> _parallelConnection;
     std::unique_ptr<WindowWrapper> _windowWrapper;
     std::unique_ptr<ghoul::fontrendering::FontManager> _fontManager;
+    std::unique_ptr<Scene> _scene;
 
     // Others
     std::unique_ptr<properties::PropertyOwner> _globalPropertyNamespace;

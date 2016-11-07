@@ -135,9 +135,6 @@ bool SceneGraph::loadFromFile(const std::string& sceneDescription) {
     if (!success)
         // There are no modules that are loaded
         return true;
-    
-//    lua_State* state = ghoul::lua::createNewLuaState();
-//    OsEng.scriptEngine().initializeLuaState(state);
 
     // Above we generated a ghoul::Dictionary from the scene file; now we run the scene
     // file again to load any variables defined inside into the state that is passed to
@@ -405,18 +402,6 @@ bool SceneGraph::loadFromFile(const std::string& sceneDescription) {
     return true;
 }
 
-bool SceneGraph::nodeIsDependentOnRoot(SceneGraphNodeInternal* node) {
-    if (node->node->name() == SceneGraphNode::RootNodeName)
-        return true;
-    else {
-        for (SceneGraphNodeInternal* n : node->outgoingEdges) {
-            bool dep = nodeIsDependentOnRoot(n);
-            if (dep)
-                return true;
-        }
-        return false;
-    }
-}
 
 bool SceneGraph::sortTopologically() {
     if (_nodes.empty())
