@@ -22,68 +22,38 @@
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                         *
  ****************************************************************************************/
 
-#ifndef __OPENSPACE_CORE___INTERACTIONHANDLER___H__
-#define __OPENSPACE_CORE___INTERACTIONHANDLER___H__
+#ifndef __OPENSPACE_CORE___KEYBINDINGMANAGER___H__
+#define __OPENSPACE_CORE___KEYBINDINGMANAGER___H__
 
-#include <openspace/interaction/interactionmode.h>
-#include <openspace/network/parallelconnection.h>
-#include <openspace/properties/propertyowner.h>
-#include <openspace/properties/stringproperty.h>
-#include <openspace/properties/scalar/boolproperty.h>
-#include <openspace/properties/scalar/floatproperty.h>
+#include <openspace/engine/openspaceengine.h>
 #include <openspace/util/mouse.h>
 #include <openspace/util/keys.h>
-
+#include <openspace/scripting/lualibrary.h>
 #include <ghoul/misc/boolean.h>
-
-#include <list>
-
-#include <mutex>
+#include <ghoul/logging/logmanager.h>
+#include <openspace/interaction/keyboardmouseeventconsumer.h>
 
 namespace openspace {
-
-class Camera;
-class SceneGraphNode;
-
 namespace interaction {
 
-
-class InteractionHandler : public properties::PropertyOwner
-{
+class KeyBindingManager : public KeyboardMouseEventConsumer {
 public:
-    InteractionHandler();
-    ~InteractionHandler();
+    KeyBindingManager() = default;
+    ~KeyBindingManager() = default;
 
-    void initialize();
-    void deinitialize();
-
-    // Mutators
-    void setFocusNode(SceneGraphNode* node);
-    void setCamera(Camera* camera);
-    void resetCameraDirection();
-
-    // Interaction mode setters
-    void setCameraStateFromDictionary(const ghoul::Dictionary& cameraDict);
-    void setInteractionMode(const std::string& interactionModeKey);
-    
-    void goToChunk(int x, int y, int level);
-    void goToGeo(double latitude, double longitude);
-    
-    void addKeyframe(const datamessagestructures::CameraKeyframe &kf);
-    void clearKeyframes();
-
-    void lockControls();
-    void unlockControls();
-
-    //void update(double deltaTime);
-    void updateCamera(double deltaTime);
-    void updateInputStates(double timeSinceLastUpdate);    
-
-    // Accessors
-    ghoul::Dictionary getCameraStateDictionary();
-    SceneGraphNode* const focusNode() const;
-    Camera* const camera() const;
-    const InputState& inputState() const;
+    void resetKeyBindings();
+    void bindKeyLocal(
+        Key key,
+        KeyModifier modifier,
+        std::string luaCommand,
+        std::string documentation = ""
+    );
+    void bindKey(
+        Key key,
+        KeyModifier modifier,
+        std::string luaCommand,
+        std::string documentation = ""
+    );
 
     /**
     * Returns the Lua library that contains all Lua functions available to affect the
@@ -95,13 +65,8 @@ public:
     static scripting::LuaLibrary luaLibrary();
 
     // Callback functions 
-    void keyboardCallback(Key key, KeyModifier modifier, KeyAction action);
-    void mouseButtonCallback(MouseButton button, MouseAction action);
-    void mousePositionCallback(double x, double y);
-    void mouseScrollWheelCallback(double pos);
-
-    void saveCameraStateToFile(const std::string& filepath);
-    void restoreCameraStateFromFile(const std::string& filepath);
+    bool handleKeyboard(Key key, KeyModifier modifier, KeyAction action) override;
+    void writeKeyboardDocumentation(const std::string& type, const std::string& file);
 
 private:
     using Synchronized = ghoul::Boolean;
@@ -112,32 +77,10 @@ private:
         std::string documentation;
     };
 
-    void setInteractionMode(std::shared_ptr<InteractionMode> interactionMode);
-
-    bool _cameraUpdatedFromScript = false;
-
     std::multimap<KeyWithModifier, KeyInformation> _keyLua;
-
-    std::unique_ptr<InputState> _inputState;
-    Camera* _camera;
-
-    std::shared_ptr<InteractionMode> _currentInteractionMode;
-
-    std::map<std::string, std::shared_ptr<InteractionMode>> _interactionModes;
-    std::shared_ptr<OrbitalInteractionMode::MouseStates> _mouseStates;
-
-    // Properties
-    properties::StringProperty _origin;
-
-    properties::BoolProperty _rotationalFriction;
-    properties::BoolProperty _horizontalFriction;
-    properties::BoolProperty _verticalFriction;
-
-    properties::FloatProperty _sensitivity;
-    properties::FloatProperty _rapidness;
 };
 
 } // namespace interaction
 } // namespace openspace
 
-#endif // __OPENSPACE_CORE___INTERACTIONHANDLER___H__
+#endif // __OPENSPACE_CORE___KEYBINDINGMANAGER___H__

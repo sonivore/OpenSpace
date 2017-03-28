@@ -130,7 +130,7 @@ void LuaConsole::deinitialize() {
     OsEng.parallelConnection().connectionEvent()->unsubscribe("luaConsole");
 }
 
-bool LuaConsole::keyboardCallback(Key key, KeyModifier modifier, KeyAction action) {
+bool LuaConsole::handleKeyboard(Key key, KeyModifier modifier, KeyAction action) {
     if (action != KeyAction::Press && action != KeyAction::Repeat) {
         return false;
     }
@@ -360,13 +360,13 @@ bool LuaConsole::keyboardCallback(Key key, KeyModifier modifier, KeyAction actio
     return true;
 }
 
-void LuaConsole::charCallback(unsigned int codepoint, KeyModifier modifier) {
+bool LuaConsole::handleCharacter(unsigned int codepoint, KeyModifier modifier) {
     if (!_isVisible) {
-        return;
+        return false;
     }
 
     if (codepoint == static_cast<unsigned int>(CommandInputButton)) {
-        return;
+        return false;
     }
 
 #ifndef WIN32
@@ -375,16 +375,17 @@ void LuaConsole::charCallback(unsigned int codepoint, KeyModifier modifier) {
     const int codepoint_C = 99;
     const int codepoint_V = 118;
     if (modifierControl && (codepoint == codepoint_C || codepoint == codepoint_V)) {
-        return;
+        return false;
     }
 #endif
 
     // Disallow all non ASCII characters for now
     if (codepoint > 0x7f) {
-        return;
+        return false;
     }
 
     addToCommand(std::string(1, static_cast<const char>(codepoint)));
+    return true;
 }
 
 void LuaConsole::render() {

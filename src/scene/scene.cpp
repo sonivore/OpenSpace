@@ -29,6 +29,7 @@
 #include <openspace/engine/openspaceengine.h>
 #include <openspace/engine/wrapper/windowwrapper.h>
 #include <openspace/interaction/interactionhandler.h>
+#include <openspace/interaction/keybindingmanager.h>
 #include <openspace/query/query.h>
 #include <openspace/rendering/renderengine.h>
 #include <openspace/scene/scenegraphnode.h>
@@ -128,7 +129,7 @@ void Scene::update(const UpdateData& data) {
             );
             
             if (hasType && hasFile) {
-                OsEng.interactionHandler().writeKeyboardDocumentation(type, file);
+                OsEng.keyBindingManager().writeKeyboardDocumentation(type, file);
             }
 
             LINFO("Loaded " << _sceneGraphToLoad);

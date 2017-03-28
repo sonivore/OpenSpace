@@ -22,34 +22,44 @@
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                         *
  ****************************************************************************************/
 
-#ifndef __OPENSPACE_MODULE_ONSCREENGUI___ONSCREENGUIMODULE___H__
-#define __OPENSPACE_MODULE_ONSCREENGUI___ONSCREENGUIMODULE___H__
+#ifndef __OPENSPACE_CORE___KEYBOARDMOUSEKEYBOARDMOUSEEVENTCONSUMER___H__
+#define __OPENSPACE_CORE___KEYBOARDMOUSEKEYBOARDMOUSEEVENTCONSUMER___H__
 
-#include <openspace/util/openspacemodule.h>
 #include <openspace/util/mouse.h>
 #include <openspace/util/keys.h>
 
-#include <modules/onscreengui/include/gui.h>
-
 namespace openspace {
-    
-class OnScreenGUIModule : public OpenSpaceModule {
-public:
-    OnScreenGUIModule();
+namespace interaction {
 
-    void internalInitialize() override;
-    void internalDeinitialize() override;
-    void initializeGL() override;
-    void deinitializeGL() override;
-    void draw() override;
-    bool handleKeyboard(Key key, KeyModifier mod, KeyAction action) override;
-    bool handleCharacter(unsigned int codepoint, KeyModifier modifier) override;
-    bool handleMouseButton(MouseButton button, MouseAction action) override;
-    bool handleMouseScroll(double position) override;
-    
-    static gui::GUI gui;
+class KeyboardMouseEventConsumer {
+public:
+    /**
+     * Handle keyboard event
+     */
+    virtual bool handleKeyboard(Key key, KeyModifier mod, KeyAction action) { return false; };
+
+    /**
+     * Handle character event
+     */
+    virtual bool handleCharacter(unsigned int codepoint, KeyModifier modifier) { return false; };
+
+    /**
+     * Handle mouse button event
+     */
+    virtual bool handleMouseButton(MouseButton button, MouseAction action) { return false; };
+
+    /**
+     * Handle mouse position 
+     */
+    virtual bool handleMousePosition(double x, double y) { return false;  }
+
+    /**
+     * Handle mouse scroll
+     */
+    virtual bool handleMouseScroll(double pos) { return false; }
 };
 
-} // namespace openspace
+}
+}
 
-#endif // __OPENSPACE_MODULE_ONSCREENGUI___ONSCREENGUIMODULE___H__
+#endif // __OPENSPACE_CORE___KEYBOARDMOUSEKEYBOARDMOUSEEVENTCONSUMER___H__

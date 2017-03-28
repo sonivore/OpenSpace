@@ -22,34 +22,48 @@
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                         *
  ****************************************************************************************/
 
-#ifndef __OPENSPACE_MODULE_ONSCREENGUI___ONSCREENGUIMODULE___H__
-#define __OPENSPACE_MODULE_ONSCREENGUI___ONSCREENGUIMODULE___H__
+#ifndef __OPENSPACE_CORE___KEYBOARDMOUSEINTERACTIONHANDLER___H__
+#define __OPENSPACE_CORE___KEYBOARDMOUSEINTERACTIONHANDLER___H__
 
-#include <openspace/util/openspacemodule.h>
+#include <openspace/properties/propertyowner.h>
+#include <openspace/properties/stringproperty.h>
+#include <openspace/properties/scalar/boolproperty.h>
+#include <openspace/properties/scalar/floatproperty.h>
 #include <openspace/util/mouse.h>
 #include <openspace/util/keys.h>
 
-#include <modules/onscreengui/include/gui.h>
+#include <ghoul/misc/boolean.h>
+
+#include <list>
 
 namespace openspace {
-    
-class OnScreenGUIModule : public OpenSpaceModule {
-public:
-    OnScreenGUIModule();
 
-    void internalInitialize() override;
-    void internalDeinitialize() override;
-    void initializeGL() override;
-    void deinitializeGL() override;
-    void draw() override;
-    bool handleKeyboard(Key key, KeyModifier mod, KeyAction action) override;
-    bool handleCharacter(unsigned int codepoint, KeyModifier modifier) override;
-    bool handleMouseButton(MouseButton button, MouseAction action) override;
-    bool handleMouseScroll(double position) override;
+namespace interaction {
+
+class KeyboardMouseEventConsumer;
+
+class KeyboardMouseInteractionHandler : public properties::PropertyOwner {
+public:
+    KeyboardMouseInteractionHandler() = default;
+    ~KeyboardMouseInteractionHandler() = default;
     
-    static gui::GUI gui;
+    // Mutators
+    void addEventConsumer(KeyboardMouseEventConsumer* consumer, int priority);
+    void removeEventConsumer(KeyboardMouseEventConsumer* consumer);
+    void setPriority(KeyboardMouseEventConsumer* consumer, int priority);
+
+    // Callback functions 
+    bool handleKeyboard(Key key, KeyModifier modifier, KeyAction action);
+    bool handleCharacter(unsigned int codepoint, KeyModifier modifier);
+    bool handleMouseButton(MouseButton button, MouseAction action);
+    bool handleMousePosition(double x, double y);
+    bool handleMouseScroll(double pos);
+
+private:
+    std::multimap<int, KeyboardMouseEventConsumer*> _eventConsumers;
 };
 
+} // namespace interaction
 } // namespace openspace
 
-#endif // __OPENSPACE_MODULE_ONSCREENGUI___ONSCREENGUIMODULE___H__
+#endif // __OPENSPACE_CORE___KEYBOARDMOUSEINTERACTIONHANDLER___H__

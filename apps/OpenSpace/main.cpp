@@ -153,8 +153,8 @@ void mainPostSyncPreDrawFunc() {
     LTRACE("main::postSynchronizationPreDraw(end)");
 }
 
-void mainRenderFunc() {
-    LTRACE("main::mainRenderFunc(begin)");
+void mainDrawFunc() {
+    LTRACE("main::mainDrawFunc(begin)");
 
     glm::mat4 viewMatrix =
         SgctEngine->getCurrentViewMatrix() *
@@ -176,11 +176,11 @@ void mainRenderFunc() {
 #endif
 
     if (SgctEngine->isMaster()) {
-        OsEng.render(viewMatrix, projectionMatrix);
+        OsEng.draw(viewMatrix, projectionMatrix);
     }
     else {
         glm::mat4 sceneMatrix = SgctEngine->getModelMatrix();
-        OsEng.render(viewMatrix * sceneMatrix, projectionMatrix);
+        OsEng.draw(viewMatrix * sceneMatrix, projectionMatrix);
     }
     LTRACE("main::mainRenderFunc(end)");
 }
@@ -321,7 +321,7 @@ int main_main(int argc, char** argv) {
     SgctEngine->setInitOGLFunction(mainInitFunc);
     SgctEngine->setPreSyncFunction(mainPreSyncFunc);
     SgctEngine->setPostSyncPreDrawFunction(mainPostSyncPreDrawFunc);
-    SgctEngine->setDrawFunction(mainRenderFunc);
+    SgctEngine->setDrawFunction(mainDrawFunc);
     SgctEngine->setPostDrawFunction(mainPostDrawFunc);
     SgctEngine->setKeyboardCallbackFunction(mainKeyboardCallback);
     SgctEngine->setMouseButtonCallbackFunction(mainMouseButtonCallback);

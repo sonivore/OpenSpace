@@ -37,8 +37,12 @@
 #include <openspace/engine/wrapper/windowwrapper.h>
 #include <openspace/interaction/interactionhandler.h>
 #include <openspace/interaction/luaconsole.h>
+#include <openspace/interaction/keyboardmouseinteractionhandler.h>
+#include <openspace/interaction/keybindingmanager.h>
+#include <openspace/interaction/keyboardmousestate.h>
 #include <openspace/network/networkengine.h>
 #include <openspace/rendering/renderable.h>
+#include <openspace/scripting/scriptengine.h>
 #include <openspace/scripting/scriptscheduler.h>
 #include <openspace/scene/rotation.h>
 #include <openspace/scene/scale.h>
@@ -110,6 +114,7 @@ OpenSpaceEngine::OpenSpaceEngine(std::string programName,
                                  std::unique_ptr<WindowWrapper> windowWrapper)
     : _configurationManager(new ConfigurationManager)
     , _interactionHandler(new interaction::InteractionHandler)
+    , _keyboardMouseInteractionHandler(std::make_unique<interaction::KeyboardMouseInteractionHandler>())
     , _renderEngine(new RenderEngine)
     , _scriptEngine(new scripting::ScriptEngine)
     , _scriptScheduler(new scripting::ScriptScheduler)
@@ -119,6 +124,7 @@ OpenSpaceEngine::OpenSpaceEngine(std::string programName,
         programName, ghoul::cmdparser::CommandlineParser::AllowUnknownCommands::Yes
       ))
     , _console(new LuaConsole)
+    , _keyBindingManager(std::make_unique<interaction::KeyBindingManager>())
     , _moduleEngine(new ModuleEngine)
     , _settingsEngine(new SettingsEngine)
     , _timeManager(new TimeManager)
@@ -164,22 +170,6 @@ OpenSpaceEngine::OpenSpaceEngine(std::string programName,
     Time::initialize();
     TransformationManager::initialize();
 }
-
-//OpenSpaceEngine::~OpenSpaceEngine() {
-//    _globalPropertyNamespace = nullptr;
-//    _windowWrapper = nullptr;
-//    _parallelConnection = nullptr;
-//    _configurationManager = nullptr;
-//    _interactionHandler = nullptr;
-//    _renderEngine = nullptr;
-//    _scriptEngine = nullptr;
-//    _networkEngine = nullptr;
-//    _syncEngine = nullptr;
-//    _commandlineParser = nullptr;
-//    _console = nullptr;
-//    _moduleEngine = nullptr;
-//    _settingsEngine = nullptr;
-//}
 
 OpenSpaceEngine& OpenSpaceEngine::ref() {
     ghoul_assert(_engine, "OpenSpaceEngine not created");
@@ -332,22 +322,15 @@ void OpenSpaceEngine::create(int argc, char** argv,
         }
     }
 
-    // Register modules
-    _engine->_moduleEngine->initialize();
-
-    // After registering the modules, the documentations for the available classes
-    // can be added as well
-    for (OpenSpaceModule* m : _engine->_moduleEngine->modules()) {
-        for (auto&& doc : m->documentations()) {
-            DocEng.addDocumentation(doc);
-        }
-    }
-
     // Create the cachemanager
     FileSys.createCacheManager(
         absPath("${" + ConfigurationManager::KeyCache + "}"), CacheVersion
     );
     _engine->_console->initialize();
+    _engine->_keyboardMouseInteractionHandler->addEventConsumer(_engine->_keyboardMouseState.get(), 1);
+    _engine->_keyboardMouseInteractionHandler->addEventConsumer(_engine->_console.get(), 2);
+    _engine->_keyboardMouseInteractionHandler->addEventConsumer(_engine->_keyBindingManager.get(), 3);
+    
 
     // Register the provided shader directories
     ghoul::opengl::ShaderPreprocessor::addIncludePath(absPath("${SHADERS}"));
@@ -369,16 +352,25 @@ void OpenSpaceEngine::create(int argc, char** argv,
     sgctArguments.insert(sgctArguments.begin(), argv[0]);
     sgctArguments.insert(sgctArguments.begin() + 1, SgctConfigArgumentCommand);
     sgctArguments.insert(sgctArguments.begin() + 2, absPath(sgctConfigurationPath));
+
+    // Register modules
+    _engine->_moduleEngine->initialize();
+
+    // After registering the modules, the documentations for the available classes
+    // can be added as well
+    for (OpenSpaceModule* m : _engine->_moduleEngine->modules()) {
+        _engine->_keyboardMouseInteractionHandler->addEventConsumer(m, 0);
+        for (auto&& doc : m->documentations()) {
+            DocEng.addDocumentation(doc);
+        }
+    }
 }
 
 void OpenSpaceEngine::destroy() {
     LTRACE("OpenSpaceEngine::destroy(begin)");
-    for (const auto& func : _engine->_moduleCallbacks.deinitializeGL) {
-        func();
-    }
-
-    for (const auto& func : _engine->_moduleCallbacks.deinitialize) {
-        func();
+    for (auto& module : _engine->_moduleEngine->modules()) {
+        module->deinitializeGL();
+        _engine->_keyboardMouseInteractionHandler->removeEventConsumer(module);
     }
 
     _engine->_moduleEngine->deinitialize();
@@ -513,10 +505,6 @@ void OpenSpaceEngine::initialize() {
     _renderEngine->setGlobalBlackOutFactor(0.0);
     _renderEngine->startFading(1, 3.0);
     
-    for (const auto& func : _moduleCallbacks.initialize) {
-        func();
-    }
-
     // Run start up scripts
     runPreInitializationScripts(scenePath);
 
@@ -804,8 +792,8 @@ void OpenSpaceEngine::initializeGL() {
     // @CLEANUP:  Remove the return statement and replace with exceptions ---abock
     _renderEngine->initializeGL();
     
-    for (const auto& func : _moduleCallbacks.initializeGL) {
-        func();
+    for (auto& module : _engine->_moduleEngine->modules()) {
+        module->initializeGL();
     }
     
     LINFO("Finished initializing OpenGL");
@@ -858,8 +846,8 @@ void OpenSpaceEngine::preSynchronization() {
 
     }
     
-    for (const auto& func : _moduleCallbacks.preSync) {
-        func();
+    for (auto& module : _engine->_moduleEngine->modules()) {
+        module->preSync();
     }
     LTRACE("OpenSpaceEngine::preSynchronization(end)");
 }
@@ -890,8 +878,8 @@ void OpenSpaceEngine::postSynchronizationPreDraw() {
     // Step the camera using the current mouse velocities which are synced
     //_interactionHandler->updateCamera();
     
-    for (const auto& func : _moduleCallbacks.postSyncPreDraw) {
-        func();
+    for (auto& module : _engine->_moduleEngine->modules()) {
+        module->postSyncPreDraw();
     }
     
     // Testing this every frame has minimal impact on the performance --- abock
@@ -916,14 +904,14 @@ void OpenSpaceEngine::postSynchronizationPreDraw() {
     LTRACE("OpenSpaceEngine::postSynchronizationPreDraw(end)");
 }
 
-void OpenSpaceEngine::render(const glm::mat4& viewMatrix,
+void OpenSpaceEngine::draw(const glm::mat4& viewMatrix,
                              const glm::mat4& projectionMatrix)
 {
-    LTRACE("OpenSpaceEngine::render(begin)");
+    LTRACE("OpenSpaceEngine::draw(begin)");
     _renderEngine->render(viewMatrix, projectionMatrix);
     
-    for (const auto& func : _moduleCallbacks.render) {
-        func();
+    for (auto& module : _engine->_moduleEngine->modules()) {
+        module->draw();
     }
     
     // @CLEANUP:  Replace the two windows by a single call to whether a gui should be
@@ -938,7 +926,7 @@ void OpenSpaceEngine::render(const glm::mat4& viewMatrix,
         _renderEngine->renderShutdownInformation(_shutdown.timer, _shutdown.waitTime);
     }
 
-    LTRACE("OpenSpaceEngine::render(end)");
+    LTRACE("OpenSpaceEngine::draw(end)");
 }
 
 void OpenSpaceEngine::postDraw() {
@@ -946,8 +934,8 @@ void OpenSpaceEngine::postDraw() {
     
     _renderEngine->postDraw();
 
-    for (const auto& func : _moduleCallbacks.postDraw) {
-        func();
+    for (auto& module : _engine->_moduleEngine->modules()) {
+        module->postDraw();
     }
         
     if (_isFirstRenderingFirstFrame) {
@@ -959,60 +947,23 @@ void OpenSpaceEngine::postDraw() {
 }
 
 void OpenSpaceEngine::keyboardCallback(Key key, KeyModifier mod, KeyAction action) {
-    for (const auto& func : _moduleCallbacks.keyboard) {
-        const bool consumed = func(key, mod, action);
-        if (consumed) {
-            return;
-        }
-    }
-
-    const bool consoleConsumed = _console->keyboardCallback(key, mod, action);
-    if (consoleConsumed) {
-        return;
-    }
-
-    _interactionHandler->keyboardCallback(key, mod, action);
+    _keyboardMouseInteractionHandler->handleKeyboard(key, mod, action);
 }
 
 void OpenSpaceEngine::charCallback(unsigned int codepoint, KeyModifier modifier) {
-    for (const auto& func : _moduleCallbacks.character) {
-        bool consumed = func(codepoint, modifier);
-        if (consumed) {
-            return;
-        }
-    }
-
-    _console->charCallback(codepoint, modifier);
+    _keyboardMouseInteractionHandler->handleCharacter(codepoint, modifier);
 }
 
 void OpenSpaceEngine::mouseButtonCallback(MouseButton button, MouseAction action) {
-    for (const auto& func : _moduleCallbacks.mouseButton) {
-        bool consumed = func(button, action);
-        if (consumed) {
-            return;
-        }
-    }
-    
-    _interactionHandler->mouseButtonCallback(button, action);
+    _keyboardMouseInteractionHandler->handleMouseButton(button, action);
 }
 
 void OpenSpaceEngine::mousePositionCallback(double x, double y) {
-    for (const auto& func : _moduleCallbacks.mousePosition) {
-        func(x, y);
-    }
-
-    _interactionHandler->mousePositionCallback(x, y);
+    _keyboardMouseInteractionHandler->handleMousePosition(x, y);
 }
 
 void OpenSpaceEngine::mouseScrollWheelCallback(double pos) {
-    for (const auto& func : _moduleCallbacks.mouseScrollWheel) {
-        bool consumed = func(pos);
-        if (consumed) {
-            return;
-        }
-    }
-    
-    _interactionHandler->mouseScrollWheelCallback(pos);
+    _keyboardMouseInteractionHandler->handleMouseScroll(pos);
 }
 
 void OpenSpaceEngine::encode() {
@@ -1079,70 +1030,6 @@ void OpenSpaceEngine::disableBarrier() {
     _windowWrapper->setBarrier(false);
 }
 
-// Registers a callback for a specific CallbackOption
-void OpenSpaceEngine::registerModuleCallback(OpenSpaceEngine::CallbackOption option,
-                                             std::function<void()> function)
-{
-    switch (option) {
-        case CallbackOption::Initialize:
-            _moduleCallbacks.initialize.push_back(std::move(function));
-            break;
-        case CallbackOption::Deinitialize:
-            _moduleCallbacks.deinitialize.push_back(std::move(function));
-            break;
-        case CallbackOption::InitializeGL:
-            _moduleCallbacks.initializeGL.push_back(std::move(function));
-            break;
-        case CallbackOption::DeinitializeGL:
-            _moduleCallbacks.deinitializeGL.push_back(std::move(function));
-            break;
-        case CallbackOption::PreSync:
-            _moduleCallbacks.preSync.push_back(std::move(function));
-            break;
-        case CallbackOption::PostSyncPreDraw:
-            _moduleCallbacks.postSyncPreDraw.push_back(std::move(function));
-            break;
-        case CallbackOption::Render:
-            _moduleCallbacks.render.push_back(std::move(function));
-            break;
-        case CallbackOption::PostDraw:
-            _moduleCallbacks.postDraw.push_back(std::move(function));
-            break;
-        default:
-            ghoul_assert(false, "Missing case label");
-    }
-}
-    
-void OpenSpaceEngine::registerModuleKeyboardCallback(
-                               std::function<bool (Key, KeyModifier, KeyAction)> function)
-{
-    _moduleCallbacks.keyboard.push_back(std::move(function));
-}
-    
-void OpenSpaceEngine::registerModuleCharCallback(
-                                 std::function<bool (unsigned int, KeyModifier)> function)
-{
-    _moduleCallbacks.character.push_back(std::move(function));
-}
-
-void OpenSpaceEngine::registerModuleMouseButtonCallback(
-                                  std::function<bool (MouseButton, MouseAction)> function)
-{
-    _moduleCallbacks.mouseButton.push_back(std::move(function));
-}
-
-void OpenSpaceEngine::registerModuleMousePositionCallback(
-                                            std::function<void (double, double)> function)
-{
-    _moduleCallbacks.mousePosition.push_back(std::move(function));
-}
-
-void OpenSpaceEngine::registerModuleMouseScrollWheelCallback(
-                                                    std::function<bool (double)> function)
-{
-    _moduleCallbacks.mouseScrollWheel.push_back(std::move(function));
-}
-
 ConfigurationManager& OpenSpaceEngine::configurationManager() {
     ghoul_assert(_configurationManager, "ConfigurationManager must not be nullptr");
     return *_configurationManager;
@@ -1202,6 +1089,17 @@ interaction::InteractionHandler& OpenSpaceEngine::interactionHandler() {
     ghoul_assert(_interactionHandler, "InteractionHandler must not be nullptr");
     return *_interactionHandler;
 }
+
+interaction::KeyboardMouseInteractionHandler& OpenSpaceEngine::keyboardMouseInteractionHandler() {
+    ghoul_assert(_keyboardMouseInteractionHandler, "InteractionHandler must not be nullptr");
+    return *_keyboardMouseInteractionHandler;
+}
+
+interaction::KeyBindingManager& OpenSpaceEngine::keyBindingManager() {
+    ghoul_assert(_keyBindingManager, "InteractionHandler must not be nullptr");
+    return *_keyBindingManager;
+}
+
 
 properties::PropertyOwner& OpenSpaceEngine::globalPropertyOwner() {
     ghoul_assert(

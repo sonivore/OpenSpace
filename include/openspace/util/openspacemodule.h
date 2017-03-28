@@ -29,7 +29,10 @@
 
 #include <openspace/scripting/lualibrary.h>
 
+
+
 #include <ghoul/systemcapabilities/version.h>
+#include <openspace/interaction/keyboardmouseeventconsumer.h>
 
 #include <string>
 #include <vector>
@@ -42,7 +45,7 @@ namespace documentation {  struct Documentation; }
  * into a useful granularity to be mostly used self-sufficiently. Each OpenSpaceModule
  * needs a unique, nonempty <code>name</code>.
  */
-class OpenSpaceModule : public properties::PropertyOwner {
+class OpenSpaceModule : public properties::PropertyOwner, public interaction::KeyboardMouseEventConsumer {
 public:
     /**
      * Constructs the OpenSpaceModule with a specific \p name. The uniqueness of the 
@@ -68,6 +71,36 @@ public:
      * module-specific customization.
      */
     void deinitialize();
+
+    /** 
+     * Initialize gl
+     */
+    virtual void initializeGL() {};
+
+    /**
+     * Deinitialize gl
+     */
+    virtual void deinitializeGL() {};
+
+    /**
+     * Initialize gl
+     */
+    virtual void preSync() {};
+
+    /**
+     * Post sync pre render
+     */
+    virtual void postSyncPreDraw() {};
+
+    /**
+     * Render
+     */
+    virtual void draw() {};
+
+    /**
+     * Post Render
+     */
+    virtual void postDraw() {};
 
     /**
      * Returns a list of Documentation classes that are valid for this OpenSpaceModule.

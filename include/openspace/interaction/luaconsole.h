@@ -30,21 +30,22 @@
 #include <openspace/properties/scalar/boolproperty.h>
 #include <openspace/scripting/scriptengine.h>
 #include <openspace/util/keys.h>
+#include <openspace/interaction/keyboardmouseeventconsumer.h>
 
 #include <string>
 #include <vector>
 
 namespace openspace {
 
-class LuaConsole : public properties::PropertyOwner {
+class LuaConsole : public properties::PropertyOwner, public interaction::KeyboardMouseEventConsumer {
 public:
     LuaConsole();
 
     void initialize();
     void deinitialize();
 
-    bool keyboardCallback(Key key, KeyModifier modifier, KeyAction action);
-    void charCallback(unsigned int codepoint, KeyModifier modifier);
+    bool handleKeyboard(Key key, KeyModifier modifier, KeyAction action) override;
+    bool handleCharacter(unsigned int codepoint, KeyModifier modifier) override;
 
     void render();
 

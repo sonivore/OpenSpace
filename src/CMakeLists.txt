@@ -43,6 +43,10 @@ set(OPENSPACE_SOURCE
     ${OPENSPACE_BASE_DIR}/src/interaction/interactionhandler.cpp
     ${OPENSPACE_BASE_DIR}/src/interaction/interactionmode.cpp
     ${OPENSPACE_BASE_DIR}/src/interaction/interactionhandler_lua.inl
+    ${OPENSPACE_BASE_DIR}/src/interaction/keybindingmanager.cpp
+    ${OPENSPACE_BASE_DIR}/src/interaction/keybindingmanager_lua.inl
+    ${OPENSPACE_BASE_DIR}/src/interaction/keyboardmouseinteractionhandler.cpp
+    ${OPENSPACE_BASE_DIR}/src/interaction/keyboardmousestate.cpp
     ${OPENSPACE_BASE_DIR}/src/interaction/luaconsole.cpp
     ${OPENSPACE_BASE_DIR}/src/mission/mission.cpp
     ${OPENSPACE_BASE_DIR}/src/mission/missionmanager.cpp
@@ -179,6 +183,10 @@ set(OPENSPACE_HEADER
     ${OPENSPACE_BASE_DIR}/include/openspace/interaction/interactionhandler.h
     ${OPENSPACE_BASE_DIR}/include/openspace/interaction/interactionmode.h
     ${OPENSPACE_BASE_DIR}/include/openspace/interaction/luaconsole.h
+    ${OPENSPACE_BASE_DIR}/include/openspace/interaction/keybindingmanager.h
+    ${OPENSPACE_BASE_DIR}/include/openspace/interaction/keyboardmouseeventconsumer.h
+    ${OPENSPACE_BASE_DIR}/include/openspace/interaction/keyboardmouseinteractionhandler.h
+    ${OPENSPACE_BASE_DIR}/include/openspace/interaction/keyboardmousestate.h
     ${OPENSPACE_BASE_DIR}/include/openspace/mission/mission.h
     ${OPENSPACE_BASE_DIR}/include/openspace/mission/missionmanager.h
     ${OPENSPACE_BASE_DIR}/include/openspace/network/networkengine.h

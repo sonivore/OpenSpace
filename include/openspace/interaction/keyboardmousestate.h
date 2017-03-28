@@ -22,34 +22,46 @@
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                         *
  ****************************************************************************************/
 
-#ifndef __OPENSPACE_MODULE_ONSCREENGUI___ONSCREENGUIMODULE___H__
-#define __OPENSPACE_MODULE_ONSCREENGUI___ONSCREENGUIMODULE___H__
-
-#include <openspace/util/openspacemodule.h>
-#include <openspace/util/mouse.h>
-#include <openspace/util/keys.h>
-
-#include <modules/onscreengui/include/gui.h>
+#ifndef __OPENSPACE_CORE___KEYBOARDMOUSESTATE___H__
+#define __OPENSPACE_CORE___KEYBOARDMOUSESTATE___H__
+    
+#include <openspace/interaction/keyboardmouseeventconsumer.h>
+#include <list>
+#include <ghoul/glm.h>
 
 namespace openspace {
-    
-class OnScreenGUIModule : public OpenSpaceModule {
-public:
-    OnScreenGUIModule();
+namespace interaction {
 
-    void internalInitialize() override;
-    void internalDeinitialize() override;
-    void initializeGL() override;
-    void deinitializeGL() override;
-    void draw() override;
-    bool handleKeyboard(Key key, KeyModifier mod, KeyAction action) override;
-    bool handleCharacter(unsigned int codepoint, KeyModifier modifier) override;
-    bool handleMouseButton(MouseButton button, MouseAction action) override;
-    bool handleMouseScroll(double position) override;
-    
-    static gui::GUI gui;
+class KeyboardMouseState : public KeyboardMouseEventConsumer {
+public:
+    KeyboardMouseState();
+    ~KeyboardMouseState();
+
+    // Callback functions
+    bool handleKeyboard(Key key, KeyModifier modifier, KeyAction action);
+    bool handleMouseButton(MouseButton button, MouseAction action);
+    bool handleMousePosition(double mouseX, double mouseY);
+    bool handleMouseScroll(double mouseScrollDelta);
+
+    // Accessors
+    const std::list<std::pair<Key, KeyModifier> >& getPressedKeys() const;
+    const std::list<MouseButton>& getPressedMouseButtons() const;
+    glm::dvec2 getMousePosition() const;
+    double getMouseScrollDelta() const;
+
+    bool isKeyPressed(std::pair<Key, KeyModifier> keyModPair) const;
+    bool isKeyPressed(Key key) const;
+    bool isMouseButtonPressed(MouseButton mouseButton) const;
+private:
+    // Input from keyboard and mouse
+    std::list<std::pair<Key, KeyModifier> > _keysDown;
+    std::list<MouseButton> _mouseButtonsDown;
+    glm::dvec2 _mousePosition;
+    double _mouseScrollDelta;
 };
 
+
+} // namespace interaction
 } // namespace openspace
 
-#endif // __OPENSPACE_MODULE_ONSCREENGUI___ONSCREENGUIMODULE___H__
+#endif // __OPENSPACE_CORE___KEYBOARDMOUSESTATE___H__
