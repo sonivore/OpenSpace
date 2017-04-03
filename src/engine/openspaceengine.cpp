@@ -125,6 +125,7 @@ OpenSpaceEngine::OpenSpaceEngine(std::string programName,
       ))
     , _console(new LuaConsole)
     , _keyBindingManager(std::make_unique<interaction::KeyBindingManager>())
+    , _keyboardMouseState(std::make_unique<interaction::KeyboardMouseState>())
     , _moduleEngine(new ModuleEngine)
     , _settingsEngine(new SettingsEngine)
     , _timeManager(new TimeManager)
