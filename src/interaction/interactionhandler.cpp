@@ -384,7 +384,6 @@ void InteractionHandler::restoreCameraStateFromFile(const std::string& filepath)
     }
 }
 
-
 scripting::LuaLibrary InteractionHandler::luaLibrary() {
     return{
         "",

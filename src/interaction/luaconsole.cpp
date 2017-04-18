@@ -323,7 +323,7 @@ bool LuaConsole::handleKeyboard(Key key, KeyModifier modifier, KeyAction action)
             std::transform(
                 command.begin(), command.end(),
                 std::back_inserter(commandLowerCase),
-                ::tolower
+                [](char v) { return static_cast<char>(tolower(v)); }
             );
                 
             std::string initialValueLowerCase;
@@ -331,7 +331,7 @@ bool LuaConsole::handleKeyboard(Key key, KeyModifier modifier, KeyAction action)
                 _autoCompleteInfo.initialValue.begin(),
                 _autoCompleteInfo.initialValue.end(),
                 std::back_inserter(initialValueLowerCase),
-                ::tolower
+                [](char v) { return static_cast<char>(tolower(v)); }
             );
     
             bool correctCommand =
