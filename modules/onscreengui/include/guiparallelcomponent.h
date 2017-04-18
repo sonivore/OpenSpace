@@ -22,45 +22,30 @@
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                         *
  ****************************************************************************************/
 
-#ifndef __OPENSPACE_MODULE_GLOBEBROWSING___ASYNC_TILE_READER___H__
-#define __OPENSPACE_MODULE_GLOBEBROWSING___ASYNC_TILE_READER___H__
+#ifndef __OPENSPACE_MODULE_ONSCREENGUI___GUIPARALLELCOMPONENT___H__
+#define __OPENSPACE_MODULE_ONSCREENGUI___GUIPARALLELCOMPONENT___H__
 
-#include <modules/globebrowsing/other/concurrentjobmanager.h>
+#include <modules/onscreengui/include/guicomponent.h>
+#include <modules/onscreengui/include/guipropertycomponent.h>
 
-#include <modules/globebrowsing/tile/tileindex.h>
-
-#include <unordered_map>
+#include <string>
 
 namespace openspace {
-namespace globebrowsing {
-    
-class RawTile;
-class TileDataset;
+namespace gui {
 
-class AsyncTileDataProvider {
+class GuiParallelComponent : public GuiPropertyComponent {
 public:
-    AsyncTileDataProvider(std::shared_ptr<TileDataset> textureDataProvider, 
-        std::shared_ptr<ThreadPool> pool);
-
-    bool enqueueTileIO(const TileIndex& tileIndex);        
-    std::vector<std::shared_ptr<RawTile>> getRawTiles();
-        
-    void reset();
-    void clearRequestQueue();
-
-    std::shared_ptr<TileDataset> getTextureDataProvider() const;
-    float noDataValueAsFloat();
-
-protected:
-    virtual bool satisfiesEnqueueCriteria(const TileIndex&) const;
-
+    GuiParallelComponent();
+    void render() override;
 private:
-    std::shared_ptr<TileDataset> _tileDataset;
-    ConcurrentJobManager<RawTile> _concurrentJobManager;
-    std::unordered_map<TileIndex::TileHashKey, TileIndex> _enqueuedTileRequests;
+    void renderDisconnected();
+    void renderClientWithHost();
+    void renderClientWithoutHost();
+    void renderClientCommon();
+    void renderHost();
 };
 
-} // namespace globebrowsing
+} // namespace gui
 } // namespace openspace
 
-#endif // __OPENSPACE_MODULE_GLOBEBROWSING___ASYNC_TILE_READER___H__
+#endif // __OPENSPACE_MODULE_ONSCREENGUI___GUIPARALLELCOMPONENT___H__

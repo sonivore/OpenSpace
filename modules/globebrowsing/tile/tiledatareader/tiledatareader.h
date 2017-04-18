@@ -22,71 +22,71 @@
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                         *
  ****************************************************************************************/
 
-#include <modules/globebrowsing/tile/tiledatalayout.h>
+#ifndef __OPENSPACE_MODULE_GLOBEBROWSING___TILE_DATAREADER___H__
+#define __OPENSPACE_MODULE_GLOBEBROWSING___TILE_DATAREADER___H__
 
-#include <limits>
-
-#include <ogr_featurestyle.h>
-#include <ogr_spatialref.h>
-
-#include <ghoul/logging/logmanager.h>
-#include <ghoul/filesystem/filesystem.h> // abspath
-#include <ghoul/misc/assert.h>
-
+#include <modules/globebrowsing/tile/textureformat.h>
 #include <modules/globebrowsing/tile/tile.h>
-#include <modules/globebrowsing/tile/tileprovider/tileprovider.h>
-
-
-#include <modules/globebrowsing/geometry/angle.h>
-
-#include <float.h>
-#include <sstream>
-#include <algorithm>
-
-#include <gdal_priv.h>
-#include <openspace/engine/openspaceengine.h>
-#include <openspace/engine/configurationmanager.h>
-
-#include <memory>
-#include <set>
-#include <queue>
-#include <iostream>
-#include <unordered_map>
-
-#include <ghoul/filesystem/file.h>
-#include <ghoul/opengl/texture.h>
-#include <ghoul/misc/threadpool.h>
-
-#include <modules/globebrowsing/tile/tile.h>
-#include <modules/globebrowsing/tile/tiledatatype.h>
 #include <modules/globebrowsing/tile/tiledepthtransform.h>
+#include <modules/globebrowsing/tile/tiledatalayout.h>
 #include <modules/globebrowsing/tile/pixelregion.h>
-#include <modules/globebrowsing/tile/rawtile.h>
-#include <modules/globebrowsing/tile/tilemetadata.h>
-#include <modules/globebrowsing/geometry/geodetic2.h>
-#include <modules/globebrowsing/geometry/geodeticpatch.h>
 
-namespace {
-    const std::string _loggerCat = "TileDataset";
-}
+#include <ghoul/glm.h>
+#include <ghoul/opengl/ghoul_gl.h>
+#include <ghoul/opengl/texture.h>
+
+#include <gdal.h>
+#include <string>
 
 namespace openspace {
 namespace globebrowsing {
 
-TileDataLayout::TileDataLayout() {}
+struct RawTile;
+class GeodeticPatch;
 
-TileDataLayout::TileDataLayout(GDALDataset* dataSet, GLuint preferredGlType) {
-    // Assume all raster bands have the same data type
-    gdalType =preferredGlType != 0 ?
-        tiledatatype::getGdalDataType(preferredGlType) :
-        dataSet->GetRasterBand(1)->GetRasterDataType();
+/**
+ * Interface for reading <code>RawTile</code>s given a <code>TileIndex</code>
+ */
+class TileDataReader {
+public:
+    struct Configuration {
+        bool doPreProcessing;
+        int minimumTilePixelSize;
+        GLuint dataType = 0; // default = no datatype reinterpretation
+    };
 
-    glType = tiledatatype::getOpenGLDataType(gdalType);
-    numRasters = dataSet->GetRasterCount();
-    bytesPerDatum = tiledatatype::numberOfBytes(gdalType);
-    bytesPerPixel = bytesPerDatum * numRasters;
-    textureFormat = tiledatatype::getTextureFormat(numRasters, gdalType);
-}
+    virtual TileDataReader(const Configuration& config);
+
+    std::shared_ptr<RawTile> defaultTileData();
+    
+    virtual std::shared_ptr<RawTile> readTileData(TileIndex tileIndex) = 0;
+    virtual int maxChunkLevel() = 0;
+    virtual TileDepthTransform getDepthTransform() = 0;
+    virtual const TileDataLayout& getDataLayout() = 0;
+    virtual void reset() = 0;
+    virtual float noDataValueAsFloat() = 0;
+    virtual size_t rasterXSize() = 0;
+    virtual size_t rasterYSize() = 0;
+
+    const static glm::ivec2 tilePixelStartOffset;
+    const static glm::ivec2 tilePixelSizeDifference;
+    const static PixelRegion padding; // same as the two above
   
+    const static glm::ivec2 tilePixelStartOffset;
+    const static glm::ivec2 tilePixelSizeDifference;
+    const static PixelRegion padding; // same as the two above
+
+    static bool logReadErrors;
+    
+protected:
+    Configuration _config;
+
+    virtual std::array<double, 6> padfTransform getGeoTransform();
+    PixelRegion::PixelCoordinate geodeticToPixel(const Geodetic2& geo) const;
+    Geodetic2 pixelToGeodetic(const PixelRegion::PixelCoordinate& p) const;
+};
+
 } // namespace globebrowsing
 } // namespace openspace
+
+#endif // __OPENSPACE_MODULE_GLOBEBROWSING___TILE_DATAREADER___H__

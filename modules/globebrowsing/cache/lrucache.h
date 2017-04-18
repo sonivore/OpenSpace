@@ -22,35 +22,46 @@
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                         *
  ****************************************************************************************/
 
-#ifndef __OPENSPACE_MODULE_GLOBEBROWSING___TILE_DATA_TYPE___H__
-#define __OPENSPACE_MODULE_GLOBEBROWSING___TILE_DATA_TYPE___H__
+#ifndef __OPENSPACE_MODULE_GLOBEBROWSING___LRU_CACHE___H__
+#define __OPENSPACE_MODULE_GLOBEBROWSING___LRU_CACHE___H__
 
-#include <modules/globebrowsing/tile/tile.h>
-
-#include <modules/globebrowsing/tile/textureformat.h>
-
-#include <ghoul/opengl/ghoul_gl.h>
-
-#include <gdal.h>
+#include <list>
+#include <unordered_map>
 
 namespace openspace {
 namespace globebrowsing {
-namespace tiledatatype {
+namespace cache {
 
-GLuint getOpenGLDataType(GDALDataType gdalType);
+/**
+ * Templated class implementing a Least-Recently-Used Cache.
+ * <code>KeyType</code> needs to be an enumerable type.
+ */
+template<typename KeyType, typename ValueType>
+class LRUCache {
+public:
+    /**
+     * \param size is the maximum size of the cache given in number of cached items.
+     */
+    LRUCache(size_t size);
 
-GDALDataType getGdalDataType(GLuint glType);
+    void put(const KeyType& key, const ValueType& value);
+    void clear();
+    bool exist(const KeyType& key) const;
+    ValueType get(const KeyType& key);
+    size_t size() const;
 
-TextureFormat getTextureFormat(int rasterCount, GDALDataType gdalType);
+private:
+    void clean();
 
-size_t getMaximumValue(GDALDataType gdalType);
+    std::list<std::pair<KeyType, ValueType>> _itemList;
+    std::unordered_map<KeyType, decltype(_itemList.begin())> _itemMap;
+    size_t _cacheSize;
+};
 
-size_t numberOfBytes(GDALDataType gdalType);
-
-float interpretFloat(GDALDataType gdalType, const char* src);
-
-} // namespace tiledatatype
+} // namespace cache
 } // namespace globebrowsing
 } // namespace openspace
 
-#endif // __OPENSPACE_MODULE_GLOBEBROWSING___TILE_DATA_TYPE___H__
+#include <modules/globebrowsing/cache/lrucache.inl>
+
+#endif // __OPENSPACE_MODULE_GLOBEBROWSING___LRU_CACHE___H__

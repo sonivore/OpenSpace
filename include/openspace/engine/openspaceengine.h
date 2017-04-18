@@ -56,6 +56,7 @@ class ParallelConnection;
 class RenderEngine;
 class SettingsEngine;
 class SceneManager;
+class VirtualPropertyManager;
 
 class SyncEngine;
 class TimeManager;
@@ -92,7 +93,8 @@ public:
     void deinitialize();
     void preSynchronization();
     void postSynchronizationPreDraw();
-    void draw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix);
+    void draw(const glm::mat4& sceneMatrix, const glm::mat4& viewMatrix,
+        const glm::mat4& projectionMatrix);
     void postDraw();
     void keyboardCallback(Key key, KeyModifier mod, KeyAction action);
     void charCallback(unsigned int codepoint, KeyModifier mod);
@@ -132,6 +134,7 @@ public:
     properties::PropertyOwner& globalPropertyOwner();
     scripting::ScriptEngine& scriptEngine();
     scripting::ScriptScheduler& scriptScheduler();
+    VirtualPropertyManager& virtualPropertyManager();
 
     /**
      * Returns the Lua library that contains all Lua functions available to affect the
@@ -142,7 +145,6 @@ public:
 private:
     OpenSpaceEngine(std::string programName,
         std::unique_ptr<WindowWrapper> windowWrapper);
-    ~OpenSpaceEngine() = default;
 
     void loadScene(const std::string& scenePath);
     void gatherCommandlineArguments();
@@ -171,6 +173,7 @@ private:
     std::unique_ptr<interaction::KeyboardMouseState> _keyboardMouseState;
     std::unique_ptr<scripting::ScriptEngine> _scriptEngine;
     std::unique_ptr<scripting::ScriptScheduler> _scriptScheduler;
+    std::unique_ptr<VirtualPropertyManager> _virtualPropertyManager;
 
     // Others
     std::unique_ptr<properties::PropertyOwner> _globalPropertyNamespace;

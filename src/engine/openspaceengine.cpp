@@ -34,6 +34,7 @@
 #include <openspace/engine/moduleengine.h>
 #include <openspace/engine/settingsengine.h>
 #include <openspace/engine/syncengine.h>
+#include <openspace/engine/virtualpropertymanager.h>
 #include <openspace/engine/wrapper/windowwrapper.h>
 #include <openspace/interaction/interactionhandler.h>
 #include <openspace/interaction/luaconsole.h>
@@ -41,6 +42,7 @@
 #include <openspace/interaction/keybindingmanager.h>
 #include <openspace/interaction/keyboardmousestate.h>
 #include <openspace/network/networkengine.h>
+#include <openspace/network/parallelconnection.h>
 #include <openspace/rendering/renderable.h>
 #include <openspace/scripting/scriptengine.h>
 #include <openspace/scripting/scriptscheduler.h>
@@ -139,9 +141,10 @@ OpenSpaceEngine::OpenSpaceEngine(
     , _settingsEngine(new SettingsEngine)
     , _timeManager(new TimeManager)
     , _downloadManager(nullptr)
-    , _parallelConnection(new ParallelConnection)
+    , _parallelConnection(std::make_unique<ParallelConnection>())
     , _windowWrapper(std::move(windowWrapper))
     , _globalPropertyNamespace(new properties::PropertyOwner(""))
+    , _virtualPropertyManager(new VirtualPropertyManager)
     , _scheduledSceneSwitch(false)
     , _scenePath("")
     , _runTime(0.0)
@@ -155,6 +158,7 @@ OpenSpaceEngine::OpenSpaceEngine(
     _globalPropertyNamespace->addPropertySubOwner(_settingsEngine.get());
     _globalPropertyNamespace->addPropertySubOwner(_renderEngine.get());
     _globalPropertyNamespace->addPropertySubOwner(_windowWrapper.get());
+    _globalPropertyNamespace->addPropertySubOwner(_parallelConnection.get());
 
     FactoryManager::initialize();
     FactoryManager::ref().addFactory(
@@ -379,6 +383,10 @@ void OpenSpaceEngine::create(int argc, char** argv,
 }
 
 void OpenSpaceEngine::destroy() {
+    if (_engine->parallelConnection().status() != ParallelConnection::Status::Disconnected) {
+        _engine->parallelConnection().signalDisconnect();
+    }
+
     LTRACE("OpenSpaceEngine::destroy(begin)");
     for (auto& module : _engine->_moduleEngine->modules()) {
         module->deinitializeGL();
@@ -1029,11 +1037,12 @@ void OpenSpaceEngine::postSynchronizationPreDraw() {
     LTRACE("OpenSpaceEngine::postSynchronizationPreDraw(end)");
 }
 
-void OpenSpaceEngine::draw(const glm::mat4& viewMatrix,
-                             const glm::mat4& projectionMatrix)
+void OpenSpaceEngine::draw(const glm::mat4& sceneMatrix,
+                           const glm::mat4& viewMatrix,
+                           const glm::mat4& projectionMatrix)
 {
-    LTRACE("OpenSpaceEngine::draw(begin)");
-    _renderEngine->render(viewMatrix, projectionMatrix);
+    LTRACE("OpenSpaceEngine::render(begin)");
+    _renderEngine->render(sceneMatrix, viewMatrix, projectionMatrix);
     
     for (auto& module : _engine->_moduleEngine->modules()) {
         module->draw();
@@ -1142,6 +1151,24 @@ scripting::LuaLibrary OpenSpaceEngine::luaLibrary() {
                 &luascriptfunctions::writeDocumentation,
                 "",
                 "Writes out documentation files"
+            },
+            {
+                "addVirtualProperty",
+                &luascriptfunctions::addVirtualProperty,
+                "type, name, identifier, [value, minimumValue, maximumValue]",
+                "Adds a virtual property that will set a group of properties"
+            },
+            {
+                "removeVirtualProperty",
+                &luascriptfunctions::removeVirtualProperty,
+                "string",
+                "Removes a previously added virtual property"
+            },
+            {
+                "removeAllVirtualProperties",
+                &luascriptfunctions::removeAllVirtualProperties,
+                "",
+                "Remove all registered virtual properties"
             }
         }
     };
@@ -1232,6 +1259,15 @@ properties::PropertyOwner& OpenSpaceEngine::globalPropertyOwner() {
         "Global Property Namespace must not be nullptr"
     );
     return *_globalPropertyNamespace;
+}
+
+VirtualPropertyManager& OpenSpaceEngine::virtualPropertyManager() {
+    ghoul_assert(
+        _virtualPropertyManager,
+        "Virtual Property Manager must not be nullptr"
+    );
+
+    return *_virtualPropertyManager;
 }
 
 ScriptEngine& OpenSpaceEngine::scriptEngine() {

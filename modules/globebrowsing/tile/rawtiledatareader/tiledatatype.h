@@ -22,38 +22,39 @@
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                         *
  ****************************************************************************************/
 
-#ifndef __OPENSPACE_MODULE_GLOBEBROWSING___LRU_CACHE___H__
-#define __OPENSPACE_MODULE_GLOBEBROWSING___LRU_CACHE___H__
+#ifndef __OPENSPACE_MODULE_GLOBEBROWSING___TILE_DATA_TYPE___H__
+#define __OPENSPACE_MODULE_GLOBEBROWSING___TILE_DATA_TYPE___H__
 
-#include <list>
-#include <unordered_map>
+#include <modules/globebrowsing/tile/tile.h>
+#include <modules/globebrowsing/tile/textureformat.h>
+
+#include <ghoul/opengl/ghoul_gl.h>
+
+#ifdef GLOBEBROWSING_USE_GDAL
+#include <gdal.h>
+#endif // GLOBEBROWSING_USE_GDAL
 
 namespace openspace {
 namespace globebrowsing {
+namespace tiledatatype {
 
-// Templated class implementing a Least-Recently-Used Cache
-template<typename KeyType, typename ValueType>
-class LRUCache {
-public:
-    LRUCache(size_t size);
+#ifdef GLOBEBROWSING_USE_GDAL
+GLuint getOpenGLDataType(GDALDataType gdalType);
+GDALDataType getGdalDataType(GLuint glType);
+TextureFormat getTextureFormat(int rasterCount, GDALDataType gdalType);
+TextureFormat getTextureFormatOptimized(int rasterCount, GDALDataType gdalType);
+size_t getMaximumValue(GDALDataType gdalType);
+size_t numberOfBytes(GDALDataType gdalType);
+float interpretFloat(GDALDataType gdalType, const char* src);
+#endif // GLOBEBROWSING_USE_GDAL
 
-    void put(const KeyType& key, const ValueType& value);
-    void clear();
-    bool exist(const KeyType& key) const;
-    ValueType get(const KeyType& key);
-    size_t size() const;
+size_t numberOfRasters(ghoul::opengl::Texture::Format format);
+size_t numberOfBytes(GLuint glType);
+size_t getMaximumValue(GLuint glType);
+float interpretFloat(GLuint glType, const char* src);
 
-private:
-    void clean();
-
-    std::list<std::pair<KeyType, ValueType>> _itemList;
-    std::unordered_map<KeyType, decltype(_itemList.begin())> _itemMap;
-    size_t _cacheSize;
-};
-
+} // namespace tiledatatype
 } // namespace globebrowsing
 } // namespace openspace
 
-#include <modules/globebrowsing/other/lrucache.inl>
-
-#endif // __OPENSPACE_MODULE_GLOBEBROWSING___LRU_CACHE___H__
+#endif // __OPENSPACE_MODULE_GLOBEBROWSING___TILE_DATA_TYPE___H__

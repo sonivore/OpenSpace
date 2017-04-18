@@ -54,7 +54,7 @@ private:
     void addToCommand(std::string c);
 
     properties::BoolProperty _isVisible;
-    bool _remoteScripting;
+    properties::BoolProperty _remoteScripting;
 
     size_t _inputPosition;
     std::vector<std::string> _commandsHistory;

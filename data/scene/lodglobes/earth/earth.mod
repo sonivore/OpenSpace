@@ -56,13 +56,14 @@ return {
             SegmentsPerPatch = 64,
             Layers = {
                 ColorLayers = {
+                
                     {
                         Name = "ESRI VIIRS Combo",
                         Type = "ByLevel",
                         LevelTileProviders = {
                             {
-                                MaxLevel = 7, 
-                                TileProvider = { FilePath = "map_service_configs/GIBS/VIIRS_SNPP_CorrectedReflectance_TrueColor.xml", }, 
+                                MaxLevel = 3, 
+                                TileProvider = { Type = "Temporal", FilePath = "map_service_configs/GIBS/Temporal_VIIRS_SNPP_CorrectedReflectance_TrueColor.xml", }, 
                             },
                             {
                                 MaxLevel = 22, 
@@ -85,6 +86,11 @@ return {
                         Name = "Temporal_GHRSST_L4_MUR_Sea_Surface_Temperature",
                         FilePath = "map_service_configs/GIBS/Temporal_GHRSST_L4_MUR_Sea_Surface_Temperature.xml",
                     },
+                    {
+                        Type = "Temporal",
+                        Name = "Temporal_AMSR2_GCOM_W1_Sea_Ice_Concentration",
+                        FilePath = "map_service_configs/GIBS/Temporal_AMSR2_GCOM_W1_Sea_Ice_Concentration.xml",
+                    },                    
                     -- {
                     --     Type = "SingleImage",
                     --     Name = "Debug Tiles",
@@ -111,7 +117,7 @@ return {
                     {
                         Type = "Temporal",
                         Name = "Temporal Earth at Night",
-                        FilePath = "map_service_configs/GIBS/Temporal_VIIRS_CityLights.xml"
+                        FilePath = "map_service_configs/GIBS/Temporal_VIIRS_SNPP_DayNightBand_ENCC.xml"
                     }
                 },
                 WaterMasks = {
@@ -168,7 +174,7 @@ return {
                         Name = "Terrain tileset",
                         FilePath = "map_service_configs/ESRI/TERRAIN.wms",
                         Enabled = true,
-                        MinimumPixelSize = 64,
+                        TilePixelSize = 64,
                         DoPreProcessing = true,
                     },
                 },

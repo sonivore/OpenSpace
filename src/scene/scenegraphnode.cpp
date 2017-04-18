@@ -64,6 +64,7 @@ const std::string SceneGraphNode::RootNodeName = "Root";
 const std::string SceneGraphNode::KeyName = "Name";
 const std::string SceneGraphNode::KeyParentName = "Parent";
 const std::string SceneGraphNode::KeyDependencies = "Dependencies";
+const std::string SceneGraphNode::KeyTag = "Tag";
 
 std::unique_ptr<SceneGraphNode> SceneGraphNode::createFromDictionary(const ghoul::Dictionary& dictionary){
     openspace::documentation::testSpecificationAndThrow(
@@ -135,6 +136,25 @@ std::unique_ptr<SceneGraphNode> SceneGraphNode::createFromDictionary(const ghoul
         LDEBUG("Successfully created scale for '" << result->name() << "'");
     }
 
+    if (dictionary.hasKey(KeyTag)) {
+        if (dictionary.hasKeyAndValue<std::string>(KeyTag)) {
+            std::string tagName = dictionary.value<std::string>(KeyTag);
+            if (!tagName.empty()) {
+                result->addTag(std::move(tagName));
+            }
+        } else if (dictionary.hasKeyAndValue<ghoul::Dictionary>(KeyTag)) {
+            ghoul::Dictionary tagNames = dictionary.value<ghoul::Dictionary>(KeyTag);
+            std::vector<std::string> keys = tagNames.keys();
+            std::string tagName;
+            for (const std::string& key : keys) {
+                tagName = tagNames.value<std::string>(key);
+                if (!tagName.empty()) {
+                    result->addTag(std::move(tagName));
+                }
+            }
+        }
+    }
+
     LDEBUG("Successfully created SceneGraphNode '"
                    << result->name() << "'");
     return std::move(result);
@@ -151,8 +171,6 @@ SceneGraphNode::SceneGraphNode()
     }
     , _performanceRecord({0, 0, 0})
     , _renderable(nullptr)
-    , _renderableVisible(false)
-    , _boundingSphereVisible(false)
 {
 }
 
@@ -190,9 +208,6 @@ bool SceneGraphNode::deinitialize() {
 
     // reset variables
     _parent = nullptr;
-    _renderableVisible = false;
-    _boundingSphereVisible = false;
-    _boundingSphere = PowerScaledScalar(0.0, 0.0);
 
     return true;
 }
@@ -268,7 +283,17 @@ void SceneGraphNode::update(const UpdateData& data) {
 
     newUpdateData.modelTransform.translation = worldPosition();
     newUpdateData.modelTransform.rotation = worldRotationMatrix();
-    newUpdateData.modelTransform .scale = worldScale();
+    newUpdateData.modelTransform.scale = worldScale();
+
+    glm::dmat4 translation =
+        glm::translate(glm::dmat4(1.0), newUpdateData.modelTransform.translation);
+    glm::dmat4 rotation = glm::dmat4(newUpdateData.modelTransform.rotation);
+    glm::dmat4 scaling =
+        glm::scale(glm::dmat4(1.0), glm::dvec3(newUpdateData.modelTransform.scale,
+            newUpdateData.modelTransform.scale, newUpdateData.modelTransform.scale));
+
+    _modelTransformCached = translation * rotation * scaling;
+    _inverseModelTransformCached = glm::inverse(_modelTransformCached);
 
     if (_renderable && _renderable->isReady()) {
         if (data.doPerformanceMeasurement) {
@@ -286,46 +311,6 @@ void SceneGraphNode::update(const UpdateData& data) {
     }
 }
 
-void SceneGraphNode::evaluate(const Camera* camera, const psc& parentPosition) {
-    //const psc thisPosition = parentPosition + _ephemeris->position();
-    //const psc camPos = camera->position();
-    //const psc toCamera = thisPosition - camPos;
-
-    // init as not visible
-    //_boundingSphereVisible = false;
-    _renderableVisible = false;
-
-#ifndef OPENSPACE_VIDEO_EXPORT
-    // check if camera is outside the node boundingsphere
-  /*  if (toCamera.length() > _boundingSphere) {
-        // check if the boudningsphere is visible before avaluating children
-        if (!sphereInsideFrustum(thisPosition, _boundingSphere, camera)) {
-            // the node is completely outside of the camera view, stop evaluating this
-            // node
-            //LFATAL(_nodeName << " is outside of frustum");
-            return;
-        }
-    }
-    */
-#endif
-
-    // inside boudningsphere or parts of the sphere is visible, individual
-    // children needs to be evaluated
-    _boundingSphereVisible = true;
-
-    // this node has an renderable
-    if (_renderable) {
-        //  check if the renderable boundingsphere is visible
-        // _renderableVisible = sphereInsideFrustum(
-        //       thisPosition, _renderable->getBoundingSphere(), camera);
-        _renderableVisible = true;
-    }
-
-    // evaluate all the children, tail-recursive function(?)
-    //for (SceneGraphNode* child : _children)
-    //    child->evaluate(camera, psc());
-}
-
 void SceneGraphNode::render(const RenderData& data, RendererTasks& tasks) {
     const psc thisPositionPSC = psc::CreatePowerScaledCoordinate(_worldPositionCached.x, _worldPositionCached.y, _worldPositionCached.z);
 
@@ -340,7 +325,7 @@ void SceneGraphNode::render(const RenderData& data, RendererTasks& tasks) {
 
     //_performanceRecord.renderTime = 0;
 
-    bool visible = _renderableVisible &&
+    bool visible = _renderable &&
         _renderable->isVisible() &&
         _renderable->isReady() &&
         _renderable->isEnabled() &&
@@ -521,6 +506,14 @@ const glm::dmat3& SceneGraphNode::worldRotationMatrix() const
     return _worldRotationCached;
 }
 
+glm::dmat4 SceneGraphNode::modelTransform() const {
+    return _modelTransformCached;
+}
+
+glm::dmat4 SceneGraphNode::inverseModelTransform() const {
+    return _inverseModelTransformCached;
+}
+
 double SceneGraphNode::worldScale() const
 {
     return _worldScaleCached;
@@ -582,42 +575,11 @@ std::vector<SceneGraphNode*> SceneGraphNode::children() const {
     return nodes;
 }
 
-PowerScaledScalar SceneGraphNode::calculateBoundingSphere(){
-    // set the bounding sphere to 0.0
-    _boundingSphere = 0.0;
-    /*
-    This is not how to calculate a bounding sphere, better to leave it at 0 if not a
-    renderable. --KB
-    if (!_children.empty()) {  // node
-        PowerScaledScalar maxChild;
-
-        // loop though all children and find the one furthest away/with the largest
-        // bounding sphere
-        for (size_t i = 0; i < _children.size(); ++i) {
-            // when positions is dynamic, change this part to fins the most distant
-            // position
-            //PowerScaledScalar child = _children.at(i)->position().length()
-            //            + _children.at(i)->calculateBoundingSphere();
-            PowerScaledScalar child = _children.at(i)->calculateBoundingSphere();
-            if (child > maxChild) {
-                maxChild = child;
-            }
-        }
-        _boundingSphere += maxChild;
-    } 
-    */
-    // if has a renderable, use that boundingsphere
-    if (_renderable ) {
-        PowerScaledScalar renderableBS = _renderable->getBoundingSphere();
-        if(renderableBS > _boundingSphere)
-            _boundingSphere = renderableBS;
+float SceneGraphNode::boundingSphere() const{
+    if (_renderable) {
+        return _renderable->boundingSphere();
     }
-    
-    return _boundingSphere;
-}
-
-PowerScaledScalar SceneGraphNode::boundingSphere() const{
-    return _boundingSphere;
+    return 0.0;
 }
 
 // renderable

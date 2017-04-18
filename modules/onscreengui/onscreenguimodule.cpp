@@ -28,8 +28,10 @@
 
 #include <openspace/engine/openspaceengine.h>
 #include <openspace/engine/settingsengine.h>
+#include <openspace/engine/virtualpropertymanager.h>
 #include <openspace/engine/wrapper/windowwrapper.h>
 #include <openspace/interaction/interactionhandler.h>
+#include <openspace/network/parallelconnection.h>
 #include <openspace/rendering/renderengine.h>
 #include <openspace/rendering/screenspacerenderable.h>
 #include <openspace/scene/scene.h>
@@ -41,12 +43,11 @@ namespace openspace {
 
 gui::GUI OnScreenGUIModule::gui;
     
-OnScreenGUIModule::OnScreenGUIModule() 
+OnScreenGUIModule::OnScreenGUIModule()
     : OpenSpaceModule("OnScreenGUI")
 {
     addPropertySubOwner(gui);
 }
-    
 
 void OnScreenGUIModule::internalInitialize() {
     LDEBUGC("OnScreenGUIModule", "Initializing GUI");
@@ -76,6 +77,16 @@ void OnScreenGUIModule::internalInitialize() {
             const auto& nodes = OsEng.renderEngine().scene()->allSceneGraphNodes();
             return std::vector<properties::PropertyOwner*>(nodes.begin(), nodes.end());
         }
+    );
+
+    gui._virtualProperty.setSource(
+        []() {
+        std::vector<properties::PropertyOwner*> res = {
+            &(OsEng.virtualPropertyManager())
+        };
+
+        return res;
+    }
     );
 
 }

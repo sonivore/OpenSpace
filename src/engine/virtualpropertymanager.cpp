@@ -22,61 +22,37 @@
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                         *
  ****************************************************************************************/
 
-#include <ghoul/misc/assert.h>
+#include <openspace/engine/virtualpropertymanager.h>
 
 namespace openspace {
-namespace globebrowsing {
-    
-template<typename KeyType, typename ValueType>
-LRUCache<KeyType, ValueType>::LRUCache(size_t size)
-    : _cacheSize(size)
-{}
 
-template<typename KeyType, typename ValueType>
-void LRUCache<KeyType, ValueType>::clear() {
-    _itemList.erase(_itemList.begin(), _itemList.end());
-    _itemMap.erase(_itemMap.begin(), _itemMap.end());
+VirtualPropertyManager::VirtualPropertyManager()
+    : properties::PropertyOwner("")
+{
+
 }
 
-template<typename KeyType, typename ValueType>
-void LRUCache<KeyType, ValueType>::put(const KeyType& key, const ValueType& value) {
-    auto it = _itemMap.find(key);
-    if (it != _itemMap.end()) {
-        _itemList.erase(it->second);
-        _itemMap.erase(it);
-    }
-    _itemList.push_front(std::make_pair(key, value));
-    _itemMap.insert(std::make_pair(key, _itemList.begin()));
-    clean();
+void VirtualPropertyManager::addProperty(std::unique_ptr<properties::Property> prop) {
+    // PropertyOwner does not take the ownership of the pointer
+    properties::PropertyOwner::addProperty(prop.get());
+
+    // So we store the pointer locally instead
+    _properties.push_back(std::move(prop));
 }
 
-template<typename KeyType, typename ValueType>
-bool LRUCache<KeyType, ValueType>::exist(const KeyType& key) const {
-    return _itemMap.count(key) > 0;
+void VirtualPropertyManager::removeProperty(properties::Property* prop) {
+    properties::PropertyOwner::removeProperty(prop);
+    _properties.erase(
+        std::remove_if(
+            _properties.begin(),
+            _properties.end(),
+            [prop](const std::unique_ptr<properties::Property>& p) {
+                return p.get() == prop;
+            }
+        ),
+        _properties.end()
+    );
 }
 
-template<typename KeyType, typename ValueType>
-ValueType LRUCache<KeyType, ValueType>::get(const KeyType& key) {
-    //ghoul_assert(exist(key), "Key " << key << " must exist");
-    auto it = _itemMap.find(key);
-    // Move list iterator pointing to value
-    _itemList.splice(_itemList.begin(), _itemList, it->second);
-    return it->second->second;
-}
 
-template<typename KeyType, typename ValueType>
-size_t LRUCache<KeyType, ValueType>::size() const {
-    return _itemMap.size();
-}
-
-template<typename KeyType, typename ValueType>
-void LRUCache<KeyType, ValueType>::clean() {
-    while (_itemMap.size() > _cacheSize) {
-        auto last_it = _itemList.end(); last_it--;
-        _itemMap.erase(last_it->first);
-        _itemList.pop_back();
-    }
-}
-
-} // namespace globebrowsing
 } // namespace openspace
