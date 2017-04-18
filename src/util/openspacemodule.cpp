@@ -42,7 +42,7 @@ OpenSpaceModule::OpenSpaceModule(std::string name)
     : properties::PropertyOwner(std::move(name))
 {}
 
-void OpenSpaceModule::initialize() {
+void OpenSpaceModule::registerModule() {
     std::string upperName = name();
     std::transform(
         upperName.begin(),
@@ -60,12 +60,6 @@ void OpenSpaceModule::initialize() {
     std::string path = modulePath();
     LDEBUG("Registering module path: " << moduleToken << ": " << path);
     FileSys.registerPathToken(moduleToken, path);
-    
-    internalInitialize();
-}
-
-void OpenSpaceModule::deinitialize() {
-    internalDeinitialize();
 }
 
 std::vector<documentation::Documentation> OpenSpaceModule::documentations() const {
@@ -101,8 +95,5 @@ std::string OpenSpaceModule::modulePath() const {
         "OpenSpaceModule"
     );
 }
-
-void OpenSpaceModule::internalInitialize() {}
-void OpenSpaceModule::internalDeinitialize() {}
 
 } // namespace openspace

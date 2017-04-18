@@ -32,11 +32,8 @@ namespace openspace {
 class NewHorizonsModule : public OpenSpaceModule {
 public:
     NewHorizonsModule();
-    
+    void initialize() override;
     std::vector<documentation::Documentation> documentations() const override;
-
-protected:
-    void internalInitialize() override;
 };
 
 } // namespace openspace

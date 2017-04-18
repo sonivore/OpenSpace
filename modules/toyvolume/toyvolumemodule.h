@@ -32,7 +32,7 @@ namespace openspace {
 class ToyVolumeModule : public OpenSpaceModule {
 public:
     ToyVolumeModule();
-    void internalInitialize() override;
+    void initialize() override;
 };
 
 } // namespace openspace

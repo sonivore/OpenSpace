@@ -34,7 +34,7 @@ namespace openspace {
 
 ToyVolumeModule::ToyVolumeModule() : OpenSpaceModule("ToyVolume") {}
 
-void ToyVolumeModule::internalInitialize() {
+void ToyVolumeModule::initialize() {
     auto fRenderable = FactoryManager::ref().factory<Renderable>();
     ghoul_assert(fRenderable, "No renderable factory existed");
     fRenderable->registerClass<RenderableToyVolume>("RenderableToyVolume");

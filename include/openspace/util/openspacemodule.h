@@ -59,18 +59,16 @@ public:
     virtual ~OpenSpaceModule() = default;
 
     /**
-     * Initialization method that will register a token of the form
+     * Registration method that will register a token of the form
      * <code>${MODULE_\<\<NAME\>\>}</code> for a specific <code>\<\<NAME\>\></code> that
-     * is set in the OpenSpaceModule constructor. This method will call the
-     * internalInitialize method for further customization for each subclass.
+     * is set in the OpenSpaceModule constructor.
      */
-    void initialize();
+    void registerModule();
     
     /**
-     * Empty deinitialization method that will call the internalDeinitialize method for
-     * module-specific customization.
-     */
-    void deinitialize();
+    * Initialize gl
+    */
+    virtual void initialize() {};
 
     /** 
      * Initialize gl
@@ -83,7 +81,12 @@ public:
     virtual void deinitializeGL() {};
 
     /**
-     * Initialize gl
+    * Deinitialize
+    */
+    virtual void deinitialize() {};
+
+    /**
+     * Post sync
      */
     virtual void preSync() {};
 
@@ -122,19 +125,7 @@ public:
      */
     virtual ghoul::systemcapabilities::Version requiredOpenGLVersion() const;
 
-protected:
-    /**
-     * Customization point for each derived class. The internalInitialize method is called
-     * by the initiailze method.
-     */
-    virtual void internalInitialize();
-    
-    /**
-     * Customization point for each derived class. The internalDeinitialize method is
-     * called by the deinitialize method.
-     */
-    virtual void internalDeinitialize();
-    
+protected:   
     /**
      * Returns the path for this module, possibly containing ghoul::filesystem::FileSystem
      * path tokens.

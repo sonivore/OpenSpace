@@ -40,18 +40,30 @@ namespace {
 
 namespace openspace {
 
-void ModuleEngine::initialize() {
+void ModuleEngine::registerModules() {
     for (OpenSpaceModule* m : AllModules()) {
         registerModule(std::unique_ptr<OpenSpaceModule>(m));
     }
 }
 
+void ModuleEngine::initialize() {
+    LDEBUG("Initializing modules");
+
+    for (auto& m : _modules) {
+        LDEBUG("Initialize module '" << m->name() << "'");
+        m->initialize();
+    }
+    LDEBUG("Finished initializing modules");
+}
+
 void ModuleEngine::deinitialize() {
     LDEBUG("Deinitializing modules");
+
     for (auto& m : _modules) {
-        LDEBUG("Deinitializing module '" << m->name() << "'");
+        LDEBUG("Deinitialize module '" << m->name() << "'");
         m->deinitialize();
     }
+
     _modules.clear();
     LDEBUG("Finished destroying modules");
 }
@@ -74,7 +86,7 @@ void ModuleEngine::registerModule(std::unique_ptr<OpenSpaceModule> module) {
     }
     
     LDEBUG("Registering module '" << module->name() << "'");
-    module->initialize();
+    module->registerModule();
     LDEBUG("Registered module '" << module->name() << "'");
     _modules.push_back(std::move(module));
 }

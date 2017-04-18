@@ -33,10 +33,8 @@ class SpaceModule : public OpenSpaceModule {
 public:
     SpaceModule();
     virtual ~SpaceModule() = default;
+    void initialize() override;
     std::vector<documentation::Documentation> documentations() const override;
-
-protected:
-    void internalInitialize() override;
 };
 
 } // namespace openspace

@@ -54,13 +54,18 @@ class ModuleEngine {
 public:
     /**
      * Registers all of the OpenSpaceModule%s which are created by the CMake configuration
-     * and stored in the <code>moduleregistration.h</code> file. For all of those modules
-     * the OpenSpaceModule::initialize method with will called.
+     * and stored in the <code>moduleregistration.h</code> file. 
      * \throw ghoul::RuntimeError If two modules in the default modules have the same
      * name
     */
-    void initialize();
+    void registerModules();
     
+    /**
+    * Initializes all of the contained OpenSpaceModule%s by calling the
+    * OpenSpaceModule::initialize methods.
+    */
+    void initialize();
+
     /**
      * Deinitializes all of the contained OpenSpaceModule%s by calling the
      * OpenSpaceModule::deinitialize methods.

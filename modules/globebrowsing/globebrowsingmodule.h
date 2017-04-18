@@ -36,9 +36,10 @@ namespace openspace {
 class GlobeBrowsingModule : public OpenSpaceModule {
 public:
     GlobeBrowsingModule();
-    
 protected:
-    void internalInitialize() override;
+    void initialize() override;
+    void deinitialize() override;
+    
 private:
     properties::IntProperty _openSpaceMaximumTileCacheSize;
     properties::TriggerProperty _clearTileCache;

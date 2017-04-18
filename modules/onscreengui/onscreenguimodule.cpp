@@ -49,7 +49,7 @@ OnScreenGUIModule::OnScreenGUIModule()
     addPropertySubOwner(gui);
 }
 
-void OnScreenGUIModule::internalInitialize() {
+void OnScreenGUIModule::initialize() {
     LDEBUGC("OnScreenGUIModule", "Initializing GUI");
     gui.initialize();
 
@@ -91,7 +91,7 @@ void OnScreenGUIModule::internalInitialize() {
 
 }
 
-void OnScreenGUIModule::internalDeinitialize() {
+void OnScreenGUIModule::deinitialize() {
     LDEBUGC("OnScreenGui", "Deinitialize GUI");
     gui.deinitialize();
 }

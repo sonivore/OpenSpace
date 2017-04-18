@@ -34,7 +34,7 @@ class KameleonVolumeModule : public OpenSpaceModule {
 public:
     KameleonVolumeModule();
     virtual ~KameleonVolumeModule() = default;
-    void internalInitialize() override;
+    void initialize() override;
     std::vector<documentation::Documentation> documentations() const override;
 };
 

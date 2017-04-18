@@ -32,7 +32,7 @@ namespace openspace {
 class MultiresVolumeModule : public OpenSpaceModule {
 public:
     MultiresVolumeModule();
-    void internalInitialize() override;
+    void initialize() override;
 };
 
 } // namespace openspace

@@ -47,7 +47,7 @@ NewHorizonsModule::NewHorizonsModule()
     : OpenSpaceModule("NewHorizons")
 {}
 
-void NewHorizonsModule::internalInitialize() {
+void NewHorizonsModule::initialize() {
     ImageSequencer::initialize();
 
     FactoryManager::ref().addFactory(

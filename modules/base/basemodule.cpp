@@ -57,7 +57,7 @@ BaseModule::BaseModule()
     : OpenSpaceModule("Base")
 {}
 
-void BaseModule::internalInitialize() {
+void BaseModule::initialize() {
     FactoryManager::ref().addFactory(
         std::make_unique<ghoul::TemplateFactory<modelgeometry::ModelGeometry>>(),
         "ModelGeometry"

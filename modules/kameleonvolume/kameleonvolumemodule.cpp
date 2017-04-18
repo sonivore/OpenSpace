@@ -37,7 +37,7 @@ namespace openspace {
 
 KameleonVolumeModule::KameleonVolumeModule() : OpenSpaceModule("KameleonVolume") {}
 
-void KameleonVolumeModule::internalInitialize() {
+void KameleonVolumeModule::initialize() {
     auto fRenderable = FactoryManager::ref().factory<Renderable>();
     ghoul_assert(fRenderable, "No renderable factory existed");
     fRenderable->registerClass<RenderableKameleonVolume>("RenderableKameleonVolume");
@@ -46,8 +46,6 @@ void KameleonVolumeModule::internalInitialize() {
     ghoul_assert(fTask, "No task factory existed");
     fTask->registerClass<KameleonMetadataToJsonTask>("KameleonMetadataToJsonTask");
     fTask->registerClass<KameleonDocumentationTask>("KameleonDocumentationTask");
-
-  
 }
 
 std::vector<documentation::Documentation> KameleonVolumeModule::documentations() const

@@ -49,7 +49,7 @@ SpaceModule::SpaceModule()
     : OpenSpaceModule("Space")
 {}
 
-void SpaceModule::internalInitialize() {
+void SpaceModule::initialize() {
     FactoryManager::ref().addFactory(
         std::make_unique<ghoul::TemplateFactory<planetgeometry::PlanetGeometry>>(),
         "PlanetGeometry"

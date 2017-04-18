@@ -35,8 +35,4 @@ VolumeModule::VolumeModule()
     : OpenSpaceModule("Volume")
 {}
 
-void VolumeModule::internalInitialize() {
-
-}
-
 } // namespace openspace

@@ -37,7 +37,7 @@ DebuggingModule::DebuggingModule()
     : OpenSpaceModule("Debugging")
 {}
 
-void DebuggingModule::internalInitialize() {
+void DebuggingModule::initialize() {
     auto fRenderable = FactoryManager::ref().factory<Renderable>();
     ghoul_assert(fRenderable, "No renderable factory existed");
 

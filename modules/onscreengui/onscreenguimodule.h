@@ -37,8 +37,8 @@ class OnScreenGUIModule : public OpenSpaceModule {
 public:
     OnScreenGUIModule();
 
-    void internalInitialize() override;
-    void internalDeinitialize() override;
+    void initialize() override;
+    void deinitialize() override;
     void initializeGL() override;
     void deinitializeGL() override;
     void draw() override;

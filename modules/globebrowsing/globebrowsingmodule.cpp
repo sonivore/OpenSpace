@@ -60,46 +60,36 @@ GlobeBrowsingModule::GlobeBrowsingModule()
         1)      // Step: One MB
     , _clearTileCache("clearTileCache", "Clear tile cache") {}
 
-void GlobeBrowsingModule::internalInitialize() {
+void GlobeBrowsingModule::initialize() {
     using namespace globebrowsing;
 
-    OsEng.registerModuleCallback(OpenSpaceEngine::CallbackOption::Initialize, [&] {
-        // Set maximum cache size to 25% of total RAM
-        _openSpaceMaximumTileCacheSize.setMaxValue(CpuCap.installedMainMemory() * 0.25);
+    // Set maximum cache size to 25% of total RAM
+    _openSpaceMaximumTileCacheSize.setMaxValue(CpuCap.installedMainMemory() * 0.25);
         
+    // Convert from MB to KB
+    cache::MemoryAwareTileCache::create(_openSpaceMaximumTileCacheSize * 1024);
+    _openSpaceMaximumTileCacheSize.onChange(
+    [&]{
         // Convert from MB to KB
-        cache::MemoryAwareTileCache::create(_openSpaceMaximumTileCacheSize * 1024);
-        _openSpaceMaximumTileCacheSize.onChange(
-        [&]{
-            // Convert from MB to KB
-            cache::MemoryAwareTileCache::ref().setMaximumSize(
-                _openSpaceMaximumTileCacheSize * 1024);
-        });
-        _clearTileCache.onChange(
-        [&]{
-            cache::MemoryAwareTileCache::ref().clear();
-        });
+        cache::MemoryAwareTileCache::ref().setMaximumSize(
+            _openSpaceMaximumTileCacheSize * 1024);
+    });
+    _clearTileCache.onChange(
+    [&]{
+        cache::MemoryAwareTileCache::ref().clear();
+    });
 
-        addProperty(_openSpaceMaximumTileCacheSize);
-        addProperty(_clearTileCache);
+    addProperty(_openSpaceMaximumTileCacheSize);
+    addProperty(_clearTileCache);
       
 #ifdef GLOBEBROWSING_USE_GDAL
-        // Convert from MB to Bytes
-        GdalWrapper::create(
-            16ULL * 1024ULL * 1024ULL, // 16 MB
-            CpuCap.installedMainMemory() * 0.25 * 1024 * 1024); // 25% of total RAM
-        addPropertySubOwner(GdalWrapper::ref());
+    // Convert from MB to Bytes
+    GdalWrapper::create(
+        16ULL * 1024ULL * 1024ULL, // 16 MB
+        CpuCap.installedMainMemory() * 0.25 * 1024 * 1024); // 25% of total RAM
+    addPropertySubOwner(GdalWrapper::ref());
 #endif // GLOBEBROWSING_USE_GDAL
-    });
-  
-    OsEng.registerModuleCallback(OpenSpaceEngine::CallbackOption::Deinitialize, [&]{
-        cache::MemoryAwareTileCache::ref().clear();
-        cache::MemoryAwareTileCache::ref().destroy();
-#ifdef GLOBEBROWSING_USE_GDAL
-        GdalWrapper::ref().destroy();
-#endif // GLOBEBROWSING_USE_GDAL
-    });
-
+    
     auto fRenderable = FactoryManager::ref().factory<Renderable>();
     ghoul_assert(fRenderable, "Renderable factory was not created");
     fRenderable->registerClass<globebrowsing::RenderableGlobe>("RenderableGlobe");
@@ -122,5 +112,16 @@ void GlobeBrowsingModule::internalInitialize() {
     fTileProvider->registerClass<tileprovider::PresentationSlideProvider>("PresentationSlides");
     FactoryManager::ref().addFactory(std::move(fTileProvider));
 }
+
+void GlobeBrowsingModule::deinitialize() {
+    using namespace globebrowsing;
+
+    cache::MemoryAwareTileCache::ref().clear();
+    cache::MemoryAwareTileCache::ref().destroy();
+#ifdef GLOBEBROWSING_USE_GDAL
+    GdalWrapper::ref().destroy();
+#endif // GLOBEBROWSING_USE_GDAL
+}
+
 
 } // namespace openspace

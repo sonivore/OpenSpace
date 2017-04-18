@@ -32,9 +32,7 @@ namespace openspace {
 class DebuggingModule : public OpenSpaceModule {
 public:
     DebuggingModule();
-    
-protected:
-    void internalInitialize() override;
+    void initialize() override;
 };
 
 } // namespace openspace

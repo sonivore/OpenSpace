@@ -369,8 +369,7 @@ void OpenSpaceEngine::create(int argc, char** argv,
     sgctArguments.insert(sgctArguments.begin() + 1, SgctConfigArgumentCommand);
     sgctArguments.insert(sgctArguments.begin() + 2, absPath(sgctConfigurationPath));
 
-    // Register modules
-    _engine->_moduleEngine->initialize();
+    _engine->_moduleEngine->registerModules();
 
     // After registering the modules, the documentations for the available classes
     // can be added as well
@@ -484,6 +483,9 @@ void OpenSpaceEngine::initialize() {
     LDEBUG("Registering Lua libraries");
     registerCoreClasses(*_scriptEngine);
     
+    // Register modules
+    _engine->_moduleEngine->initialize();
+
     for (OpenSpaceModule* module : _moduleEngine->modules()) {
         _scriptEngine->addLibrary(module->luaLibrary());
     }
@@ -520,10 +522,6 @@ void OpenSpaceEngine::initialize() {
     configurationManager().getValue(ConfigurationManager::KeyConfigScene, scenePath);
 
     _renderEngine->initialize();
-
-    for (const auto& func : _moduleCallbacks.initialize) {
-        func();
-    }
 
     scheduleLoadScene(scenePath);
 

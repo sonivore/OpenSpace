@@ -32,9 +32,6 @@ namespace openspace {
 class VolumeModule : public OpenSpaceModule {
 public:
     VolumeModule();
-    
-protected:
-    void internalInitialize() override;
 };
 
 } // namespace openspace

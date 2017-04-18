@@ -35,7 +35,7 @@ namespace openspace {
 
 MultiresVolumeModule::MultiresVolumeModule() : OpenSpaceModule("MultiresVolume") {}
 
-void MultiresVolumeModule::internalInitialize() {
+void MultiresVolumeModule::initialize() {
     auto fRenderable = FactoryManager::ref().factory<Renderable>();
     ghoul_assert(fRenderable, "No renderable factory existed");
 
