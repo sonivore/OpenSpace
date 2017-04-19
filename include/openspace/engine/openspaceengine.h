@@ -63,7 +63,7 @@ class TimeManager;
 class WindowWrapper;
 
 namespace interaction {
-    class InteractionHandler;
+    class Navigator;
     class KeyboardMouseInteractionHandler;
     class KeyboardMouseState;
     class KeyBindingManager;
@@ -127,7 +127,7 @@ public:
     TimeManager& timeManager();
     WindowWrapper& windowWrapper();
     ghoul::fontrendering::FontManager& fontManager();
-    interaction::InteractionHandler& interactionHandler();
+    interaction::Navigator& navigator();
     interaction::KeyboardMouseInteractionHandler& keyboardMouseInteractionHandler();
     interaction::KeyBindingManager& keyBindingManager();
     interaction::KeyboardMouseState& keyboardMouseState();
@@ -167,7 +167,7 @@ private:
     std::unique_ptr<WindowWrapper> _windowWrapper;
     std::unique_ptr<ghoul::cmdparser::CommandlineParser> _commandlineParser;
     std::unique_ptr<ghoul::fontrendering::FontManager> _fontManager;
-    std::unique_ptr<interaction::InteractionHandler> _interactionHandler;
+    std::unique_ptr<interaction::Navigator> _navigator;
     std::unique_ptr<interaction::KeyboardMouseInteractionHandler> _keyboardMouseInteractionHandler;
     std::unique_ptr<interaction::KeyBindingManager> _keyBindingManager;
     std::unique_ptr<interaction::KeyboardMouseState> _keyboardMouseState;
@@ -181,26 +181,6 @@ private:
     bool _scheduledSceneSwitch;
     std::string _scenePath;
 
-    struct {
-        std::vector<std::function<void()>> initialize;
-        std::vector<std::function<void()>> deinitialize;
-        
-        std::vector<std::function<void()>> initializeGL;
-        std::vector<std::function<void()>> deinitializeGL;
-        
-        std::vector<std::function<void()>> preSync;
-        std::vector<std::function<void()>> postSyncPreDraw;
-        std::vector<std::function<void()>> render;
-        std::vector<std::function<void()>> postDraw;
-        
-        std::vector<std::function<bool (Key, KeyModifier, KeyAction)>> keyboard;
-        std::vector<std::function<bool (unsigned int, KeyModifier)>> character;
-        
-        std::vector<std::function<bool (MouseButton, MouseAction)>> mouseButton;
-        std::vector<std::function<void (double, double)>> mousePosition;
-        std::vector<std::function<bool (double)>> mouseScrollWheel;
-    } _moduleCallbacks;
-    
     double _runTime;
 
     // Structure that is responsible for the delayed shutdown of the application

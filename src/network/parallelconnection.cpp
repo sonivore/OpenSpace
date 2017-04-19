@@ -64,7 +64,7 @@
 #include <openspace/network/parallelconnection.h>
 #include <openspace/engine/openspaceengine.h>
 #include <openspace/engine/wrapper/windowwrapper.h>
-#include <openspace/interaction/interactionhandler.h>
+#include <openspace/interaction/navigator.h>
 #include <openspace/interaction/interactionmode.h>
 #include <openspace/scene/scenegraphnode.h>
 #include <openspace/util/timemanager.h>
@@ -538,8 +538,8 @@ void ParallelConnection::dataMessageReceived(const std::vector<char>& messageCon
             datamessagestructures::CameraKeyframe kf(buffer);
             kf._timestamp = calculateBufferedKeyframeTime(kf._timestamp);
 
-            OsEng.interactionHandler().removeKeyframesAfter(kf._timestamp);
-            OsEng.interactionHandler().addKeyframe(kf);
+            OsEng.navigator().removeKeyframesAfter(kf._timestamp);
+            OsEng.navigator().addKeyframe(kf);
             break;
         }
         case datamessagestructures::Type::TimeData: {
@@ -692,7 +692,7 @@ void ParallelConnection::connectionStatusMessageReceived(const std::vector<char>
 
     setStatus(status);
 
-    OsEng.interactionHandler().clearKeyframes();
+    OsEng.navigator().clearKeyframes();
     OsEng.timeManager().clearKeyframes();
 
 }
@@ -941,7 +941,7 @@ void ParallelConnection::sendScript(std::string script) {
 }
 
 void ParallelConnection::resetTimeOffset() {
-    OsEng.interactionHandler().clearKeyframes();
+    OsEng.navigator().clearKeyframes();
     OsEng.timeManager().clearKeyframes();
     std::lock_guard<std::mutex> latencyLock(_latencyMutex);
     _latencyDiffs.clear();
@@ -1012,21 +1012,21 @@ const std::string& ParallelConnection::hostName() {
 }
 
 void ParallelConnection::sendCameraKeyframe() {
-    SceneGraphNode* focusNode = OsEng.interactionHandler().focusNode();
+    SceneGraphNode* focusNode = OsEng.navigator().focusNode();
     if (!focusNode) {
         return;
     }
 
     // Create a keyframe with current position and orientation of camera
     datamessagestructures::CameraKeyframe kf;
-    kf._position = OsEng.interactionHandler().focusNodeToCameraVector();
+    kf._position = OsEng.navigator().focusNodeToCameraVector();
 
-    kf._followNodeRotation = OsEng.interactionHandler().interactionMode()->followingNodeRotation();
+    kf._followNodeRotation = OsEng.navigator().interactionMode()->followingNodeRotation();
     if (kf._followNodeRotation) {
         kf._position = glm::inverse(focusNode->worldRotationMatrix()) * kf._position;
-        kf._rotation = OsEng.interactionHandler().focusNodeToCameraRotation();
+        kf._rotation = OsEng.navigator().focusNodeToCameraRotation();
     } else {
-        kf._rotation = OsEng.interactionHandler().camera()->rotationQuaternion();
+        kf._rotation = OsEng.navigator().camera()->rotationQuaternion();
     }
 
     kf._focusNode = focusNode->name();

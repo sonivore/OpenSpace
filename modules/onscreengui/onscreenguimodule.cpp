@@ -30,7 +30,7 @@
 #include <openspace/engine/settingsengine.h>
 #include <openspace/engine/virtualpropertymanager.h>
 #include <openspace/engine/wrapper/windowwrapper.h>
-#include <openspace/interaction/interactionhandler.h>
+#include <openspace/interaction/navigator.h>
 #include <openspace/network/parallelconnection.h>
 #include <openspace/rendering/renderengine.h>
 #include <openspace/rendering/screenspacerenderable.h>
@@ -58,7 +58,7 @@ void OnScreenGUIModule::initialize() {
             std::vector<properties::PropertyOwner*> res = {
                 &(OsEng.windowWrapper()),
                 &(OsEng.settingsEngine()),
-                &(OsEng.interactionHandler()),
+                &(OsEng.navigator()),
                 &(OsEng.renderEngine())
             };
             return res;

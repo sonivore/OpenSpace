@@ -25,6 +25,7 @@
 #ifndef __OPENSPACE_CORE___INTERACTIONHANDLER___H__
 #define __OPENSPACE_CORE___INTERACTIONHANDLER___H__
 
+#include <openspace/interaction/keyboardmousestate.h>
 #include <openspace/interaction/interactionmode.h>
 #include <openspace/network/parallelconnection.h>
 #include <openspace/properties/propertyowner.h>
@@ -78,9 +79,7 @@ public:
     void lockControls();
     void unlockControls();
 
-    //void update(double deltaTime);
     void updateCamera(double deltaTime);
-    void updateInputStates(double timeSinceLastUpdate);    
 
     // Accessors
     ghoul::Dictionary getCameraStateDictionary();
@@ -88,7 +87,6 @@ public:
     glm::dvec3 focusNodeToCameraVector() const;
     glm::quat focusNodeToCameraRotation() const;
     Camera* const camera() const;
-    const InputState& inputState() const;
 
     /**
     * Returns the Lua library that contains all Lua functions available to affect the
@@ -98,12 +96,6 @@ public:
     * interaction
     */
     static scripting::LuaLibrary luaLibrary();
-
-    // Callback functions 
-    void keyboardCallback(Key key, KeyModifier modifier, KeyAction action);
-    void mouseButtonCallback(MouseButton button, MouseAction action);
-    void mousePositionCallback(double x, double y);
-    void mouseScrollWheelCallback(double pos);
 
     void saveCameraStateToFile(const std::string& filepath);
     void restoreCameraStateFromFile(const std::string& filepath);
@@ -123,14 +115,12 @@ private:
 
     std::multimap<KeyWithModifier, KeyInformation> _keyLua;
 
-    std::unique_ptr<InputState> _inputState;
+    KeyboardMouseState* _inputState;
     Camera* _camera;
 
     std::shared_ptr<InteractionMode> _currentInteractionMode;
 
     std::map<std::string, std::shared_ptr<InteractionMode>> _interactionModes;
-    std::shared_ptr<OrbitalInteractionMode::MouseStates> _mouseStates;
-
     // Properties
     properties::StringProperty _origin;
 

@@ -50,130 +50,6 @@ namespace {
 namespace openspace {
 namespace interaction {
 
-    // InputState
-    InputState::InputState() {
-
-    }
-
-    InputState::~InputState() {
-
-    }
-
-    const std::vector<datamessagestructures::CameraKeyframe>& InputState::keyframes() const {
-        return _keyframes;
-    }
-
-    void InputState::addKeyframe(const datamessagestructures::CameraKeyframe &kf) {
-        clearOldKeyframes();
-        if (kf._timestamp < OsEng.runTime()) {
-            return;
-        }
-        _keyframes.insert(std::upper_bound(_keyframes.begin(), _keyframes.end(), kf, &InputState::compareKeyframeTimes), kf);
-    }
-
-    void InputState::removeKeyframesAfter(double timestamp) {
-        datamessagestructures::CameraKeyframe kf;
-        kf._timestamp = timestamp;
-        // Remove keyframes after the inserted keyframe.
-        _keyframes.erase(std::upper_bound(_keyframes.begin(), _keyframes.end(), kf, &InputState::compareKeyframeTimes), _keyframes.end());
-    }
-
-    bool InputState::compareKeyframeTimes(const datamessagestructures::CameraKeyframe& a, const datamessagestructures::CameraKeyframe& b) {
-        return a._timestamp < b._timestamp;
-    }
-
-    void InputState::clearOldKeyframes() {
-        double now = OsEng.runTime();
-        auto isLater = [now](const datamessagestructures::CameraKeyframe kf) {
-            return kf._timestamp > now;
-        };
-
-        // Remote keyframes with earlier timestamps than the current time.
-        auto nextKeyframe = std::find_if(_keyframes.begin(), _keyframes.end(), isLater);
-        if (nextKeyframe != _keyframes.begin()) {
-            _keyframes.erase(_keyframes.begin(), nextKeyframe - 1);
-        }
-    }
-
-    void InputState::clearKeyframes() {
-        _keyframes.clear();
-    }
-
-    void InputState::keyboardCallback(Key key, KeyModifier modifier, KeyAction action) {
-        if (action == KeyAction::Press) {
-            _keysDown.push_back(std::pair<Key, KeyModifier>(key, modifier));
-        }
-        else if (action == KeyAction::Release) {
-            // Remove all key pressings for 'key'
-            _keysDown.remove_if([key](std::pair<Key, KeyModifier> keyModPair)
-            { return keyModPair.first == key; });
-        }
-    }
-
-    void InputState::mouseButtonCallback(MouseButton button, MouseAction action) {
-        if (action == MouseAction::Press) {
-            _mouseButtonsDown.push_back(button);
-        }
-        else if (action == MouseAction::Release) {
-            // Remove all key pressings for 'button'
-            _mouseButtonsDown.remove_if([button](MouseButton buttonInList)
-            { return button == buttonInList; });
-        }
-    }
-
-    void InputState::mousePositionCallback(double mouseX, double mouseY) {
-        _mousePosition = glm::dvec2(mouseX, mouseY);
-    }
-
-    void InputState::mouseScrollWheelCallback(double mouseScrollDelta) {
-        _mouseScrollDelta = mouseScrollDelta;
-    }
-
-    const std::list<std::pair<Key, KeyModifier> >& InputState::getPressedKeys() const {
-        return _keysDown;
-    }
-
-    const std::list<MouseButton>& InputState::getPressedMouseButtons() const {
-        return _mouseButtonsDown;
-    }
-
-    glm::dvec2 InputState::getMousePosition() const {
-        return _mousePosition;
-    }
-
-    double InputState::getMouseScrollDelta() const {
-        return _mouseScrollDelta;
-    }
-
-    bool InputState::isKeyPressed(std::pair<Key, KeyModifier> keyModPair) const {
-        for (auto it = _keysDown.begin(); it != _keysDown.end(); it++) {
-            if (*it == keyModPair) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    bool InputState::isKeyPressed(Key key) const {
-        for (auto it = _keysDown.begin(); it != _keysDown.end(); it++) {
-            if ((*it).first == key) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    bool InputState::isMouseButtonPressed(MouseButton mouseButton) const {
-        for (auto it = _mouseButtonsDown.begin(); it != _mouseButtonsDown.end(); it++) {
-            if (*it == mouseButton) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-
-
 InteractionMode::InteractionMode()
     : _rotateToFocusNodeInterpolator(Interpolator<double>([](double t){
         return pow(t, 2);
@@ -210,10 +86,6 @@ KeyframeInteractionMode::KeyframeInteractionMode(){
 
 KeyframeInteractionMode::~KeyframeInteractionMode() {
 
-}
-
-void KeyframeInteractionMode::updateMouseStatesFromInput(const InputState& inputState, double deltaTime) {
-    _keyframes = inputState.keyframes();
 }
 
 void KeyframeInteractionMode::updateCameraStateFromMouseStates(Camera& camera, double deltaTime) {
@@ -290,7 +162,7 @@ OrbitalInteractionMode::MouseStates::MouseStates(double sensitivity, double velo
 
 }
 
-void OrbitalInteractionMode::MouseStates::updateMouseStatesFromInput(const InputState& inputState, double deltaTime) {
+void OrbitalInteractionMode::MouseStates::updateMouseStatesFromInput(const KeyboardMouseState& inputState, double deltaTime) {
     glm::dvec2 mousePosition = inputState.getMousePosition();
 
     bool button1Pressed = inputState.isMouseButtonPressed(MouseButton::Button1);
@@ -524,7 +396,7 @@ bool OrbitalInteractionMode::followingNodeRotation() const {
     return false;
 }
 
-void OrbitalInteractionMode::updateMouseStatesFromInput(const InputState& inputState, double deltaTime) {
+void OrbitalInteractionMode::updateMouseStatesFromInput(const KeyboardMouseState& inputState, double deltaTime) {
     _mouseStates->updateMouseStatesFromInput(inputState, deltaTime);
 }
 

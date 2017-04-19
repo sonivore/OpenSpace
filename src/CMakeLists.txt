@@ -41,14 +41,14 @@ set(OPENSPACE_SOURCE
     ${OPENSPACE_BASE_DIR}/src/engine/wrapper/sgctwindowwrapper.cpp
     ${OPENSPACE_BASE_DIR}/src/engine/wrapper/windowwrapper.cpp
     ${OPENSPACE_BASE_DIR}/src/interaction/controller.cpp
-    ${OPENSPACE_BASE_DIR}/src/interaction/interactionhandler.cpp
     ${OPENSPACE_BASE_DIR}/src/interaction/interactionmode.cpp
-    ${OPENSPACE_BASE_DIR}/src/interaction/interactionhandler_lua.inl
     ${OPENSPACE_BASE_DIR}/src/interaction/keybindingmanager.cpp
     ${OPENSPACE_BASE_DIR}/src/interaction/keybindingmanager_lua.inl
     ${OPENSPACE_BASE_DIR}/src/interaction/keyboardmouseinteractionhandler.cpp
     ${OPENSPACE_BASE_DIR}/src/interaction/keyboardmousestate.cpp
     ${OPENSPACE_BASE_DIR}/src/interaction/luaconsole.cpp
+    ${OPENSPACE_BASE_DIR}/src/interaction/navigator.cpp
+    ${OPENSPACE_BASE_DIR}/src/interaction/navigator_lua.inl
     ${OPENSPACE_BASE_DIR}/src/mission/mission.cpp
     ${OPENSPACE_BASE_DIR}/src/mission/missionmanager.cpp
     ${OPENSPACE_BASE_DIR}/src/mission/missionmanager_lua.inl
@@ -183,13 +183,13 @@ set(OPENSPACE_HEADER
     ${OPENSPACE_BASE_DIR}/include/openspace/engine/wrapper/sgctwindowwrapper.h
     ${OPENSPACE_BASE_DIR}/include/openspace/engine/wrapper/windowwrapper.h
     ${OPENSPACE_BASE_DIR}/include/openspace/interaction/controller.h
-    ${OPENSPACE_BASE_DIR}/include/openspace/interaction/interactionhandler.h
     ${OPENSPACE_BASE_DIR}/include/openspace/interaction/interactionmode.h
     ${OPENSPACE_BASE_DIR}/include/openspace/interaction/luaconsole.h
     ${OPENSPACE_BASE_DIR}/include/openspace/interaction/keybindingmanager.h
     ${OPENSPACE_BASE_DIR}/include/openspace/interaction/keyboardmouseeventconsumer.h
     ${OPENSPACE_BASE_DIR}/include/openspace/interaction/keyboardmouseinteractionhandler.h
     ${OPENSPACE_BASE_DIR}/include/openspace/interaction/keyboardmousestate.h
+    ${OPENSPACE_BASE_DIR}/include/openspace/interaction/navigator.h
     ${OPENSPACE_BASE_DIR}/include/openspace/mission/mission.h
     ${OPENSPACE_BASE_DIR}/include/openspace/mission/missionmanager.h
     ${OPENSPACE_BASE_DIR}/include/openspace/network/networkengine.h

@@ -25,7 +25,7 @@
 #include <modules/onscreengui/include/guiorigincomponent.h>
 
 #include <openspace/engine/openspaceengine.h>
-#include <openspace/interaction/interactionhandler.h>
+#include <openspace/interaction/navigator.h>
 #include <openspace/rendering/renderengine.h>
 #include <openspace/scene/scenegraphnode.h>
 
@@ -41,7 +41,7 @@ GuiOriginComponent::GuiOriginComponent()
 {}
 
 void GuiOriginComponent::render() {
-    SceneGraphNode* currentFocus = OsEng.interactionHandler().focusNode();
+    SceneGraphNode* currentFocus = OsEng.navigator().focusNode();
 
     std::vector<SceneGraphNode*> nodes =
         OsEng.renderEngine().scene()->allSceneGraphNodes();

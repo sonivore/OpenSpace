@@ -26,6 +26,7 @@
 #define __OPENSPACE_CORE___INTERACTIONMODE___H__
 
 #include <openspace/network/parallelconnection.h>
+#include <openspace/interaction/keyboardmousestate.h>
 #include <openspace/util/mouse.h>
 #include <openspace/util/keys.h>
 
@@ -68,49 +69,6 @@ namespace interaction {
         double _t;
     };
 
-    class InputState
-    {
-    public:
-        InputState();
-        ~InputState();
-
-        // Callback functions
-        void keyboardCallback(Key key, KeyModifier modifier, KeyAction action);
-        void mouseButtonCallback(MouseButton button, MouseAction action);
-        void mousePositionCallback(double mouseX, double mouseY);
-        void mouseScrollWheelCallback(double mouseScrollDelta);
-
-        // Mutators
-        void addKeyframe(const datamessagestructures::CameraKeyframe &kf);
-        void removeKeyframesAfter(double timestamp);
-        void clearKeyframes();
-        void clearOldKeyframes();
-
-        static bool compareKeyframeTimes(const datamessagestructures::CameraKeyframe& a, const datamessagestructures::CameraKeyframe& b);
-
-        // Accessors
-        const std::list<std::pair<Key, KeyModifier> >& getPressedKeys() const;
-        const std::list<MouseButton>& getPressedMouseButtons() const;
-        glm::dvec2 getMousePosition() const;
-        double getMouseScrollDelta() const;
-        const std::vector<datamessagestructures::CameraKeyframe>& keyframes() const;
-
-        bool isKeyPressed(std::pair<Key, KeyModifier> keyModPair) const;
-        bool isKeyPressed(Key key) const;
-        bool isMouseButtonPressed(MouseButton mouseButton) const;
-    private:
-        // Input from keyboard and mouse
-        std::list<std::pair<Key, KeyModifier> > _keysDown;
-        std::list<MouseButton> _mouseButtonsDown;
-        glm::dvec2 _mousePosition;
-        double _mouseScrollDelta;
-
-        // Remote input via keyframes
-        std::vector<datamessagestructures::CameraKeyframe> _keyframes;
-    };
-
-
-
 class InteractionMode {
 public:
     InteractionMode();
@@ -124,7 +82,7 @@ public:
     Interpolator<double>& rotateToFocusNodeInterpolator();
     virtual bool followingNodeRotation() const = 0;
     
-    virtual void updateMouseStatesFromInput(const InputState& inputState, double deltaTime) = 0;
+    virtual void updateMouseStatesFromInput(const KeyboardMouseState& kmState, double deltaTime) = 0;
     virtual void updateCameraStateFromMouseStates(Camera& camera, double deltaTime) = 0;
 
 protected:
@@ -197,13 +155,12 @@ public:
     KeyframeInteractionMode();
     ~KeyframeInteractionMode();
 
-    virtual void updateMouseStatesFromInput(const InputState& inputState, double deltaTime);
+    virtual void updateMouseStatesFromInput(const KeyboardMouseState& kmState, double deltaTime);
     virtual void updateCameraStateFromMouseStates(Camera& camera, double deltaTime);
     bool followingNodeRotation() const override;
 
 private:
-    std::vector<datamessagestructures::CameraKeyframe> _keyframes;
-    double _currentKeyframeTime;
+
 };
 
 class GlobeBrowsingInteractionMode;
@@ -220,7 +177,7 @@ public:
         interaction. Lower value will make it harder to move the camera. 
         */
         MouseStates(double sensitivity, double velocityScaleFactor);
-        void updateMouseStatesFromInput(const InputState& inputState, double deltaTime);
+        void updateMouseStatesFromInput(const KeyboardMouseState& kmState, double deltaTime);
         void setRotationalFriction(double friction);
         void setHorizontalFriction(double friction);
         void setVerticalFriction(double friction);
@@ -248,7 +205,7 @@ public:
 
     //virtual void update(Camera& camera, const InputState& inputState, double deltaTime);
 
-    virtual void updateMouseStatesFromInput(const InputState& inputState, double deltaTime);
+    virtual void updateMouseStatesFromInput(const KeyboardMouseState& kmState, double deltaTime);
     virtual void updateCameraStateFromMouseStates(Camera& camera, double deltaTime);
     bool followingNodeRotation() const override;
 

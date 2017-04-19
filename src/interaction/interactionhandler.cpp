@@ -286,22 +286,6 @@ const InputState& InteractionHandler::inputState() const {
     return *_inputState;
 }
 
-void InteractionHandler::mouseButtonCallback(MouseButton button, MouseAction action) {
-    _inputState->mouseButtonCallback(button, action);
-}
-
-void InteractionHandler::mousePositionCallback(double x, double y) {
-    _inputState->mousePositionCallback(x, y);
-}
-
-void InteractionHandler::mouseScrollWheelCallback(double pos) {
-    _inputState->mouseScrollWheelCallback(pos);
-}
-
-void InteractionHandler::keyboardCallback(Key key, KeyModifier modifier, KeyAction action) {
-    _inputState->keyboardCallback(key, modifier, action);
-}
-
 void InteractionHandler::setCameraStateFromDictionary(const ghoul::Dictionary& cameraDict) {
     bool readSuccessful = true;
 

@@ -36,7 +36,7 @@
 #include <openspace/engine/syncengine.h>
 #include <openspace/engine/virtualpropertymanager.h>
 #include <openspace/engine/wrapper/windowwrapper.h>
-#include <openspace/interaction/interactionhandler.h>
+#include <openspace/interaction/navigator.h>
 #include <openspace/interaction/luaconsole.h>
 #include <openspace/interaction/keyboardmouseinteractionhandler.h>
 #include <openspace/interaction/keybindingmanager.h>
@@ -123,7 +123,7 @@ OpenSpaceEngine::OpenSpaceEngine(
     std::string programName,
     std::unique_ptr<WindowWrapper> windowWrapper)
     : _configurationManager(new ConfigurationManager)
-    , _interactionHandler(new interaction::InteractionHandler)
+    , _navigator(new interaction::Navigator)
     , _keyboardMouseInteractionHandler(std::make_unique<interaction::KeyboardMouseInteractionHandler>())
     , _renderEngine(new RenderEngine)
     , _sceneManager(new SceneManager)
@@ -151,10 +151,10 @@ OpenSpaceEngine::OpenSpaceEngine(
     , _shutdown({false, 0.f, 0.f})
     , _isFirstRenderingFirstFrame(true)
 {
-    _interactionHandler->setPropertyOwner(_globalPropertyNamespace.get());
+    _navigator->setPropertyOwner(_globalPropertyNamespace.get());
     
     // New property subowners also have to be added to the OnScreenGuiModule callback!
-    _globalPropertyNamespace->addPropertySubOwner(_interactionHandler.get());
+    _globalPropertyNamespace->addPropertySubOwner(_navigator.get());
     _globalPropertyNamespace->addPropertySubOwner(_settingsEngine.get());
     _globalPropertyNamespace->addPropertySubOwner(_renderEngine.get());
     _globalPropertyNamespace->addPropertySubOwner(_windowWrapper.get());
@@ -513,7 +513,8 @@ void OpenSpaceEngine::initialize() {
     _settingsEngine->setModules(_moduleEngine->modules());
 
     // Initialize the InteractionHandler
-    _interactionHandler->initialize();
+    _navigator->initialize();
+    _navigator->setInputState(_engine->_keyboardMouseState.get());
 
     // Load a light and a monospaced font
     loadFonts();
@@ -586,7 +587,7 @@ void OpenSpaceEngine::loadScene(const std::string& scenePath) {
     _renderEngine->startFading(1, 3.0);
 
     scene->initialize();
-    _interactionHandler->setCamera(scene->camera());
+    _navigator->setCamera(scene->camera());
 
     try {
         runPostInitializationScripts(scenePath);
@@ -645,7 +646,7 @@ void OpenSpaceEngine::loadScene(const std::string& scenePath) {
 void OpenSpaceEngine::deinitialize() {
     LTRACE("OpenSpaceEngine::deinitialize(begin)");
 
-    _interactionHandler->deinitialize();
+    _navigator->deinitialize();
     _renderEngine->deinitialize();
 
     LTRACE("OpenSpaceEngine::deinitialize(end)");
@@ -966,11 +967,9 @@ void OpenSpaceEngine::preSynchronization() {
                 *it, ScriptEngine::RemoteScripting::Yes
             );
         }
-
-        _interactionHandler->updateInputStates(dt);
         
         _renderEngine->updateScene();
-        _interactionHandler->updateCamera(dt);
+        _navigator->updateCamera(dt);
         _renderEngine->camera()->invalidateCache();
 
         _parallelConnection->preSynchronization();
@@ -1235,13 +1234,13 @@ ghoul::fontrendering::FontManager& OpenSpaceEngine::fontManager() {
     return *_fontManager;
 }
 
-interaction::InteractionHandler& OpenSpaceEngine::interactionHandler() {
-    ghoul_assert(_interactionHandler, "InteractionHandler must not be nullptr");
-    return *_interactionHandler;
+interaction::Navigator& OpenSpaceEngine::navigator() {
+    ghoul_assert(_navigator, "Navigator must not be nullptr");
+    return *_navigator;
 }
 
 interaction::KeyboardMouseInteractionHandler& OpenSpaceEngine::keyboardMouseInteractionHandler() {
-    ghoul_assert(_keyboardMouseInteractionHandler, "InteractionHandler must not be nullptr");
+    ghoul_assert(_keyboardMouseInteractionHandler, "KeyboardMouseInteractionHandler must not be nullptr");
     return *_keyboardMouseInteractionHandler;
 }
 
@@ -1250,6 +1249,10 @@ interaction::KeyBindingManager& OpenSpaceEngine::keyBindingManager() {
     return *_keyBindingManager;
 }
 
+interaction::KeyboardMouseState& OpenSpaceEngine::keyboardMouseState() {
+    ghoul_assert(_keyBindingManager, "KeyboardMouseState must not be nullptr");
+    return *_keyboardMouseState;
+}
 
 properties::PropertyOwner& OpenSpaceEngine::globalPropertyOwner() {
     ghoul_assert(
