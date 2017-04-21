@@ -35,7 +35,7 @@ const std::string _loggerCat = "PowerScaledSphere";
 
 namespace openspace {
 
-PowerScaledSphere::PowerScaledSphere(const PowerScaledScalar& radius, int segments)
+PowerScaledSphere::PowerScaledSphere(double radius, int segments)
     : _vaoID(0)
     , _vBufferID(0)
     , _iBufferID(0)
@@ -49,7 +49,7 @@ PowerScaledSphere::PowerScaledSphere(const PowerScaledScalar& radius, int segmen
 
     int nr = 0;
     const float fsegments = static_cast<float>(segments);
-    const float r = static_cast<float>(radius[0]);
+    const float r = static_cast<float>(radius);
 
     for (int i = 0; i <= segments; i++) {
         // define an extra vertex around the y-axis due to texture mapping
@@ -78,7 +78,7 @@ PowerScaledSphere::PowerScaledSphere(const PowerScaledScalar& radius, int segmen
             _varray[nr].location[0] = x;
             _varray[nr].location[1] = y;
             _varray[nr].location[2] = z;
-            _varray[nr].location[3] = static_cast<GLfloat>(radius[1]);
+            _varray[nr].location[3] = 0;
             _varray[nr].normal[0] = normal[0];
             _varray[nr].normal[1] = normal[1];
             _varray[nr].normal[2] = normal[2];

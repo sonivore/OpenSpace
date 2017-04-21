@@ -114,7 +114,8 @@ bool RenderableSphere::isReady() const {
 
 bool RenderableSphere::initialize() {
     delete _sphere;
-    _sphere = new PowerScaledSphere(_size.value(), _segments);
+    const double s = _size.value()[0] * pow(10, _size.value()[1]);
+    _sphere = new PowerScaledSphere(s, _segments);
     _sphere->initialize();
 
     // pscstandard
@@ -184,7 +185,8 @@ void RenderableSphere::update(const UpdateData& data) {
 
     if (_sphereIsDirty) {
         delete _sphere;
-        _sphere = new PowerScaledSphere(_size.value(), _segments);
+        const double s = _size.value()[0] * pow(10, _size.value()[1]);
+        _sphere = new PowerScaledSphere(s, _segments);
         _sphere->initialize();
         _sphereIsDirty = false;
     }

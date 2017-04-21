@@ -27,17 +27,13 @@
 
 // open space includes
 #include <ghoul/opengl/ghoul_gl.h>
-#include <openspace/util/powerscaledcoordinate.h>
-#include <openspace/util/powerscaledscalar.h>
 #include <openspace/properties/vector/vec4property.h>
 
 namespace openspace {
 
 class PowerScaledSphere {
 public:
-    // initializers
-    PowerScaledSphere(const PowerScaledScalar& radius, 
-        int segments = 8);
+    PowerScaledSphere(double radius, int segments = 8);
 
     PowerScaledSphere(glm::vec3 radius, int segments);
 

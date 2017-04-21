@@ -22,11 +22,8 @@
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                         *
  ****************************************************************************************/
 
-// open space includes
 #include <openspace/util/powerscaledcoordinate.h>
-#include <openspace/util/powerscaledscalar.h>
 
-// std includes
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
@@ -123,9 +120,10 @@ glm::dvec3 PowerScaledCoordinate::dvec3() const
         _vec[2] * pow(k, _vec[3]));
 }
 
-PowerScaledScalar PowerScaledCoordinate::length() const
+double PowerScaledCoordinate::length() const
 {
-    return PowerScaledScalar(glm::length(glm::vec3(_vec[0], _vec[1], _vec[2])), _vec[3]);
+    return glm::length(glm::vec3(_vec[0], _vec[1], _vec[2])) * pow(10, _vec[3]);
+    //return PowerScaledScalar(glm::length(glm::vec3(_vec[0], _vec[1], _vec[2])), _vec[3]);
 }
 
 glm::vec3 PowerScaledCoordinate::direction() const
@@ -225,29 +223,29 @@ PowerScaledCoordinate PowerScaledCoordinate::operator*(const float& rhs) const
     return PowerScaledCoordinate(_vec[0] * rhs, _vec[1] * rhs, _vec[2] * rhs, _vec[3]);
 }
 
-PowerScaledCoordinate& PowerScaledCoordinate::operator*=(const PowerScaledScalar& rhs)
-{
-    double ds = this->_vec[3] - rhs._data[1];
-    if (ds >= 0.0) {
-        double p = pow(k, -ds);
-        *this = PowerScaledCoordinate(
-            static_cast<float>(rhs._data[0] * p * _vec[0]), 
-            static_cast<float>(rhs._data[0] * p * _vec[1]),
-            static_cast<float>(rhs._data[0] * p * _vec[2]), this->_vec[3] + _vec[3]);
-    } else {
-        double p = pow(k, ds);
-        *this = PowerScaledCoordinate(
-            static_cast<float>(rhs._data[0] * _vec[0] * p), 
-            static_cast<float>(rhs._data[0] * _vec[1] * p),
-            static_cast<float>(rhs._data[0] * _vec[2] * p), rhs._data[1] + rhs._data[1]);
-    }
-    return *this;
-}
+//PowerScaledCoordinate& PowerScaledCoordinate::operator*=(const PowerScaledScalar& rhs)
+//{
+//    double ds = this->_vec[3] - rhs._data[1];
+//    if (ds >= 0.0) {
+//        double p = pow(k, -ds);
+//        *this = PowerScaledCoordinate(
+//            static_cast<float>(rhs._data[0] * p * _vec[0]), 
+//            static_cast<float>(rhs._data[0] * p * _vec[1]),
+//            static_cast<float>(rhs._data[0] * p * _vec[2]), this->_vec[3] + _vec[3]);
+//    } else {
+//        double p = pow(k, ds);
+//        *this = PowerScaledCoordinate(
+//            static_cast<float>(rhs._data[0] * _vec[0] * p), 
+//            static_cast<float>(rhs._data[0] * _vec[1] * p),
+//            static_cast<float>(rhs._data[0] * _vec[2] * p), rhs._data[1] + rhs._data[1]);
+//    }
+//    return *this;
+//}
 
-PowerScaledCoordinate PowerScaledCoordinate::operator*(const PowerScaledScalar& rhs) const
-{
-    return PowerScaledCoordinate(*this) *= rhs;
-}
+//PowerScaledCoordinate PowerScaledCoordinate::operator*(const PowerScaledScalar& rhs) const
+//{
+//    return PowerScaledCoordinate(*this) *= rhs;
+//}
 
 PowerScaledCoordinate PowerScaledCoordinate::operator*(const glm::mat4& matrix) const
 {

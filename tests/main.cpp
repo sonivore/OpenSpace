@@ -56,7 +56,6 @@
 #endif
 
 #include <test_luaconversions.inl>
-#include <test_powerscalecoordinates.inl>
 
 #ifdef OPENSPACE_MODULE_ISWA_ENABLED
 #include <test_screenspaceimage.inl>

@@ -89,7 +89,7 @@ bool DataSphere::initialize(){
 }
 
 bool DataSphere::createGeometry(){
-    PowerScaledScalar radius =  PowerScaledScalar(6.371f*_radius, 6.0);
+    const double radius = 6.371f*_radius * pow(10, 6);
     int segments = 100;
     _sphere = std::make_shared<PowerScaledSphere>(radius, segments);
     _sphere->initialize();
