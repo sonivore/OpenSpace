@@ -996,16 +996,15 @@ void RenderEngine::renderInformation() {
                 if (hasNewHorizons) {
                     try {
                         double lt;
-                        glm::dvec3 p =
+                        glm::dvec3 nhPos =
                             SpiceManager::ref().targetPosition("PLUTO", "NEW HORIZONS", "GALACTIC", {}, currentTime, lt);
-                        psc nhPos = PowerScaledCoordinate::CreatePowerScaledCoordinate(p.x, p.y, p.z);
                         float a, b;
                         glm::dvec3 radii;
                         SpiceManager::ref().getValue("PLUTO", "RADII", radii);
                         a = static_cast<float>(radii.x);
                         b = static_cast<float>(radii.y);
                         float radius = (a + b) / 2.f;
-                        float distToSurf = glm::length(nhPos.vec3()) - radius;
+                        float distToSurf = glm::length(nhPos) - radius;
 
                         RenderFont(*_fontInfo,
                                    penPosition,

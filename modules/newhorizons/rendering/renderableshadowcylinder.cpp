@@ -169,15 +169,13 @@ void RenderableShadowCylinder::createCylinder(double time) {
         _numberOfPoints
     );
     
-    std::vector<psc> terminatorPoints;
+    std::vector<glm::dvec3> terminatorPoints;
     std::transform(
         res.terminatorPoints.begin(),
         res.terminatorPoints.end(),
         std::back_inserter(terminatorPoints),
-        [](const glm::dvec3& p) {
-            PowerScaledCoordinate psc = PowerScaledCoordinate::CreatePowerScaledCoordinate(p.x, p.y, p.z);
-            psc[3] += 3;
-            return psc;
+        [](const glm::dvec3& p) -> glm::dvec3 {
+            return { p.x * 1000, p.y * 1000, p.z * 1000 };
         }
     );
     
@@ -190,11 +188,16 @@ void RenderableShadowCylinder::createCylinder(double time) {
     vecLightSource *= _shadowLength;
     _vertices.clear();
 
-    psc endpoint = psc::CreatePowerScaledCoordinate(vecLightSource.x, vecLightSource.y, vecLightSource.z);
+    const glm::dvec3 endpoint = vecLightSource;
+    //psc endpoint = psc::CreatePowerScaledCoordinate(vecLightSource.x, vecLightSource.y, vecLightSource.z);
     for (const auto& v : terminatorPoints) {
-        _vertices.push_back({ v[0], v[1], v[2], v[3] });
-        glm::vec4 f = psc_addition(v.vec4(), endpoint.vec4());
-        _vertices.push_back({ f[0], f[1], f[2], f[3] });
+        _vertices.push_back({ float(v.x), float(v.y), float(v.z), 0.f });
+        _vertices.push_back({
+            float(v.x + endpoint.x),
+            float(v.y + endpoint.y),
+            float(v.z + endpoint.z),
+            0.f 
+        });
     }
     _vertices.push_back(_vertices[0]);
     _vertices.push_back(_vertices[1]);

@@ -37,14 +37,14 @@ uniform mat4 ProjectorMatrix;
 uniform mat4 ModelTransform;
 
 uniform vec2 _scaling;
-uniform vec4 _radius;
+uniform vec3 _radius;
 uniform int _segments;
 
 uniform vec3 boresight;
 
 #define M_PI 3.14159265358979323846
 
-vec4 uvToModel(vec2 uv, vec4 radius, float segments){
+vec3 uvToModel(vec2 uv, vec3 radius, float segments){
     float fj = uv.x * segments;
     float fi = (1.0 - uv.y) * segments;
 
@@ -55,7 +55,7 @@ vec4 uvToModel(vec2 uv, vec4 radius, float segments){
     float y = radius[1] * cos(theta);             // up 
     float z = radius[2] * cos(phi) * sin(theta);  //
     
-    return vec4(x, y, z, radius[3]);
+    return vec3(x, y, z);
 }
 
 bool inRange(float x, float a, float b){
@@ -65,7 +65,7 @@ bool inRange(float x, float a, float b){
 void main() {
     vec2 uv = (vs_position.xy + vec2(1.0)) / vec2(2.0);
 
-    vec4 vertex = uvToModel(uv, _radius, _segments);
+    vec4 vertex = vec4(uvToModel(uv, _radius, _segments), 0.0);
 
     vec4 raw_pos   = psc_to_meter(vertex, _scaling);
     vec4 projected = ProjectorMatrix * ModelTransform * raw_pos;

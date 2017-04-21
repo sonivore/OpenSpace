@@ -158,8 +158,8 @@ void Renderable::setPscUniforms(
     const Camera& camera,
     const PowerScaledCoordinate& position) 
 {
-    program.setUniform("campos", camera.position().vec4());
-    program.setUniform("objpos", position.vec4());
+    program.setUniform("campos", glm::vec4(camera.position(), 0.f));
+    program.setUniform("objpos", glm::vec4(position, 0.f));
     program.setUniform("camrot", glm::mat4(camera.viewRotationMatrix()));
     program.setUniform("scaling", camera.scaling());
 }

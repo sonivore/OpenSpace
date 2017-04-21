@@ -296,7 +296,7 @@ void ABufferRenderer::render(float blackoutFactor, bool doPerformanceMeasurement
     // TEMPORARY GAMMA CORRECTION.
 
     float gamma = 1.0;
-    glm::vec3 cameraPos = data.camera.position().vec3();
+    glm::vec3 cameraPos = data.camera.position();
     float maxComponent = std::max(std::max(std::abs(cameraPos.x), std::abs(cameraPos.y)), std::abs(cameraPos.z));
     float logDistance = std::log(glm::length(cameraPos / maxComponent) * maxComponent) / std::log(10.f);
 

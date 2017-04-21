@@ -258,8 +258,9 @@ void RenderablePlaneProjection::updatePlane(const Image& img, double currentTime
         }
         cornerPosition = SpiceManager::ref().frameTransformationMatrix(GalacticFrame, _target.frame, currentTime) * cornerPosition;
 
-        projection[j] = PowerScaledCoordinate::CreatePowerScaledCoordinate(cornerPosition[0], cornerPosition[1], cornerPosition[2]);
-        projection[j][3] += 3;
+        projection[j] = cornerPosition * 1000.0;
+        //projection[j] = PowerScaledCoordinate::CreatePowerScaledCoordinate(cornerPosition[0], cornerPosition[1], cornerPosition[2]);
+        //projection[j][3] += 3;
     }
 
     if (!_moving) {

@@ -265,12 +265,12 @@ namespace openspace {
     // Deprecated
     void Camera::setPosition(psc pos) {
         std::lock_guard<std::mutex> _lock(_mutex);
-        _position = pos.dvec3();
+        _position = glm::dvec3(pos);
     }
 
     void Camera::setFocusPosition(psc pos) {
         std::lock_guard<std::mutex> _lock(_mutex);
-        _focusPosition = pos.dvec3();
+        _focusPosition = glm::dvec3(pos);
     }
 
     psc Camera::position() const {

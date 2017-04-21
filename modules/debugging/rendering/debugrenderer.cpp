@@ -200,7 +200,7 @@ void DebugRenderer::renderCameraFrustum(const RenderData& data, const Camera& ot
                                         RGBA rgba) const
 {
     using namespace glm;
-    dmat4 modelTransform = translate(dmat4(1), data.position.dvec3());
+    dmat4 modelTransform = translate(dmat4(1), glm::dvec3(data.position));
     dmat4 viewTransform = dmat4(data.camera.combinedViewMatrix());
     dmat4 vp = dmat4(data.camera.projectionMatrix()) * viewTransform;
 

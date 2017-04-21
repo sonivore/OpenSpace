@@ -154,7 +154,9 @@ void IswaCygnet::render(const RenderData& data){
     }
     transform = transform*_rotation;
 
-    position += transform*glm::vec4(_data->spatialScale.x*_data->offset, _data->spatialScale.w);
+    glm::vec4 tf = transform*glm::vec4(_data->spatialScale.x*_data->offset, _data->spatialScale.w);
+    glm::vec3 t = { tf.x * pow(10, tf.w), tf.y * pow(10, tf.w), tf.z * pow(10, tf.w) };
+    position += t;
     
     // Activate shader
     _shader->activate();

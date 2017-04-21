@@ -55,7 +55,7 @@ SimpleSphereGeometry::SimpleSphereGeometry(const ghoul::Dictionary& dictionary)
     using constants::simplespheregeometry::keyRadius;
     using constants::simplespheregeometry::keySegments;
 
-    float sphereRadius = 0.f;
+    double sphereRadius = 0.f;
     glm::vec3 ellipsoidRadius;
     if (dictionary.getValue(keyRadius, sphereRadius)) {
         _radius = { sphereRadius, sphereRadius, sphereRadius };

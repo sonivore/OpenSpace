@@ -236,7 +236,7 @@ void RenderableModelProjection::render(const RenderData& data) {
         glm::dmat4(data.modelTransform.rotation) * // Rotation
         glm::scale(glm::dmat4(1.0), glm::dvec3(data.modelTransform.scale)); // Scale
     glm::dmat4 modelViewTransform = data.camera.combinedViewMatrix() * modelTransform;
-    glm::vec3 directionToSun = glm::normalize(_sunPosition.vec3() - glm::vec3(bodyPosition));
+    glm::vec3 directionToSun = glm::normalize(_sunPosition - bodyPosition);
     glm::vec3 directionToSunViewSpace = glm::mat3(data.camera.combinedViewMatrix()) * directionToSun;
         
     _programObject->setUniform("_performShading", _performShading);
@@ -291,11 +291,9 @@ void RenderableModelProjection::update(const UpdateData& data) {
         
     _stateMatrix = data.modelTransform.rotation;
     
-    glm::dvec3 p =
+    _sunPosition =
         OsEng.renderEngine().scene()->sceneGraphNode("Sun")->worldPosition() -
         data.modelTransform.translation;
-
-    _sunPosition = PowerScaledCoordinate::CreatePowerScaledCoordinate(p.x, p.y, p.z);
 }
 
 void RenderableModelProjection::imageProjectGPU(
@@ -391,10 +389,12 @@ void RenderableModelProjection::attitudeParameters(double time) {
             _destination,
             _projectionComponent.aberration(),
             time, lightTime);
-    psc position = PowerScaledCoordinate::CreatePowerScaledCoordinate(p.x, p.y, p.z);
+
+    //psc position = PowerScaledCoordinate::CreatePowerScaledCoordinate(p.x, p.y, p.z);
  
-    position[3] += 4;
-    glm::vec3 cpos = position.vec3();
+    //position[3] += 4;
+    // No idea why it is 10000 here.. it was like that before I removed psc ---abock
+    glm::vec3 cpos = p * 10000.0;
 
     float distance = glm::length(cpos);
     float radius = boundingSphere();

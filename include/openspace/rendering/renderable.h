@@ -47,7 +47,6 @@ namespace documentation { struct Documentation; }
 // Forward declare to minimize dependencies
 
 class Camera;
-class PowerScaledCoordinate;
 
 class Renderable : public properties::PropertyOwner {
 public:

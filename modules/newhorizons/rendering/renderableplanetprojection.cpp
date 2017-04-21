@@ -175,9 +175,10 @@ RenderablePlanetProjection::RenderablePlanetProjection(const ghoul::Dictionary& 
         _shiftMeridianBy180 = dictionary.value<bool>(keyMeridianShift);
     }
 
-    glm::vec2 radius = glm::vec2(1.0, 9.0);
+    //glm::vec2 radius = glm::vec2(1.0, 9.0);
+    double radius = pow(10.0, 9.0);
     dictionary.getValue(keyRadius, radius);
-    setBoundingSphere(radius[0] * std::pow(10, radius[1]));
+    setBoundingSphere(radius);
 
     addPropertySubOwner(_geometry.get());
     addPropertySubOwner(_projectionComponent);
@@ -281,7 +282,7 @@ void RenderablePlanetProjection::imageProjectGPU(
 
     if (_geometry->hasProperty("radius")){ 
         ghoul::any r = _geometry->property("radius")->get();
-        if (glm::vec4* radius = ghoul::any_cast<glm::vec4>(&r)){
+        if (glm::vec3* radius = ghoul::any_cast<glm::vec3>(&r)){
             _fboProgramObject->setUniform("_radius", radius);
         }
     }else{
@@ -348,12 +349,12 @@ void RenderablePlanetProjection::attitudeParameters(double time) {
         time,
         lightTime
     );
-    psc position = PowerScaledCoordinate::CreatePowerScaledCoordinate(p.x, p.y, p.z);
+    //psc position = PowerScaledCoordinate::CreatePowerScaledCoordinate(p.x, p.y, p.z);
    
     //change to KM and add psc camera scaling. 
-    position[3] += (3 + _camScaling[1]);
+    //position[3] += (3 + _camScaling[1]);
     //position[3] += 3;
-    glm::vec3 cpos = position.vec3();
+    glm::vec3 cpos = p * pow(10, 3 + _camScaling[1]);
 
     float distance = glm::length(cpos);
     float radius = boundingSphere();
@@ -395,11 +396,10 @@ void RenderablePlanetProjection::render(const RenderData& data) {
     double  lt;
     glm::dvec3 p =
         SpiceManager::ref().targetPosition("SUN", _projectionComponent.projecteeId(), "GALACTIC", {}, _time, lt);
-    psc sun_pos = PowerScaledCoordinate::CreatePowerScaledCoordinate(p.x, p.y, p.z);
 
     // Main renderpass
     _programObject->activate();
-    _programObject->setUniform("sun_pos", sun_pos.vec3());
+    _programObject->setUniform("sun_pos", glm::vec3(p));
     //_programObject->setUniform("ViewProjection" ,  data.camera.viewProjectionMatrix());
     //_programObject->setUniform("ModelTransform" , _transform);
 

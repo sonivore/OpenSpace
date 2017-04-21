@@ -312,11 +312,9 @@ void SceneGraphNode::update(const UpdateData& data) {
 }
 
 void SceneGraphNode::render(const RenderData& data, RendererTasks& tasks) {
-    const psc thisPositionPSC = psc::CreatePowerScaledCoordinate(_worldPositionCached.x, _worldPositionCached.y, _worldPositionCached.z);
-
     RenderData newData = {
         data.camera,
-        thisPositionPSC,
+        _worldPositionCached,
         data.doPerformanceMeasurement,
         data.renderBinMask,
         _worldPositionCached,

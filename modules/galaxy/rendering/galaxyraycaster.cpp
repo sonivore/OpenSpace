@@ -116,13 +116,13 @@ void GalaxyRaycaster::postRaycast(const RaycastData& data, ghoul::opengl::Progra
 
 bool GalaxyRaycaster::cameraIsInside(const RenderData& data, glm::vec3& localPosition) {
     // Camera rig position in world coordinates.
-    glm::vec4 rigWorldPos = glm::vec4(data.camera.position().vec3(), 1.0);
+    glm::vec4 rigWorldPos = glm::vec4(data.camera.position(), 1.0);
     //rigWorldPos /= data.camera.scaling().x * pow(10.0, data.camera.scaling().y);
     //glm::mat4 invSgctMatrix = glm::inverse(data.camera.viewMatrix());
  
     // Camera position in world coordinates.
     glm::vec4 camWorldPos = rigWorldPos;
-    glm::vec3 objPos = data.position.vec3();
+    glm::vec3 objPos = data.position;
 
     glm::mat4 modelTransform = glm::translate(_modelTransform, objPos);
 

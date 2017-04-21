@@ -621,7 +621,7 @@ void RenderableStars::createDataSlice(ColorOption option) {
                 } layout;
 
                 layout.value.position = { {
-                    position[0], position[1], position[2], position[3]
+                    position.x, position.y, position.z, 0.f
                 } };
                     
 

@@ -377,8 +377,8 @@ void RenderablePlanet::render(const RenderData& data) {
     _programObject->setUniform("ModelTransform", glm::mat4(modelTransform));
 
     // Normal Transformation
-    glm::mat4 translateObjTrans = glm::translate(glm::mat4(1.0), data.position.vec3());
-    glm::mat4 translateCamTrans = glm::translate(glm::mat4(1.0), -data.camera.position().vec3());
+    glm::mat4 translateObjTrans = glm::translate(glm::mat4(1.0), data.position);
+    glm::mat4 translateCamTrans = glm::translate(glm::mat4(1.0), -data.camera.position());
     float scaleFactor = data.camera.scaling().x * powf(10.0, data.camera.scaling().y);
     glm::mat4 scaleCamTrans = glm::scale(glm::mat4(1.0), glm::vec3(scaleFactor));
 
@@ -433,11 +433,10 @@ void RenderablePlanet::render(const RenderData& data) {
             sourcePos           *= 1000.0; // converting to meters
             glm::dvec3 casterPos = SpiceManager::ref().targetPosition(shadowConf.caster.first, "SUN", "GALACTIC", {}, _time, lt);
             casterPos           *= 1000.0; // converting to meters
-            psc caster_pos       = PowerScaledCoordinate::CreatePowerScaledCoordinate(casterPos.x, casterPos.y, casterPos.z);
 
             
             // First we determine if the caster is shadowing the current planet (all calculations in World Coordinates):
-            glm::vec3 planetCasterVec   = (caster_pos - data.position).vec3();
+            glm::vec3 planetCasterVec   = (glm::vec3(casterPos) - data.position);
             glm::vec3 sourceCasterVec   = glm::vec3(casterPos - sourcePos);
             float sc_length             = glm::length(sourceCasterVec);
             glm::vec3 planetCaster_proj = (glm::dot(planetCasterVec, sourceCasterVec) / (sc_length*sc_length)) * sourceCasterVec;
@@ -446,7 +445,7 @@ void RenderablePlanet::render(const RenderData& data) {
             float rp_test               = shadowConf.caster.second * (glm::length(planetCaster_proj) + xp_test) / xp_test;
                         
             double casterDistSun = glm::length(casterPos);
-            float planetDistSun = glm::length(data.position.vec3());
+            float planetDistSun = glm::length(data.position);
 
             ShadowRenderingStruct shadowData;
             shadowData.isShadowing = false;

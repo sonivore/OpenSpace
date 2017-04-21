@@ -104,7 +104,7 @@ private:
 
     bool _capture;
         
-    psc _sunPosition;
+    glm::dvec3 _sunPosition;
     properties::BoolProperty _performShading;
 };
 
