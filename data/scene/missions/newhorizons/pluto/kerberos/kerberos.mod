@@ -19,7 +19,7 @@ return {
             Body = "KERBEROS",
             Geometry = {
                 Type = "SimpleSphere",
-                Radius = { 0.1 , 5 },
+                Radius = 0.1E5,
                 Segments = 100
             },
             Textures = {
@@ -46,7 +46,7 @@ return {
         Parent = "Kerberos",
         Renderable = {
             Type = "RenderablePlane",
-            Size = 1.0E6.3,
+            Size = 1.995262E6,
             Origin = "Center",
             Billboard = true,
             Texture = "textures/Kerberos-Text.png"

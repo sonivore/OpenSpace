@@ -19,7 +19,7 @@ return {
             Body = "HYDRA",
             Geometry = {
                 Type = "SimpleSphere",
-                Radius = { 0.53 , 5 },
+                Radius = 0.53E5,
                 Segments = 100
             },
             Textures = {
@@ -46,7 +46,7 @@ return {
         Parent = "Hydra",
         Renderable = {
             Type = "RenderablePlane",
-            Size = 1.0E6.3,
+            Size = 1.995262E6,
             Origin = "Center",
             Billboard = true,
             Texture = "textures/Hydra-Text.png"

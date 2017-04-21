@@ -72,7 +72,7 @@ return {
         Parent = "Charon",
         Renderable = {
             Type = "RenderablePlane",
-            Size = 1.0E6.3,
+            Size = 1.995262E6,
             Origin = "Center",
             Billboard = true,
             Texture = "textures/Charon-Text.png",

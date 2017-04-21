@@ -58,7 +58,7 @@ return {
         Parent = "Ganymede",
         Renderable = {
             Type = "RenderablePlane",
-            Size = 1.0E7.4,
+            Size = 2.5118864E7,
             Origin = "Center",
             Billboard = true,
             Texture = "textures/Ganymede-Text.png",

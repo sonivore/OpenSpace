@@ -74,7 +74,7 @@ return {
         Parent = "Io",
         Renderable = {
             Type = "RenderablePlane",
-            Size = {1.0, 7.4},
+            Size = 2.5118864E7,
             Origin = "Center",
             Billboard = true,
             Texture = "textures/Io-Text.png",
