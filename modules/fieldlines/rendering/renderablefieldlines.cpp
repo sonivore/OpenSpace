@@ -25,7 +25,6 @@
 #include <modules/fieldlines/rendering/renderablefieldlines.h>
 #include <openspace/engine/openspaceengine.h>
 #include <openspace/rendering/renderengine.h>
-#include <openspace/util/powerscaledcoordinate.h>
 #include <modules/kameleon/include/kameleonwrapper.h>
 #include <openspace/scene/scenegraphnode.h>
 

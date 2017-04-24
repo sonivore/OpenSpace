@@ -28,8 +28,6 @@
 #include "ghoul/io/model/modelreadermultiformat.h"
 #include "ghoul/opengl/vertexbufferobject.h"
 
-#include <openspace/util/powerscaledcoordinate.h>
-
 namespace {
     const std::string _loggerCat = "MultiModelGeometry";
 }

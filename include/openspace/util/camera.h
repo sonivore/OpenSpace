@@ -27,7 +27,6 @@
 
 #include <mutex>
 
-#include <openspace/util/powerscaledcoordinate.h>
 #include <openspace/rendering/renderengine.h>
 
 #include <openspace/util/syncdata.h>
@@ -158,15 +157,15 @@ public:
 
     // Deprecated
     [[deprecated("Replaced by Camera::setPositionVec3()")]]
-    void setPosition(psc pos);
+    void setPosition(glm::vec3 pos);
     [[deprecated("Replaced by Camera::setFocusPositionVec3()")]]
-    void setFocusPosition(psc pos);
+    void setFocusPosition(glm::vec3 pos);
     [[deprecated("Replaced by Camera::positionVec3()")]]
-    psc position() const;
+    glm::vec3 position() const;
     [[deprecated("Replaced by Camera::unsynchedPositionVec3()")]]
-    psc unsynchedPosition() const;
+    glm::vec3 unsynchedPosition() const;
     [[deprecated("Replaced by Camera::focusPositionVec3()")]]
-    psc focusPosition() const;
+    glm::vec3 focusPosition() const;
     // @TODO use Camera::SgctInternal interface instead
     [[deprecated("Replaced by Camera::SgctInternal::viewMatrix()")]]
     const glm::mat4& viewMatrix() const;

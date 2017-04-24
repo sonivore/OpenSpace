@@ -642,15 +642,15 @@ SceneGraphNode* SceneGraphNode::childNode(const std::string& name)
 
 void SceneGraphNode::updateCamera(Camera* camera) const{
 
-    psc origin(worldPosition());
+    glm::vec3 origin(worldPosition());
     //int i = 0;
     // the camera position
     
-    psc relative = camera->position();
-    psc focus = camera->focusPosition();
-    psc relative_focus = relative - focus;
+    glm::vec3 relative = camera->position();
+    glm::vec3 focus = camera->focusPosition();
+    glm::vec3 relative_focus = relative - focus;
 
-    psc target = origin + relative_focus;
+    glm::vec3 target = origin + relative_focus;
     
     camera->setPosition(target);
     camera->setFocusPosition(origin);

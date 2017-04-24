@@ -25,7 +25,6 @@
 #include <openspace/engine/configurationmanager.h>
 #include <modules/base/rendering/renderableplane.h>
 #include <openspace/engine/openspaceengine.h>
-#include <openspace/util/powerscaledcoordinate.h>
 
 #include <openspace/scene/scenegraphnode.h>
 #include <openspace/rendering/renderengine.h>

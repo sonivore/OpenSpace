@@ -265,7 +265,7 @@ void ABufferRenderer::render(float blackoutFactor, bool doPerformanceMeasurement
         static_cast<int>(Renderable::RenderBin::Transparent) |
         static_cast<int>(Renderable::RenderBin::Overlay);
 
-    RenderData data{ *_camera, psc(), doPerformanceMeasurements, renderBinMask };
+    RenderData data{ *_camera, glm::vec3(), doPerformanceMeasurements, renderBinMask };
     RendererTasks tasks;
     _scene->render(data, tasks);
     _blackoutFactor = blackoutFactor;

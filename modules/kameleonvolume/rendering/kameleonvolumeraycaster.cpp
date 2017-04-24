@@ -29,7 +29,6 @@
 #include <sstream>
 #include <ghoul/opengl/programobject.h>
 #include <ghoul/opengl/textureunit.h>
-#include <openspace/util/powerscaledcoordinate.h>
 #include <openspace/util/updatestructures.h>
 #include <openspace/rendering/renderable.h>
 #include <modules/kameleonvolume/rendering/renderablekameleonvolume.h>

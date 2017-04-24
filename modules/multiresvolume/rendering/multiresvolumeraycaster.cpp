@@ -32,7 +32,6 @@
 
 
 #include <ghoul/opengl/programobject.h>
-#include <openspace/util/powerscaledcoordinate.h>
 #include <openspace/util/updatestructures.h>
 #include <openspace/rendering/renderable.h>
 #include <ghoul/opengl/texture.h>

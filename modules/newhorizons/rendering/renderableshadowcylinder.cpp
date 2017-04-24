@@ -26,7 +26,6 @@
 
 #include <openspace/engine/openspaceengine.h>
 #include <openspace/rendering/renderengine.h>
-#include <openspace/util/powerscaledcoordinate.h>
 #include <openspace/util/spicemanager.h>
 #include <openspace/util/updatestructures.h>
 

@@ -606,8 +606,7 @@ void RenderableStars::createDataSlice(ColorOption option) {
         //psc position = psc(glm::vec4(p, distance));
 
         // Convert parsecs -> meter
-        psc position = psc(glm::vec4(p * 0.308567756f, 17));
-
+        glm::vec3 position = p * 0.308567756f * pow(10.f, 17.f);
         //position[1] *= parsecsToMetersFactor[0];
         //position[2] *= parsecsToMetersFactor[0];
         //position[3] += parsecsToMetersFactor[1];

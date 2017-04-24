@@ -336,7 +336,7 @@ void FramebufferRenderer::render(float blackoutFactor, bool doPerformanceMeasure
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    RenderData data = { *_camera, psc(), doPerformanceMeasurements, 0 };
+    RenderData data = { *_camera, glm::vec3(), doPerformanceMeasurements, 0 };
     RendererTasks tasks;
 
     // Capture standard fbo

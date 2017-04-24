@@ -144,7 +144,7 @@ bool IswaCygnet::isReady() const{
 void IswaCygnet::render(const RenderData& data){
     if(!readyToRender()) return;
     
-    psc position = data.position;
+    glm::vec3 position = data.position;
     glm::mat4 transform = glm::mat4(1.0);
 
     for (int i = 0; i < 3; i++){

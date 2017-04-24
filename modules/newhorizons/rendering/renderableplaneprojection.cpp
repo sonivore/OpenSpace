@@ -237,7 +237,7 @@ void RenderablePlaneProjection::updatePlane(const Image& img, double currentTime
     }
 
     double lt;
-    psc projection[4];
+    glm::vec3 projection[4];
 
     glm::dvec3 vecToTarget = SpiceManager::ref().targetPosition(
         _target.body,

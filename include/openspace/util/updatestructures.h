@@ -26,7 +26,6 @@
 #define __OPENSPACE_CORE___UPDATESTRUCTURES___H__
 
 #include <openspace/util/camera.h>
-#include <openspace/util/powerscaledcoordinate.h>
 
 namespace openspace {
 
@@ -56,7 +55,7 @@ struct RenderData {
     const Camera& camera;
     // psc position to be removed in favor of the double precision position defined in
     // the translation in transform.
-    psc position;
+    glm::vec3 position;
     bool doPerformanceMeasurement;
     int renderBinMask;
     TransformData modelTransform;

@@ -263,26 +263,26 @@ namespace openspace {
     }
 
     // Deprecated
-    void Camera::setPosition(psc pos) {
+    void Camera::setPosition(glm::vec3 pos) {
         std::lock_guard<std::mutex> _lock(_mutex);
         _position = glm::dvec3(pos);
     }
 
-    void Camera::setFocusPosition(psc pos) {
+    void Camera::setFocusPosition(glm::vec3 pos) {
         std::lock_guard<std::mutex> _lock(_mutex);
         _focusPosition = glm::dvec3(pos);
     }
 
-    psc Camera::position() const {
-        return psc((Vec3)_position);
+    glm::vec3 Camera::position() const {
+        return glm::vec3((Vec3)_position);
     }
 
-    psc Camera::unsynchedPosition() const {
-        return psc((Vec3)_position);
+    glm::vec3 Camera::unsynchedPosition() const {
+        return glm::vec3((Vec3)_position);
     }
 
-    psc Camera::focusPosition() const {
-        return psc(_focusPosition);
+    glm::vec3 Camera::focusPosition() const {
+        return glm::vec3(_focusPosition);
     }
 
     const glm::mat4& Camera::viewMatrix() const {
