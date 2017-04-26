@@ -107,18 +107,18 @@ void OnScreenGUIModule::deinitializeGL() {
 }
 
 
-void OnScreenGUIModule::draw() {
+void OnScreenGUIModule::postDraw() {
     WindowWrapper& wrapper = OsEng.windowWrapper();
     bool showGui = wrapper.hasGuiWindow() ? wrapper.isGuiWindow() : true;
-    if (wrapper.isMaster() && wrapper.isRegularRendering() && showGui) {
+    if (wrapper.isMaster() && showGui ) {
         glm::vec2 mousePosition = wrapper.mousePosition();
         //glm::ivec2 drawBufferResolution = _windowWrapper->currentDrawBufferResolution();
         glm::ivec2 windowSize = wrapper.currentWindowSize();
         glm::ivec2 renderingSize = wrapper.currentWindowResolution();
         uint32_t mouseButtons = wrapper.mouseButtons(2);
-
+        
         double dt = std::max(wrapper.averageDeltaTime(), 0.0);
-
+        
         // We don't do any collection of immediate mode user interface, so it is
         // fine to open and close a frame immediately
         gui.startFrame(
@@ -127,8 +127,8 @@ void OnScreenGUIModule::draw() {
             wrapper.dpiScaling(),
             mousePosition,
             mouseButtons
-            );
-
+        );
+        
         gui.endFrame();
     }
 }

@@ -231,7 +231,7 @@ scripting::LuaLibrary KeyBindingManager::luaLibrary() {
                 "The first argument is the key, the second argument is the Lua command "
                 "that is to be executed, and the optional third argument is a human "
                 "readable description of the command for documentation purposes."
-            },
+            }
         }
     };
 }

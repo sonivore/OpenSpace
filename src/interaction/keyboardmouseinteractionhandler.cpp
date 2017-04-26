@@ -37,7 +37,7 @@ void KeyboardMouseInteractionHandler::addEventConsumer(KeyboardMouseEventConsume
 }
 
 void KeyboardMouseInteractionHandler::setPriority(KeyboardMouseEventConsumer* consumer, int priority) {
-    auto& it = std::find_if(_eventConsumers.begin(), _eventConsumers.end(), [consumer] (const auto& c) {
+    const auto& it = std::find_if(_eventConsumers.begin(), _eventConsumers.end(), [consumer] (const auto& c) {
         return c.second == consumer;
     });
     if (it == _eventConsumers.end()) {
@@ -49,7 +49,7 @@ void KeyboardMouseInteractionHandler::setPriority(KeyboardMouseEventConsumer* co
 }
 
 void KeyboardMouseInteractionHandler::removeEventConsumer(KeyboardMouseEventConsumer* consumer) {
-    auto& it = std::find_if(_eventConsumers.begin(), _eventConsumers.end(), [consumer](const auto& c) {
+    const auto& it = std::find_if(_eventConsumers.begin(), _eventConsumers.end(), [consumer](const auto& c) {
         return c.second == consumer;
     });
     if (it == _eventConsumers.end()) {

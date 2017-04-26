@@ -22,13 +22,16 @@
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                         *
  ****************************************************************************************/
 
-#ifdef GLOBEBROWSING_USE_GDAL
 #ifndef __OPENSPACE_MODULE_GLOBEBROWSING___TEMPORAL_TILE_PROVIDER___H__
 #define __OPENSPACE_MODULE_GLOBEBROWSING___TEMPORAL_TILE_PROVIDER___H__
 
+#ifdef GLOBEBROWSING_USE_GDAL
+
 #include <modules/globebrowsing/tile/tileprovider/tileprovider.h>
+#include <openspace/engine/openspaceengine.h>
 
 #include <openspace/util/time.h>
+#include <openspace/util/timemanager.h>
 #include <openspace/util/timerange.h>
 
 #include <ghoul/misc/dictionary.h>
@@ -196,7 +199,7 @@ public:
 
     typedef std::string TimeKey;
 
-    std::shared_ptr<TileProvider> getTileProvider(Time t = Time::ref());
+    std::shared_ptr<TileProvider> getTileProvider(Time t = OsEng.timeManager().time());
     std::shared_ptr<TileProvider> getTileProvider(TimeKey timekey);
 
 private:
@@ -315,5 +318,6 @@ private:
 } // namespace globebrowsing
 } // namespace openspace
 
-#endif // __OPENSPACE_MODULE_GLOBEBROWSING___TEMPORAL_TILE_PROVIDER___H__
 #endif // GLOBEBROWSING_USE_GDAL
+
+#endif // __OPENSPACE_MODULE_GLOBEBROWSING___TEMPORAL_TILE_PROVIDER___H__
