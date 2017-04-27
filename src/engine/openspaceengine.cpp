@@ -120,32 +120,32 @@ class Scene;
 
 OpenSpaceEngine* OpenSpaceEngine::_engine = nullptr;
 
-OpenSpaceEngine::OpenSpaceEngine(
-    std::string programName,
-    std::unique_ptr<WindowWrapper> windowWrapper)
+OpenSpaceEngine::OpenSpaceEngine(std::string programName,
+                                 std::unique_ptr<WindowWrapper> windowWrapper)
     : _configurationManager(new ConfigurationManager)
     , _navigator(new interaction::Navigator)
     , _keyboardMouseInteractionHandler(std::make_unique<interaction::KeyboardMouseInteractionHandler>())
     , _renderEngine(new RenderEngine)
     , _sceneManager(new SceneManager)
-    , _scriptEngine(new scripting::ScriptEngine)
-    , _scriptScheduler(new scripting::ScriptScheduler)
-    , _networkEngine(new NetworkEngine)
-    , _syncEngine(std::make_unique<SyncEngine>(4096))
-    , _commandlineParser(new ghoul::cmdparser::CommandlineParser(
-        programName, ghoul::cmdparser::CommandlineParser::AllowUnknownCommands::Yes
-      ))
+    , _downloadManager(nullptr)
     , _console(new LuaConsole)
     , _keyBindingManager(std::make_unique<interaction::KeyBindingManager>())
     , _keyboardMouseState(std::make_unique<interaction::KeyboardMouseState>())
     , _moduleEngine(new ModuleEngine)
+    , _networkEngine(new NetworkEngine)
+    , _parallelConnection(new ParallelConnection)
+    , _renderEngine(new RenderEngine)
     , _settingsEngine(new SettingsEngine)
+    , _syncEngine(std::make_unique<SyncEngine>(4096))
     , _timeManager(new TimeManager)
-    , _downloadManager(nullptr)
-    , _parallelConnection(std::make_unique<ParallelConnection>())
     , _windowWrapper(std::move(windowWrapper))
-    , _globalPropertyNamespace(new properties::PropertyOwner(""))
+    , _commandlineParser(new ghoul::cmdparser::CommandlineParser(
+        programName, ghoul::cmdparser::CommandlineParser::AllowUnknownCommands::Yes
+    ))
+    , _scriptEngine(new scripting::ScriptEngine)
+    , _scriptScheduler(new scripting::ScriptScheduler)
     , _virtualPropertyManager(new VirtualPropertyManager)
+    , _globalPropertyNamespace(new properties::PropertyOwner(""))
     , _scheduledSceneSwitch(false)
     , _scenePath("")
     , _runTime(0.0)
@@ -942,7 +942,7 @@ void OpenSpaceEngine::initializeGL() {
                     ConfigurationManager::PartFilterIdentifier
                 );
 
-                for (int i = 1; i <= filterDict.size(); ++i) {
+                for (size_t i = 1; i <= filterDict.size(); ++i) {
                     ghoul::Dictionary id = filterDict.value<ghoul::Dictionary>(
                         std::to_string(i)
                     );
@@ -975,7 +975,7 @@ void OpenSpaceEngine::initializeGL() {
                     ConfigurationManager::PartFilterIdentifier
                 );
 
-                for (int i = 1; i <= filterDict.size(); ++i) {
+                for (size_t i = 1; i <= filterDict.size(); ++i) {
                     std::string severity = filterDict.value<std::string>(
                         std::to_string(i)
                     );

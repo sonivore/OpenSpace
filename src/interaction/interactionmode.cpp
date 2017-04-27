@@ -169,10 +169,9 @@ OrbitalInteractionMode::MouseStates::MouseStates(double sensitivity, double velo
     , _globalRotationMouseState(velocityScaleFactor)
     , _localRotationMouseState(velocityScaleFactor)
     , _truckMovementMouseState(velocityScaleFactor)
+    , _localRollMouseState(velocityScaleFactor)
     , _globalRollMouseState(velocityScaleFactor)
-    , _localRollMouseState(velocityScaleFactor) {
-
-}
+{}
 
 void OrbitalInteractionMode::MouseStates::updateMouseStatesFromInput(const KeyboardMouseState& inputState, double deltaTime) {
     glm::dvec2 mousePosition = inputState.getMousePosition();
