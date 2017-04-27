@@ -29,6 +29,7 @@
 #include <openspace/interaction/keyboardmousestate.h>
 #include <openspace/util/mouse.h>
 #include <openspace/util/keys.h>
+#include <openspace/util/timeline.h>
 
 #ifdef OPENSPACE_MODULE_GLOBEBROWSING_ENABLED
 #include <modules/globebrowsing/tile/tileindex.h>
@@ -152,15 +153,23 @@ protected:
 class KeyframeInteractionMode : public InteractionMode
 {
 public:
+    struct CameraPose {
+        glm::dvec3 position;
+        glm::quat rotation;
+        std::string focusNode;
+        bool followFocusNodeRotation;
+    };
+
     KeyframeInteractionMode();
     ~KeyframeInteractionMode();
 
     virtual void updateMouseStatesFromInput(const KeyboardMouseState& kmState, double deltaTime);
     virtual void updateCameraStateFromMouseStates(Camera& camera, double deltaTime);
     bool followingNodeRotation() const override;
+    Timeline<CameraPose>& timeline();
 
 private:
-
+    Timeline<CameraPose> _cameraPoseTimeline;
 };
 
 class GlobeBrowsingInteractionMode;

@@ -27,7 +27,7 @@
 #include <openspace/engine/configurationmanager.h>
 #include <openspace/engine/openspaceengine.h>
 #include <openspace/util/spicemanager.h>
-#include <glm/glm.hpp>
+#include <ghoul/glm.h>
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -228,7 +228,7 @@ void RenderableSphericalGrid::render(const RenderData& data){
 }
 
 void RenderableSphericalGrid::update(const UpdateData& data) {
-    _parentMatrix = SpiceManager::ref().positionTransformMatrix("IAU_JUPITER", "GALACTIC", data.time);
+    _parentMatrix = SpiceManager::ref().positionTransformMatrix("IAU_JUPITER", "GALACTIC", data.time.j2000Seconds());
 
 }
 }

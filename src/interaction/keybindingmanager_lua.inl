@@ -24,14 +24,14 @@
 
 namespace openspace {
 namespace luascriptfunctions {
-
+ 
 /**
-* \ingroup LuaScripts
-* bindKey():
-* Binds a key to Lua command to both execute locally
-* and broadcast to all clients if this node is hosting
-* a parallel connection.
-*/
+ * \ingroup LuaScripts
+ * bindKey():
+ * Binds a key to Lua command to both execute locally
+ * and broadcast to all clients if this node is hosting
+ * a parallel connection.
+ */
 int bindKey(lua_State* L) {
     using ghoul::lua::luaTypeToString;
 
@@ -69,15 +69,15 @@ int bindKey(lua_State* L) {
         std::move(command),
         std::move(documentation)
     );
-        
+
     return 0;
 }
 
 /**
-* \ingroup LuaScripts
-* bindKey():
-* Binds a key to Lua command to execute only locally
-*/
+ * \ingroup LuaScripts
+ * bindKey():
+ * Binds a key to Lua command to execute only locally
+ */
 int bindKeyLocal(lua_State* L) {
     using ghoul::lua::luaTypeToString;
 
@@ -93,9 +93,9 @@ int bindKeyLocal(lua_State* L) {
     std::string key = luaL_checkstring(L, KeyLocation);
     std::string command = luaL_checkstring(L, CommandLocation);
 
-
-    if (command.empty())
+    if (command.empty()) {
         return luaL_error(L, "Command string is empty");
+    }
 
     openspace::KeyWithModifier iKey = openspace::stringToKey(key);
 
@@ -114,29 +114,26 @@ int bindKeyLocal(lua_State* L) {
         iKey.modifier,
         std::move(command),
         std::move(documentation)
-        );
+    );
 
     return 0;
 }
 
-
 /**
-* \ingroup LuaScripts
-* clearKeys():
-* Clears all key bindings
-*/
+ * \ingroup LuaScripts
+ * clearKeys():
+ * Clears all key bindings
+ */
 int clearKeys(lua_State* L) {
     using ghoul::lua::luaTypeToString;
 
     int nArguments = lua_gettop(L);
     if (nArguments != 0)
-        return luaL_error(L, "Expected %i arguments, got %i", 0, nArguments);
+    return luaL_error(L, "Expected %i arguments, got %i", 0, nArguments);
 
     OsEng.keyBindingManager().resetKeyBindings();
-
     return 0;
 }
-
 
 } // namespace luascriptfunctions
 

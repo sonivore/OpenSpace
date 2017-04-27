@@ -41,7 +41,7 @@ public:
     void deinitialize() override;
     void initializeGL() override;
     void deinitializeGL() override;
-    void draw() override;
+    void postDraw() override;
     bool handleKeyboard(Key key, KeyModifier mod, KeyAction action) override;
     bool handleCharacter(unsigned int codepoint, KeyModifier modifier) override;
     bool handleMouseButton(MouseButton button, MouseAction action) override;

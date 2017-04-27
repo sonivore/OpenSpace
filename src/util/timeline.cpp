@@ -22,27 +22,20 @@
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                         *
  ****************************************************************************************/
 
-#ifndef __OPENSPACE_CORE___SCENEMANAGER___H__
-#define __OPENSPACE_CORE___SCENEMANAGER___H__
-
-#include <vector>
-#include <memory>
+#include <openspace/util/timeline.h>
 
 namespace openspace {
 
-class Scene;
+bool compareKeyframeTimes(const KeyframeBase& a, const KeyframeBase& b) {
+    return a.timestamp < b.timestamp;
+}
 
-class SceneManager {
-public:
-    SceneManager() = default;
-    ~SceneManager() = default;
-    Scene* loadScene(const std::string& path);
-    void unloadScene(Scene& scene);
-    void unloadAll();
-private:
-    std::vector<std::unique_ptr<Scene>> _scenes;
-};
+bool compareTimeWithKeyframeTime(double a, const KeyframeBase& b) {
+    return a < b.timestamp;
+}
+
+bool compareKeyframeTimeWithTime(const KeyframeBase& a, double b) {
+    return a.timestamp < b;
+}
 
 } // namespace
-
-#endif // __OPENSPACE_CORE___SCENEMANAGER___H__
