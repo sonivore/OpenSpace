@@ -41,6 +41,7 @@ return {
                 WaterMasks = { },
                 ColorOverlays = { },
                 HeightLayers = { },
+				BumpLayers = { },
             },
         }
     },

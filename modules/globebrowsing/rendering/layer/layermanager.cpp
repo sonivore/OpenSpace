@@ -37,7 +37,8 @@ const char* LayerManager::LAYER_GROUP_NAMES[NUM_LAYER_GROUPS] = {
     "GrayScaleLayers",
     "GrayScaleColorOverlays",
     "NightLayers",
-    "WaterMasks"
+    "WaterMasks",
+    "BumpLayers"
 };
 
 LayerManager::LayerManager(const ghoul::Dictionary& layerGroupsDict) 

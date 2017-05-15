@@ -58,6 +58,7 @@ return {
                 ColorOverlays = {
                     
                 },
+				BumpLayers = { },
                 HeightLayers = {
                     {
                         Name = "OnMoonHeight",

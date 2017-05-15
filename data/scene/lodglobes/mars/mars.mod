@@ -36,6 +36,19 @@ return {
             -- Allows camera to go down 10000 meters below the reference ellipsoid
             InteractionDepthBelowEllipsoid = 10000, -- Useful when having negative height map values
             Layers = {
+		BumpLayers = {
+			{
+				Name = "Viking BumpMap",
+				Type = "ByLevel",
+				LevelTileProviders = {
+				            {
+				                MaxLevel = 4, 
+				                TileProvider = { FilePath = "textures/normalMap.png", }, 
+				            },
+				},
+				Enabled = true,
+			},
+		},
                 ColorLayers = {
                     {
                         Name = "Viking combo",
@@ -47,7 +60,7 @@ return {
                             },
                             {
                                 MaxLevel = 22, 
-                                TileProvider = { FilePath = "map_service_configs/MARS_Viking_MDIM21.xml" },
+                                TileProvider = { FilePath = "map_service_configs/MARS_Viking_MDIM21.xml", },
                             },
                         },
                         Enabled = true,

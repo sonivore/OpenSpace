@@ -43,20 +43,21 @@ layout(location = 1) in vec2 in_uv;
 
 out vec2 fs_uv;
 out vec4 fs_position;
-out vec3 ellipsoidNormalCameraSpace;
+//out vec3 ellipsoidNormalCameraSpace;
 out LevelWeights levelWeights;
 out vec3 positionCameraSpace;
+out mat3 TBNMatrix;
 
-PositionNormalPair globalInterpolation() {
+PositionTBNPair globalInterpolation() {
     vec2 lonLatInput;
     lonLatInput.y = minLatLon.y + lonLatScalingFactor.y * in_uv.y; // Lat
     lonLatInput.x = minLatLon.x + lonLatScalingFactor.x * in_uv.x; // Lon
-    PositionNormalPair positionPairModelSpace = geodetic2ToCartesian(lonLatInput.y, lonLatInput.x, radiiSquared);
+    PositionTBNPair positionPairModelSpace = geodetic2ToCartesian(lonLatInput.y, lonLatInput.x, radiiSquared);
     return positionPairModelSpace;
 }
 
 void main() {
-    PositionNormalPair pair = globalInterpolation();
+    PositionTBNPair pair = globalInterpolation();
     float distToVertexOnEllipsoid =
         length(pair.position + pair.normal * chunkMinHeight - cameraPosition);
 
@@ -83,6 +84,7 @@ void main() {
     fs_uv = in_uv;
     fs_position = z_normalization(positionClippingSpace);
     gl_Position = fs_position;
-    ellipsoidNormalCameraSpace = mat3(modelViewTransform) * pair.normal;
+    //ellipsoidNormalCameraSpace = mat3(modelViewTransform) * pair.normal;
+    TBNMatrix = mat3(modelViewTransform) * mat3(pair.tangent, pair.bitangent, pair.normal);
     positionCameraSpace = vec3(modelViewTransform * vec4(pair.position, 1));
 }

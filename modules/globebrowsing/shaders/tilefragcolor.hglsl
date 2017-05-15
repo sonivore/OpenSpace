@@ -57,6 +57,10 @@ uniform Layer GrayScaleColorOverlays[NUMLAYERS_GRAYSCALE_OVERLAY];
 uniform Layer WaterMasks[NUMLAYERS_WATERMASK];
 #endif // USE_WATERMASK
 
+#if USE_BUMPMAP
+uniform Layer BumpLayers[NUMLAYERS_BUMPLAYERS];
+#endif // USE_BUMPMAP
+
 #if SHOW_HEIGHT_RESOLUTION
 uniform vec2 vertexResolution;
 #endif
@@ -65,15 +69,15 @@ uniform vec2 vertexResolution;
 // TODO atmosphere uniforms here
 #endif // USE_ATMOSPHERE
 
-#if USE_NIGHTTEXTURE || USE_WATERMASK || USE_ATMOSPHERE || PERFORM_SHADING
+#if USE_NIGHTTEXTURE || USE_WATERMASK || USE_ATMOSPHERE || PERFORM_SHADING || USE_BUMPMAP
 	uniform vec3 lightDirectionCameraSpace;
 #endif
 
 in vec4 fs_position;
 in vec2 fs_uv;
-in vec3 ellipsoidNormalCameraSpace;
+//in vec3 ellipsoidNormalCameraSpace;
 in vec3 positionCameraSpace;
-
+in mat3 TBNMatrix;
 
 // levelInterpolationParameter is used to interpolate between a tile and its parent tiles
 // The value increases with the distance from the vertex (or fragment) to the camera
@@ -118,6 +122,14 @@ float getUntransformedTileVertexHeight(vec2 uv, LevelWeights levelWeights){
 vec4 getTileFragColor(){
 
 	vec4 color = vec4(0.1,0.1,0.1,1);
+	vec3 ellipsoidNormalCameraSpace;
+#if USE_BUMPMAP
+	//ellipsoidNormalCameraSpace = TBNMatrix * getTexVal(BumpLayers[0].pile, levelWeights, fs_uv).xyz;
+
+	ellipsoidNormalCameraSpace = TBNMatrix * calculateNormal(fs_uv, levelWeights, BumpLayers);
+#else
+	ellipsoidNormalCameraSpace = TBNMatrix[2];
+#endif
 
 #if USE_COLORTEXTURE
 

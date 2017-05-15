@@ -62,6 +62,11 @@
 #define USE_GRAYSCALE_OVERLAY #{useGrayScaleColorOverlays}
 #define GRAYSCALE_OVERLAY_BLENDING_ENABLED #{blendGrayScaleColorOverlays}
 
+// Bump map layer
+#define NUMLAYERS_BUMPLAYERS #{lastLayerIndexBumpLayers} + 1
+#define USE_BUMPMAP #{useBumpLayers}
+#define BUMPMAP_BLENDING_ENABLED #{blendBumpLayers}
+
 // Global constants
 #define CHUNK_DEFAULT_HEIGHT #{defaultHeight}
 
@@ -143,6 +148,32 @@ float calculateHeight(
 	}
 	#endfor
 	return height;
+}
+
+vec3 calculateNormal(
+	const vec2 uv,
+	LevelWeights levelWeights,
+	const Layer BumpLayers[NUMLAYERS_BUMPLAYERS]) {
+
+	vec4 normal = vec4(0);
+
+	// The shader compiler will remove unused code when variables are multiplied by
+	// a constant 0
+#if !BUMPMAP_BLENDING_ENABLED
+	levelWeights = getDefaultLevelWeights();
+#endif // BUMPMAP_BLENDING_ENABLED
+
+	//#for i in 0..#{lastLayerIndexBumpLayers}
+	{
+		normal = getTexVal(BumpLayers[0].pile, levelWeights, uv);
+
+		normal = performLayerSettings(normal, BumpLayers[0].settings);
+
+		//normal = blendOver(normal, normalSample);
+	}
+	//#endfor
+
+	return normal.xyz;	
 }
 
 vec4 calculateColor(

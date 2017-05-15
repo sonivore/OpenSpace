@@ -108,6 +108,7 @@ return {
                 },
                 GrayScaleLayers = { },
                 GrayScaleColorOverlays = { },
+				BumpLayers = { },
                 NightLayers = {
                     {
                         Name = "Earth at Night 2012",

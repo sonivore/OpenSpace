@@ -39,7 +39,7 @@ struct LayerGroup;
  */
 class LayerManager : public properties::PropertyOwner  {
 public:
-    static const size_t NUM_LAYER_GROUPS = 7;
+    static const size_t NUM_LAYER_GROUPS = 8;
     static const char* LAYER_GROUP_NAMES[NUM_LAYER_GROUPS];
     enum LayerGroupId {
         HeightLayers,
@@ -48,7 +48,8 @@ public:
         GrayScaleLayers,
         GrayScaleColorOverlays,
         NightLayers,
-        WaterMasks
+        WaterMasks,
+        BumpLayers
     };
 
     LayerManager(const ghoul::Dictionary& textureCategoriesDictionary);
