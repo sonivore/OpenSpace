@@ -66,7 +66,7 @@ public:
 
     // Callback functions 
     bool handleKeyboard(Key key, KeyModifier modifier, KeyAction action) override;
-    void writeKeyboardDocumentation(const std::string& type, const std::string& file);
+    void writeDocumentation(const std::string& type, const std::string& file);
 
 private:
     using Synchronized = ghoul::Boolean;

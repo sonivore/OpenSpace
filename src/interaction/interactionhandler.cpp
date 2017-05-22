@@ -48,6 +48,7 @@
 
 #include <ghoul/glm.h>
 
+#include <memory>
 #include <fstream>
 
 namespace {
@@ -59,10 +60,7 @@ namespace {
 
     const char* MainTemplateFilename = "${OPENSPACE_DATA}/web/keybindings/main.hbs";
     const char* KeybindingTemplateFilename = "${OPENSPACE_DATA}/web/keybindings/keybinding.hbs";
-    const char* HandlebarsFilename = "${OPENSPACE_DATA}/web/common/handlebars-v4.0.5.js";
     const char* JsFilename = "${OPENSPACE_DATA}/web/keybindings/script.js";
-    const char* BootstrapFilename = "${OPENSPACE_DATA}/web/common/bootstrap.min.css";
-    const char* CssFilename = "${OPENSPACE_DATA}/web/common/style.css";
     
     const int IdOrbitalInteractionMode = 0;
     const char* KeyOrbitalInteractionMode = "Orbital";
@@ -82,6 +80,15 @@ namespace interaction {
 // InteractionHandler
 InteractionHandler::InteractionHandler()
     : properties::PropertyOwner("Interaction")
+    , DocumentationGenerator(
+        "Documentation",
+        "keybindings",
+        {
+            { "keybindingTemplate",  KeybindingTemplateFilename },
+            { "mainTemplate", MainTemplateFilename }
+        },
+        JsFilename
+    )
     , _origin("origin", "Origin", "")
     , _rotationalFriction("rotationalFriction", "Rotational Friction", true)
     , _horizontalFriction("horizontalFriction", "Horizontal Friction", true)
@@ -379,6 +386,36 @@ void InteractionHandler::restoreCameraStateFromFile(const std::string& filepath)
     }
 }
 
+std::string InteractionHandler::generateJson() const {
+    std::stringstream json;
+    json << "[";
+    bool first = true;
+    for (const auto& p : _keyLua) {
+        if (!first) {
+            json << ",";
+        }
+        first = false;
+        json << "{";
+        json << "\"key\": \"" << std::to_string(p.first) << "\",";
+        json << "\"script\": \"" << p.second.command << "\",";
+        json << "\"remoteScripting\": " << (p.second.synchronization ? "true," : "false,");
+        json << "\"documentation\": \"" << p.second.documentation << "\"";
+        json << "}";
+    }
+    json << "]";
+    
+    std::string jsonString = "";
+    for (const char& c : json.str()) {
+        if (c == '\'') {
+            jsonString += "\\'";
+        } else {
+            jsonString += c;
+        }
+    }
+
+    return jsonString;
+}
+    
 scripting::LuaLibrary InteractionHandler::luaLibrary() {
     return{
         "",

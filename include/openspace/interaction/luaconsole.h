@@ -28,12 +28,19 @@
 #include <openspace/network/parallelconnection.h>
 #include <openspace/properties/propertyowner.h>
 #include <openspace/properties/scalar/boolproperty.h>
+#include <openspace/properties/vector/vec4property.h>
 #include <openspace/scripting/scriptengine.h>
 #include <openspace/util/keys.h>
 #include <openspace/interaction/keyboardmouseeventconsumer.h>
 
 #include <string>
 #include <vector>
+
+namespace ghoul {
+namespace opengl {
+    class ProgramObject;
+} // namespace opengl
+} // namespace ghoul
 
 namespace openspace {
 
@@ -47,7 +54,9 @@ public:
     bool handleKeyboard(Key key, KeyModifier modifier, KeyAction action) override;
     bool handleCharacter(unsigned int codepoint, KeyModifier modifier) override;
 
+    void update();
     void render();
+    float currentHeight() const;
 
 private:
     void parallelConnectionChanged(const ParallelConnection::Status& status);
@@ -56,6 +65,14 @@ private:
     properties::BoolProperty _isVisible;
     properties::BoolProperty _remoteScripting;
 
+    properties::Vec4Property _backgroundColor;
+    properties::Vec4Property _highlightColor;
+    properties::Vec4Property _separatorColor;
+    properties::Vec4Property _entryTextColor;
+    properties::Vec4Property _historyTextColor;
+    properties::IntProperty _historyLength;
+
+    
     size_t _inputPosition;
     std::vector<std::string> _commandsHistory;
     size_t _activeCommand;
@@ -66,6 +83,17 @@ private:
         bool hasInitialValue;
         std::string initialValue;
     } _autoCompleteInfo;
+
+    float _currentHeight;
+    float _targetHeight;
+    float _fullHeight;
+
+    std::shared_ptr<ghoul::fontrendering::Font> _font;
+    std::shared_ptr<ghoul::fontrendering::Font> _historyFont;
+
+    std::unique_ptr<ghoul::opengl::ProgramObject> _program;
+    GLuint _vao;
+    GLuint _vbo;
 };
 
 } // namespace openspace

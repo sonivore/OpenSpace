@@ -29,6 +29,7 @@
 #include <openspace/query/query.h>
 #include <openspace/rendering/renderengine.h>
 #include <openspace/scene/scenegraphnode.h>
+#include <openspace/scene/scene.h>
 #include <openspace/util/time.h>
 #include <openspace/util/keys.h>
 
@@ -79,15 +80,10 @@ Interpolator<double>& InteractionMode::rotateToFocusNodeInterpolator() {
     
     
 // KeyframeInteractionMode
-KeyframeInteractionMode::KeyframeInteractionMode() {
-}
 
-KeyframeInteractionMode::~KeyframeInteractionMode() {
-}
+KeyframeInteractionMode::KeyframeInteractionMode() {}
 
-void KeyframeInteractionMode::updateMouseStatesFromInput(const InputState&, double) {
-    // Do nothing.
-}
+KeyframeInteractionMode::~KeyframeInteractionMode() {}
 
 void KeyframeInteractionMode::updateCameraStateFromMouseStates(Camera& camera, double) {
     double now = OsEng.runTime();

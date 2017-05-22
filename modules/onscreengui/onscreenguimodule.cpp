@@ -30,7 +30,12 @@
 #include <openspace/engine/settingsengine.h>
 #include <openspace/engine/virtualpropertymanager.h>
 #include <openspace/engine/wrapper/windowwrapper.h>
+
 #include <openspace/interaction/navigator.h>
+
+
+#include <openspace/interaction/luaconsole.h>
+
 #include <openspace/network/parallelconnection.h>
 #include <openspace/rendering/renderengine.h>
 #include <openspace/rendering/screenspacerenderable.h>
@@ -53,42 +58,37 @@ void OnScreenGUIModule::initialize() {
     LDEBUGC("OnScreenGUIModule", "Initializing GUI");
     gui.initialize();
 
-    gui._globalProperty.setSource(
-        []() {
-            std::vector<properties::PropertyOwner*> res = {
-                &(OsEng.windowWrapper()),
-                &(OsEng.settingsEngine()),
-                &(OsEng.navigator()),
-                &(OsEng.renderEngine())
-            };
-            return res;
-        }
-    );
+    gui._globalProperty.setSource([]() {
+        std::vector<properties::PropertyOwner*> res = {
+            &(OsEng.windowWrapper()),
+            &(OsEng.settingsEngine()),
+            &(OsEng.navigator()),
+            &(OsEng.renderEngine()),
+            &(OsEng.parallelConnection()),
+            &(OsEng.console())
+        };
+        return res;
+    });
 
-    gui._screenSpaceProperty.setSource(
-        []() {
-            const auto& ssr = OsEng.renderEngine().screenSpaceRenderables();
-            return std::vector<properties::PropertyOwner*>(ssr.begin(), ssr.end());
-        }
-    );
+    gui._screenSpaceProperty.setSource([]() {
+        const std::vector<ScreenSpaceRenderable*>& ssr =
+            OsEng.renderEngine().screenSpaceRenderables();
+        return std::vector<properties::PropertyOwner*>(ssr.begin(), ssr.end());
+    });
 
-    gui._property.setSource(
-        []() {
-            const auto& nodes = OsEng.renderEngine().scene()->allSceneGraphNodes();
-            return std::vector<properties::PropertyOwner*>(nodes.begin(), nodes.end());
-        }
-    );
+    gui._property.setSource([]() {
+        const std::vector<SceneGraphNode*>& nodes =
+            OsEng.renderEngine().scene()->allSceneGraphNodes();
+        return std::vector<properties::PropertyOwner*>(nodes.begin(), nodes.end());
+    });
 
-    gui._virtualProperty.setSource(
-        []() {
+    gui._virtualProperty.setSource([]() {
         std::vector<properties::PropertyOwner*> res = {
             &(OsEng.virtualPropertyManager())
         };
 
         return res;
-    }
-    );
-
+    });
 }
 
 void OnScreenGUIModule::deinitialize() {
@@ -135,8 +135,7 @@ void OnScreenGUIModule::postDraw() {
 bool OnScreenGUIModule::handleKeyboard(Key key, KeyModifier mod, KeyAction action) {
     if (gui.isEnabled()) {
         return gui.keyCallback(key, mod, action);
-    }
-    else {
+    } else {
         return false;
     }
 }
@@ -144,8 +143,7 @@ bool OnScreenGUIModule::handleKeyboard(Key key, KeyModifier mod, KeyAction actio
 bool OnScreenGUIModule::handleCharacter(unsigned int codepoint, KeyModifier modifier) {
     if (gui.isEnabled()) {
         return gui.charCallback(codepoint, modifier);
-    }
-    else {
+    } else {
         return false;
     }
 }
@@ -154,8 +152,7 @@ bool OnScreenGUIModule::handleCharacter(unsigned int codepoint, KeyModifier modi
 bool OnScreenGUIModule::handleMouseButton(MouseButton button, MouseAction action) {
     if (gui.isEnabled()) {
         return gui.mouseButtonCallback(button, action);
-    }
-    else {
+    } else {
         return false;
     }
 }
@@ -163,8 +160,7 @@ bool OnScreenGUIModule::handleMouseButton(MouseButton button, MouseAction action
 bool OnScreenGUIModule::handleMouseScroll(double pos) {
     if (gui.isEnabled()) {
         return gui.mouseWheelCallback(pos);
-    }
-    else {
+    } else {
         return false;
     }
 }

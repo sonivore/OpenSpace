@@ -28,6 +28,7 @@
 #include <openspace/interaction/navigator.h>
 #include <openspace/rendering/renderengine.h>
 #include <openspace/scene/scenegraphnode.h>
+#include <openspace/scene/scene.h>
 
 #include <ghoul/misc/assert.h>
 

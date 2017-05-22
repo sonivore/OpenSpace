@@ -549,8 +549,8 @@ void ParallelConnection::dataMessageReceived(const std::vector<char>& messageCon
             datamessagestructures::CameraKeyframe kf(buffer);
             kf._timestamp = calculateBufferedKeyframeTime(kf._timestamp);
 
-
             OsEng.navigator().removeKeyframesAfter(kf._timestamp);
+
             interaction::KeyframeInteractionMode::CameraPose pose;
             pose.focusNode = kf._focusNode;
             pose.position = kf._position;
