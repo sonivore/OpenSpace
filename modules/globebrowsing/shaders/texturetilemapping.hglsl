@@ -172,8 +172,12 @@ vec3 calculateNormal(
 		//normal = blendOver(normal, normalSample);
 	}
 	//#endfor
-
-	return normal.xyz;	
+	normal = normal * 2.0;
+	normal = normal - 1.0;
+	
+	vec3 retVal = normal.xyz;
+	retVal = normalize(retVal);
+	return retVal;
 }
 
 vec4 calculateColor(

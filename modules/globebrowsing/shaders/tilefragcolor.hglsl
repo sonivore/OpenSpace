@@ -124,9 +124,22 @@ vec4 getTileFragColor(){
 	vec4 color = vec4(0.1,0.1,0.1,1);
 	vec3 ellipsoidNormalCameraSpace;
 #if USE_BUMPMAP
-	//ellipsoidNormalCameraSpace = TBNMatrix * getTexVal(BumpLayers[0].pile, levelWeights, fs_uv).xyz;
-
-	ellipsoidNormalCameraSpace = TBNMatrix * calculateNormal(fs_uv, levelWeights, BumpLayers);
+	float dotNormal = dot(TBNMatrix[2], -lightDirectionCameraSpace);
+	if (dotNormal < 0.0)
+	{
+		ellipsoidNormalCameraSpace = TBNMatrix[2];
+	}
+	else
+	{
+		ellipsoidNormalCameraSpace = TBNMatrix * calculateNormal(fs_uv, levelWeights, BumpLayers);
+		
+		// blending the last 10% to give a smooth bright to dark regions
+		if (dotNormal < 0.1)
+		{
+			dotNormal *= 10;
+			ellipsoidNormalCameraSpace = (dotNormal * ellipsoidNormalCameraSpace) + ((1.0-dotNormal) * TBNMatrix[2]);
+		}
+	}
 #else
 	ellipsoidNormalCameraSpace = TBNMatrix[2];
 #endif
