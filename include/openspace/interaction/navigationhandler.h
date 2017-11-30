@@ -92,6 +92,9 @@ private:
     std::unique_ptr<InputState> _inputState;
     Camera* _camera;
 
+    bool _saveCameraPathModeEnabled = true;
+    std::ofstream ofs* _cameraPathSaveFile = nullptr;
+
     std::unique_ptr<OrbitalNavigator> _orbitalNavigator;
     std::unique_ptr<KeyframeNavigator> _keyframeNavigator;
 
