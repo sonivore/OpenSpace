@@ -30,6 +30,7 @@
 #include <openspace/rendering/renderengine.h>
 #include <openspace/scene/scenegraphnode.h>
 #include <openspace/util/time.h>
+#include <openspace/util/timemanager.h>
 #include <openspace/util/keys.h>
 
 #include <ghoul/filesystem/filesystem.h>
@@ -282,29 +283,29 @@ void NavigationHandler::saveCameraStateToFile(const std::string& filepath) {
 }
 
 void NavigationHandler::saveCameraPathUpdateToFile() {
-    if( !_cameraPathSaveFile ) {
-        //TODO : Will switch to using lua state (as mentioned above in TODO for saveCameraStateToFile()
-        _cameraPathSaveFile = new std::ofstream("C:\Users\openspace\Desktop\OpenSpaceCamPath.txt", std::ofstream::out);
-        if( !_cameraPathSaveFile ) {
+    if (!_cameraPathSaveFile) {
+        LINFO("Starting camera path save file.");
+        _cameraPathSaveFile = new std::ofstream("C:\\Users\\openspace\\Desktop\\OpenSpaceCamPath.txt", std::ofstream::out);
+        if (!_cameraPathSaveFile) {
             LERROR("Unable to open camera path save file. Disabling save camera path mode.");
             _saveCameraPathModeEnabled = false;
             return;
         }
     }
 
-    double simTime = openspace::Time::ref().j2000Seconds();
-    _cameraPathSaveFile << std::to_string(simTime) << " ";
+    double simTime = OsEng.timeManager().time().j2000Seconds();
+    *_cameraPathSaveFile << std::to_string(simTime) << " ";
 
     glm::dvec3 p = _camera->positionVec3();
-    _cameraPathSaveFile << std::to_string(p.x) << ",";
-    _cameraPathSaveFile << std::to_string(p.y) << ",";
-    _cameraPathSaveFile << std::to_string(p.z) << " ";
+    *_cameraPathSaveFile << std::to_string(p.x) << ",";
+    *_cameraPathSaveFile << std::to_string(p.y) << ",";
+    *_cameraPathSaveFile << std::to_string(p.z) << " ";
 
     glm::dquat q = _camera->rotationQuaternion();
-    _cameraPathSaveFile << std::to_string(q.w) << ",";
-    _cameraPathSaveFile << std::to_string(q.x) << ",";
-    _cameraPathSaveFile << std::to_string(q.y) << ",";
-    _cameraPathSaveFile << std::to_string(q.z) << std::endl;
+    *_cameraPathSaveFile << std::to_string(q.w) << ",";
+    *_cameraPathSaveFile << std::to_string(q.x) << ",";
+    *_cameraPathSaveFile << std::to_string(q.y) << ",";
+    *_cameraPathSaveFile << std::to_string(q.z) << std::endl;
 }
 
 void NavigationHandler::restoreCameraStateFromFile(const std::string& filepath) {
