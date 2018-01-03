@@ -282,31 +282,7 @@ void NavigationHandler::saveCameraStateToFile(const std::string& filepath) {
     }
 }
 
-void NavigationHandler::saveCameraPathUpdateToFile() {
-    if (!_cameraPathSaveFile) {
-        LINFO("Starting camera path save file.");
-        _cameraPathSaveFile = new std::ofstream("C:\\Users\\openspace\\Desktop\\OpenSpaceCamPath.txt", std::ofstream::out);
-        if (!_cameraPathSaveFile) {
-            LERROR("Unable to open camera path save file. Disabling save camera path mode.");
-            _saveCameraPathModeEnabled = false;
-            return;
-        }
-    }
 
-    double simTime = OsEng.timeManager().time().j2000Seconds();
-    *_cameraPathSaveFile << std::to_string(simTime) << " ";
-
-    glm::dvec3 p = _camera->positionVec3();
-    *_cameraPathSaveFile << std::to_string(p.x) << ",";
-    *_cameraPathSaveFile << std::to_string(p.y) << ",";
-    *_cameraPathSaveFile << std::to_string(p.z) << " ";
-
-    glm::dquat q = _camera->rotationQuaternion();
-    *_cameraPathSaveFile << std::to_string(q.w) << ",";
-    *_cameraPathSaveFile << std::to_string(q.x) << ",";
-    *_cameraPathSaveFile << std::to_string(q.y) << ",";
-    *_cameraPathSaveFile << std::to_string(q.z) << std::endl;
-}
 
 void NavigationHandler::restoreCameraStateFromFile(const std::string& filepath) {
     LINFO("Reading camera state from file: " << filepath);

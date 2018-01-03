@@ -92,17 +92,12 @@ private:
     std::unique_ptr<InputState> _inputState;
     Camera* _camera;
 
-    bool _saveCameraPathModeEnabled = true;
-    std::ofstream* _cameraPathSaveFile = nullptr;
-
     std::unique_ptr<OrbitalNavigator> _orbitalNavigator;
     std::unique_ptr<KeyframeNavigator> _keyframeNavigator;
 
     // Properties
     properties::StringProperty _origin;
     properties::BoolProperty _useKeyFrameInteraction;
-
-    void saveCameraPathUpdateToFile();
 };
 
 } // namespace openspace::interaction

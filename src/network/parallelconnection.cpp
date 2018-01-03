@@ -1105,7 +1105,6 @@ void ParallelConnection::preSynchronization() {
         handleMessage(message);
         _receiveBuffer.pop_front();
     }
-
     if (status() == Status::Host) {
         if (OsEng.timeManager().time().timeJumped()) {
             _timeJumped = true;
@@ -1120,6 +1119,10 @@ void ParallelConnection::preSynchronization() {
             sendTimeKeyframe();
             _lastTimeKeyframeTimestamp = now;
         }
+    }
+
+    if (_saveCameraPathModeEnabled) {
+        saveFileKeyFrame();
     }
 }
 
@@ -1218,6 +1221,49 @@ void ParallelConnection::sendTimeKeyframe() {
     // Send message
     queueOutDataMessage(DataMessage(datamessagestructures::Type::TimeData, buffer));
     _timeJumped = false;
+}
+
+void ParallelConnection::saveFileKeyFrame() {
+    if (!_cameraPathSaveFile) {
+        LINFO("Starting camera path save file.");
+        _cameraPathSaveFile = new std::ofstream("C:\\Users\\openspace\\Desktop\\OpenSpaceCamPath.txt", std::ofstream);
+        if (!_cameraPathSaveFile) {
+            LERROR("Unable to open camera path save file. Disabling save camera path mode.");
+            _saveCameraPathModeEnabled = false;
+            return;
+        }
+    }
+
+    //Timestamp in file
+    double simTime = OsEng.timeManager().time().j2000Seconds();
+    *_cameraPathSaveFile << std::to_string(simTime) << " ";
+
+    SceneGraphNode* focusNode = OsEng.navigationHandler().focusNode();
+    if (!focusNode) {
+        return;
+    }
+
+    // Create a keyframe with current position and orientation of camera
+    glm::dvec3 p = OsEng.navigationHandler().focusNodeToCameraVector();
+    glm::dquat q;
+
+    if (OsEng.navigationHandler().orbitalNavigator().followingNodeRotation()) {
+        p = glm::inverse(focusNode->worldRotationMatrix()) * p;
+        q = OsEng.navigationHandler().focusNodeToCameraRotation();
+    } else {
+        q = OsEng.navigationHandler().camera()->rotationQuaternion();
+    }
+
+    //Camera position & rotation
+    *_cameraPathSaveFile << std::to_string(p.x) << ",";
+    *_cameraPathSaveFile << std::to_string(p.y) << ",";
+    *_cameraPathSaveFile << std::to_string(p.z) << " ";
+
+    *_cameraPathSaveFile << std::to_string(q.w) << ",";
+    *_cameraPathSaveFile << std::to_string(q.x) << ",";
+    *_cameraPathSaveFile << std::to_string(q.y) << ",";
+    *_cameraPathSaveFile << std::to_string(q.z) << std::endl;
+
 }
 
 uint32_t ParallelConnection::hash(const std::string& val) {

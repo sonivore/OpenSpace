@@ -158,6 +158,8 @@ private:
 
     double calculateBufferedKeyframeTime(double originalTime);
 
+    void saveFileKeyFrame();
+
     properties::StringProperty _password;
     properties::StringProperty _hostPassword;
     properties::StringProperty _port;
@@ -203,6 +205,10 @@ private:
     std::unique_ptr<std::thread> _listenThread;
     std::unique_ptr<std::thread> _handlerThread;
     std::shared_ptr<ghoul::Event<>> _connectionEvent;
+
+    bool _saveCameraPathModeEnabled = false;
+    std::ofstream* _cameraPathSaveFile = nullptr;
+
 };
 
 } // namespace openspace
