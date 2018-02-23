@@ -34,7 +34,6 @@
 #include <modules/globebrowsing/chunk/culling/frustumculler.h>
 #include <modules/globebrowsing/chunk/culling/horizonculler.h>
 #include <modules/globebrowsing/globes/renderableglobe.h>
-#include <modules/globebrowsing/meshes/skirtedgrid.h>
 #include <modules/globebrowsing/tile/tileprovider/tileprovider.h>
 #include <modules/globebrowsing/rendering/chunkrenderer.h>
 #include <modules/globebrowsing/rendering/layer/layergroup.h>
@@ -55,7 +54,7 @@ const TileIndex ChunkedLodGlobe::LEFT_HEMISPHERE_INDEX = TileIndex(0, 0, 1);
 const TileIndex ChunkedLodGlobe::RIGHT_HEMISPHERE_INDEX = TileIndex(1, 0, 1);
 const GeodeticPatch ChunkedLodGlobe::COVERAGE = GeodeticPatch(0, 0, 90, 180);
 
-ChunkedLodGlobe::ChunkedLodGlobe(const RenderableGlobe& owner, size_t segmentsPerPatch,
+ChunkedLodGlobe::ChunkedLodGlobe(const RenderableGlobe& owner, size_t segmentsPerChunk,
                                  std::shared_ptr<LayerManager> layerManager)
     : Renderable({ { "Name", owner.name() } })
     , minSplitDepth(2)
@@ -67,13 +66,7 @@ ChunkedLodGlobe::ChunkedLodGlobe(const RenderableGlobe& owner, size_t segmentsPe
     , _layerManager(layerManager)
     , _shadersNeedRecompilation(true)
 {
-    auto geometry = std::make_shared<SkirtedGrid>(
-        static_cast<unsigned int>(segmentsPerPatch),
-        static_cast<unsigned int>(segmentsPerPatch),
-        TriangleSoup::Positions::No,
-        TriangleSoup::TextureCoordinates::Yes,
-        TriangleSoup::Normals::No
-    );
+    std::make_shared<SkirtedGrid> geometry = generateGrid(segmentsPerChunk);
 
     _chunkCullers.push_back(std::make_unique<culling::HorizonCuller>());
     _chunkCullers.push_back(std::make_unique<culling::FrustumCuller>(
@@ -276,6 +269,14 @@ void ChunkedLodGlobe::recompileShaders() {
     _shadersNeedRecompilation = false;
 }
 
+size_t ChunkedLodGlobe::segmentsPerChunk() {
+    return _renderer->grid()->xSegments();
+}
+
+void ChunkedLodGlobe::setSegmentsPerChunk(size_t nSegments) {
+    _renderer->setGrid(generateGrid(nSegments));
+}
+
 void ChunkedLodGlobe::render(const RenderData& data, RendererTasks&) {
     stats.startNewRecord();
     if (_shadersNeedRecompilation) {
@@ -351,6 +352,16 @@ void ChunkedLodGlobe::debugRenderChunk(const Chunk& chunk, const glm::dmat4& mvp
             DebugRenderer::ref().renderNiceBox(screenSpacePoints, color);
         }
     }
+}
+
+std::shared_ptr<SkirtedGrid> ChunkedLodGlobe::generateGrid(size_t nSegments) const {
+    return std::make_shared<SkirtedGrid>(
+        static_cast<unsigned int>(nSegments),
+        static_cast<unsigned int>(nSegments),
+        TriangleSoup::Positions::No,
+        TriangleSoup::TextureCoordinates::Yes,
+        TriangleSoup::Normals::No
+    );
 }
 
 void ChunkedLodGlobe::update(const UpdateData& data) {

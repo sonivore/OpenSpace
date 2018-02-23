@@ -84,6 +84,7 @@ public:
         properties::FloatProperty lodScaleFactor;
         properties::FloatProperty cameraMinHeight;
         properties::FloatProperty orenNayarRoughness;
+        properties::IntProperty nSegmentsPerChunk;
     };
 
     // Shadow structure

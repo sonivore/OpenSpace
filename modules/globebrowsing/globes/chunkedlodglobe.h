@@ -30,6 +30,7 @@
 #include <modules/globebrowsing/geometry/ellipsoid.h>
 #include <modules/globebrowsing/other/statscollector.h>
 #include <modules/globebrowsing/geometry/geodeticpatch.h>
+#include <modules/globebrowsing/meshes/skirtedgrid.h>
 
 #include <memory>
 
@@ -48,7 +49,7 @@ class RenderableGlobe;
 
 class ChunkedLodGlobe : public Renderable {
 public:
-    ChunkedLodGlobe(const RenderableGlobe& owner, size_t segmentsPerPatch,
+    ChunkedLodGlobe(const RenderableGlobe& owner, size_t segmentsPerChunk,
         std::shared_ptr<LayerManager> layerManager);
     ~ChunkedLodGlobe();
 
@@ -112,6 +113,16 @@ public:
      */
     void recompileShaders();
 
+    /**
+     * Set segments per chunk.
+     */
+    size_t segmentsPerChunk();
+
+    /**
+    * Get segments per chunk.
+    */
+    void setSegmentsPerChunk(size_t nSegments);
+
     const int minSplitDepth;
     const int maxSplitDepth;
 
@@ -120,6 +131,8 @@ public:
     StatsCollector stats;
 
 private:
+    std::shared_ptr<SkirtedGrid> generateGrid(size_t nSegments) const;
+
     void debugRenderChunk(const Chunk& chunk, const glm::dmat4& data) const;
 
     static const GeodeticPatch COVERAGE;

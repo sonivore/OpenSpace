@@ -164,6 +164,12 @@ namespace {
         "orenNayarRoughness",
         "" // @TODO Missing documentation
     };
+
+    static const openspace::properties::Property::PropertyInfo NSegmentsPerChunkInfo = {
+        "NSegmentsPerChunk",
+        "nSegmentsPerChunk",
+        "The number of vertex points per dimension in each chunk",
+    };
 } // namespace
 
 using namespace openspace::properties;
@@ -195,7 +201,8 @@ RenderableGlobe::RenderableGlobe(const ghoul::Dictionary& dictionary)
         BoolProperty(EclipseHardShadowsInfo, false),
         FloatProperty(LodScaleFactorInfo, 10.f, 1.f, 50.f),
         FloatProperty(CameraMinHeightInfo, 100.f, 0.f, 1000.f),
-        FloatProperty(OrenNayarRoughnessInfo, 0.f, 0.f, 1.f)
+        FloatProperty(OrenNayarRoughnessInfo, 0.f, 0.f, 1.f),
+        IntProperty(NSegmentsPerChunkInfo, 64, 4, 128)
     })
     , _debugPropertyOwner({ "Debug" })
 {
@@ -246,6 +253,11 @@ RenderableGlobe::RenderableGlobe(const ghoul::Dictionary& dictionary)
     addProperty(_generalProperties.lodScaleFactor);
     addProperty(_generalProperties.cameraMinHeight);
     addProperty(_generalProperties.orenNayarRoughness);
+    addProperty(_generalProperties.nSegmentsPerChunk);
+
+    _generalProperties.nSegmentsPerChunk.onChange([this]() {
+        _chunkedLodGlobe->setSegmentsPerChunk(_generalProperties.nSegmentsPerChunk);
+    });
 
     _debugPropertyOwner.addProperty(_debugProperties.saveOrThrowCamera);
     _debugPropertyOwner.addProperty(_debugProperties.showChunkEdges);

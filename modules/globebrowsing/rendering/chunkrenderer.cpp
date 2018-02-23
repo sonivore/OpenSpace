@@ -70,6 +70,14 @@ void ChunkRenderer::renderChunk(const Chunk& chunk, const RenderData& data) {
     }
 }
 
+void ChunkRenderer::setGrid(std::shared_ptr<Grid> grid) {
+    _grid = grid;
+}
+
+std::shared_ptr<Grid> ChunkRenderer::grid() const {
+    return _grid;
+}
+
 void ChunkRenderer::update() {
     // unused atm. Could be used for caching or precalculating
 }

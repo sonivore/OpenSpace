@@ -50,6 +50,17 @@ public:
      * of the <code>Chunk</code>.
     */
     void renderChunk(const Chunk& chunk, const RenderData& data);
+
+    /**
+    * Set grid.
+    */
+    void setGrid(std::shared_ptr<Grid> grid);
+
+    /**
+    * Get grid.
+    */
+    std::shared_ptr<Grid> grid() const;
+
     void update();
 
     void recompileShaders(const RenderableGlobe& globe);
