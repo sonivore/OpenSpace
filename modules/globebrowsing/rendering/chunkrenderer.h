@@ -38,6 +38,7 @@ class Grid;
 class GPULayerManager;
 class LayerManager;
 class LayerShaderManager;
+class ChunkProgramEnv;
 class RenderableGlobe;
 
 class ChunkRenderer {
@@ -89,7 +90,7 @@ private:
      */
     void renderChunkLocally(const Chunk& chunk, const RenderData& data);
 
-    ghoul::opengl::ProgramObject* getActivatedProgramWithTileData(
+   ChunkProgramEnv* getActivatedProgramWithTileData(
         std::shared_ptr<LayerShaderManager> layeredShaderManager,
         std::shared_ptr<GPULayerManager> gpuLayerManager,
         const Chunk& chunk);
@@ -97,7 +98,7 @@ private:
     void calculateEclipseShadows(const Chunk& chunk,
         ghoul::opengl::ProgramObject* programObject, const RenderData& data);
 
-    void setCommonUniforms(ghoul::opengl::ProgramObject& programObject,
+    void setCommonUniforms(ChunkProgramEnv& programEnv,
         const Chunk& chunk, const RenderData& data);
 
     // shared pointer to a grid which can be the same for all rendered chunks.

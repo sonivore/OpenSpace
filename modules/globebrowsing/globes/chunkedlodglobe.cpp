@@ -66,7 +66,7 @@ ChunkedLodGlobe::ChunkedLodGlobe(const RenderableGlobe& owner, size_t segmentsPe
     , _layerManager(layerManager)
     , _shadersNeedRecompilation(true)
 {
-    std::make_shared<SkirtedGrid> geometry = generateGrid(segmentsPerChunk);
+    std::shared_ptr<SkirtedGrid> geometry = generateGrid(segmentsPerChunk);
 
     _chunkCullers.push_back(std::make_unique<culling::HorizonCuller>());
     _chunkCullers.push_back(std::make_unique<culling::FrustumCuller>(

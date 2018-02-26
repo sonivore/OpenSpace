@@ -89,7 +89,7 @@ void ChunkRenderer::recompileShaders(const RenderableGlobe& globe) {
     _localLayerShaderManager->recompileShaderProgram(preprocessingData);
 }
 
-ghoul::opengl::ProgramObject* ChunkRenderer::getActivatedProgramWithTileData(
+ChunkProgramEnv* ChunkRenderer::getActivatedProgramWithTileData(
                                  std::shared_ptr<LayerShaderManager> layeredShaderManager,
                                  std::shared_ptr<GPULayerManager> gpuLayerManager,
                                  const Chunk& chunk)
@@ -97,10 +97,43 @@ ghoul::opengl::ProgramObject* ChunkRenderer::getActivatedProgramWithTileData(
     const TileIndex& tileIndex = chunk.tileIndex();
 
     // Now the shader program can be accessed
-    ghoul::opengl::ProgramObject* programObject = layeredShaderManager->programObject();
+    ChunkProgramEnv* programEnv = layeredShaderManager->programEnv();
+    ghoul::opengl::ProgramObject* programObject = programEnv->program.get();
+    ChunkProgramEnv::ChunkUniformCache& uniformCache = programEnv->uniformCache;
 
     if (layeredShaderManager->updatedSinceLastCall()) {
         gpuLayerManager->bind(programObject, *_layerManager);
+        uniformCache.calculateEclipseShadows = programObject->uniformLocation("calculateEclipseShadows");
+        uniformCache.cameraPosition = programObject->uniformLocation("cameraPosition");
+        uniformCache.chunkLevel = programObject->uniformLocation("chunkLevel");
+        uniformCache.deltaTheta0 = programObject->uniformLocation("deltaTheta0");
+        uniformCache.deltaTheta1 = programObject->uniformLocation("deltaTheta1");
+        uniformCache.deltaPhi0 = programObject->uniformLocation("deltaPhi0");
+        uniformCache.deltaPhi1 = programObject->uniformLocation("deltaPhi1");
+        uniformCache.distanceScaleFactor = programObject->uniformLocation("distanceScaleFactor");
+        uniformCache.hardShadows = programObject->uniformLocation("hardShadows");
+        uniformCache.heightScale = programObject->uniformLocation("heightScale");
+        uniformCache.inverseViewTransform = programObject->uniformLocation("inverseViewTransform");
+        uniformCache.invViewModelTransform = programObject->uniformLocation("invViewModelTransform");
+        uniformCache.lightDirectionCameraSpace = programObject->uniformLocation("lightDirectionCameraSpace");
+        uniformCache.lonLatScalingFactor = programObject->uniformLocation("lonLatScalingFactor");
+        uniformCache.modelTransform = programObject->uniformLocation("modelTransform");
+        uniformCache.modelViewProjectionTransform = programObject->uniformLocation("modelViewProjectionTransform");
+        uniformCache.modelViewTransform = programObject->uniformLocation("modelViewTransform");
+        uniformCache.minLatLon = programObject->uniformLocation("minLatLon");
+        uniformCache.orenNayarRoughness = programObject->uniformLocation("orenNayarRoughness");
+        uniformCache.p00 = programObject->uniformLocation("p00");
+        uniformCache.p01 = programObject->uniformLocation("p01");
+        uniformCache.p10 = programObject->uniformLocation("p10");
+        uniformCache.p11 = programObject->uniformLocation("p11");
+        uniformCache.patchNormalModelSpace = programObject->uniformLocation("patchNormalModelSpace");
+        uniformCache.patchNormalCameraSpace = programObject->uniformLocation("patchNormalCameraSpace");
+        uniformCache.projectionTransform = programObject->uniformLocation("projectionTransform");
+        uniformCache.radiiSquared = programObject->uniformLocation("radiiSquared");
+        uniformCache.skirtLength = programObject->uniformLocation("skirtLength");
+        uniformCache.tileDelta = programObject->uniformLocation("tileDelta");
+        uniformCache.vertexResolution = programObject->uniformLocation("vertexResolution");
+        uniformCache.xSegments = programObject->uniformLocation("xSegments");
     }
 
     // Activate the shader program
@@ -111,17 +144,17 @@ ghoul::opengl::ProgramObject* ChunkRenderer::getActivatedProgramWithTileData(
     // The length of the skirts is proportional to its size
     // TODO: Skirt length should probably be proportional to the size reffered to by
     // the chunk's most high resolution height map.
-    programObject->setUniform("skirtLength",
+    programObject->setUniform(uniformCache.skirtLength,
         glm::min(static_cast<float>(chunk.surfacePatch().halfSize().lat * 1000000),
             8700.0f));
-    programObject->setUniform("xSegments", _grid->xSegments());
+    programObject->setUniform(uniformCache.xSegments, _grid->xSegments());
 
     if (chunk.owner().debugProperties().showHeightResolution) {
-        programObject->setUniform("vertexResolution",
+        programObject->setUniform(uniformCache.vertexResolution,
             glm::vec2(_grid->xSegments(), _grid->ySegments()));
     }
 
-    return programObject;
+    return programEnv;
 }
 
 void ChunkRenderer::calculateEclipseShadows(const Chunk& chunk,
@@ -249,9 +282,12 @@ void ChunkRenderer::calculateEclipseShadows(const Chunk& chunk,
     }
 }
 
-void ChunkRenderer::setCommonUniforms(ghoul::opengl::ProgramObject& programObject,
+void ChunkRenderer::setCommonUniforms(ChunkProgramEnv& programEnv,
                                       const Chunk& chunk, const RenderData& data)
 {
+    ghoul::opengl::ProgramObject& programObject = *programEnv.program.get();
+    ChunkProgramEnv::ChunkUniformCache& uniformCache = programEnv.uniformCache;
+
     glm::dmat4 modelTransform = chunk.owner().modelTransform();
     glm::dmat4 viewTransform = data.camera.combinedViewMatrix();
     glm::dmat4 modelViewTransform = viewTransform * modelTransform;
@@ -271,12 +307,12 @@ void ChunkRenderer::setCommonUniforms(ghoul::opengl::ProgramObject& programObjec
         glm::vec3 directionToSunCameraSpace =
             glm::vec3(viewTransform * glm::dvec4(directionToSunWorldSpace, 0));
         programObject.setUniform(
-            "lightDirectionCameraSpace", -directionToSunCameraSpace);
+            uniformCache.lightDirectionCameraSpace, -directionToSunCameraSpace);
     }
 
     if (chunk.owner().generalProperties().performShading) {
         programObject.setUniform(
-            "orenNayarRoughness",
+            uniformCache.orenNayarRoughness,
             chunk.owner().generalProperties().orenNayarRoughness);
     }
 
@@ -310,25 +346,29 @@ void ChunkRenderer::setCommonUniforms(ghoul::opengl::ProgramObject& programObjec
         deltaPhi1 = modelViewTransformMat3 * deltaPhi1;
 
         // Upload uniforms
-        programObject.setUniform("deltaTheta0", glm::length(deltaTheta0));
-        programObject.setUniform("deltaTheta1", glm::length(deltaTheta1));
-        programObject.setUniform("deltaPhi0", glm::length(deltaPhi0));
-        programObject.setUniform("deltaPhi1", glm::length(deltaPhi1));
-        programObject.setUniform("tileDelta", tileDelta);
+        programObject.setUniform(uniformCache.deltaTheta0, glm::length(deltaTheta0));
+        programObject.setUniform(uniformCache.deltaTheta1, glm::length(deltaTheta1));
+        programObject.setUniform(uniformCache.deltaPhi0, glm::length(deltaPhi0));
+        programObject.setUniform(uniformCache.deltaPhi1, glm::length(deltaPhi1));
+        programObject.setUniform(uniformCache.tileDelta, tileDelta);
 
         // This should not be needed once the light calculations for the atmosphere
         // is performed in view space..
-        programObject.setUniform("invViewModelTransform",
+        programObject.setUniform(uniformCache.invViewModelTransform,
                                glm::inverse(glm::mat4(data.camera.combinedViewMatrix()) *
                                             glm::mat4(chunk.owner().modelTransform())));
     }
 }
 
 void ChunkRenderer::renderChunkGlobally(const Chunk& chunk, const RenderData& data) {
-    ghoul::opengl::ProgramObject* programObject = getActivatedProgramWithTileData(
+    ChunkProgramEnv* programEnv = getActivatedProgramWithTileData(
         _globalLayerShaderManager,
         _globalGpuLayerManager,
         chunk);
+
+    ghoul::opengl::ProgramObject* programObject = programEnv->program.get();
+    ChunkProgramEnv::ChunkUniformCache& uniformCache = programEnv->uniformCache;
+
     if (programObject == nullptr) {
         return;
     }
@@ -344,9 +384,9 @@ void ChunkRenderer::renderChunkGlobally(const Chunk& chunk, const RenderData& da
         float distanceScaleFactor = static_cast<float>(
             chunk.owner().generalProperties().lodScaleFactor * ellipsoid.minimumRadius()
         );
-        programObject->setUniform("cameraPosition", glm::vec3(cameraPosition));
-        programObject->setUniform("distanceScaleFactor", distanceScaleFactor);
-        programObject->setUniform("chunkLevel", chunk.tileIndex().level);
+        programObject->setUniform(uniformCache.cameraPosition, glm::vec3(cameraPosition));
+        programObject->setUniform(uniformCache.distanceScaleFactor, distanceScaleFactor);
+        programObject->setUniform(uniformCache.chunkLevel, chunk.tileIndex().level);
     }
 
     // Calculate other uniform variables needed for rendering
@@ -361,11 +401,11 @@ void ChunkRenderer::renderChunkGlobally(const Chunk& chunk, const RenderData& da
 
     // Upload the uniform variables
     programObject->setUniform(
-        "modelViewProjectionTransform", modelViewProjectionTransform);
-    programObject->setUniform("minLatLon", glm::vec2(swCorner.toLonLatVec2()));
-    programObject->setUniform("lonLatScalingFactor", glm::vec2(patchSize.toLonLatVec2()));
+        uniformCache.modelViewProjectionTransform, modelViewProjectionTransform);
+    programObject->setUniform(uniformCache.minLatLon, glm::vec2(swCorner.toLonLatVec2()));
+    programObject->setUniform(uniformCache.lonLatScalingFactor, glm::vec2(patchSize.toLonLatVec2()));
     // Ellipsoid Radius (Model Space)
-    programObject->setUniform("radiiSquared", glm::vec3(ellipsoid.radiiSquared()));
+    programObject->setUniform(uniformCache.radiiSquared, glm::vec3(ellipsoid.radiiSquared()));
 
     if (_layerManager->layerGroup(
             layergroupid::GroupID::NightLayers).activeLayers().size() > 0 ||
@@ -374,7 +414,7 @@ void ChunkRenderer::renderChunkGlobally(const Chunk& chunk, const RenderData& da
         chunk.owner().generalProperties().atmosphereEnabled ||
         chunk.owner().generalProperties().performShading)
     {
-        programObject->setUniform("modelViewTransform", modelViewTransform);
+        programObject->setUniform(uniformCache.modelViewTransform, modelViewTransform);
     }
 
     if (chunk.owner().generalProperties().useAccurateNormals &&
@@ -382,10 +422,10 @@ void ChunkRenderer::renderChunkGlobally(const Chunk& chunk, const RenderData& da
     {
         // Apply an extra scaling to the height if the object is scaled
         programObject->setUniform(
-            "heightScale", static_cast<float>(data.modelTransform.scale));
+            uniformCache.heightScale, static_cast<float>(data.modelTransform.scale));
     }
 
-    setCommonUniforms(*programObject, chunk, data);
+    setCommonUniforms(*programEnv, chunk, data);
 
     if (chunk.owner().ellipsoid().hasEclipseShadows()) {
         calculateEclipseShadows(chunk, programObject, data);
@@ -407,10 +447,14 @@ void ChunkRenderer::renderChunkGlobally(const Chunk& chunk, const RenderData& da
 }
 
 void ChunkRenderer::renderChunkLocally(const Chunk& chunk, const RenderData& data) {
-    ghoul::opengl::ProgramObject* programObject = getActivatedProgramWithTileData(
+    ChunkProgramEnv* programEnv = getActivatedProgramWithTileData(
         _localLayerShaderManager,
         _localGpuLayerManager,
         chunk);
+
+    ghoul::opengl::ProgramObject* programObject = programEnv->program.get();
+    ChunkProgramEnv::ChunkUniformCache& uniformCache = programEnv->uniformCache;
+
     if (programObject == nullptr) {
         return;
     }
@@ -426,8 +470,8 @@ void ChunkRenderer::renderChunkLocally(const Chunk& chunk, const RenderData& dat
             chunk.owner().ellipsoid().minimumRadius()
         );
 
-        programObject->setUniform("distanceScaleFactor", distanceScaleFactor);
-        programObject->setUniform("chunkLevel", chunk.tileIndex().level);
+        programObject->setUniform(uniformCache.distanceScaleFactor, distanceScaleFactor);
+        programObject->setUniform(uniformCache.chunkLevel, chunk.tileIndex().level);
     }
 
     // Calculate other uniform variables needed for rendering
@@ -436,7 +480,13 @@ void ChunkRenderer::renderChunkLocally(const Chunk& chunk, const RenderData& dat
     dmat4 viewTransform = data.camera.combinedViewMatrix();
     dmat4 modelViewTransform = viewTransform * modelTransform;
 
-    std::vector<std::string> cornerNames = { "p01", "p11", "p00", "p10" };
+    std::vector<int> cornerUniformLocations = {
+        uniformCache.p01,
+        uniformCache.p11,
+        uniformCache.p00,
+        uniformCache.p10
+    };
+
     std::vector<glm::dvec3> cornersCameraSpace(4);
     std::vector<glm::dvec3> cornersModelSpace(4);
     for (int i = 0; i < 4; ++i) {
@@ -447,7 +497,7 @@ void ChunkRenderer::renderChunkLocally(const Chunk& chunk, const RenderData& dat
         glm::dvec3 cornerCameraSpace =
             glm::dvec3(modelViewTransform * glm::dvec4(cornerModelSpace, 1));
         cornersCameraSpace[i] = cornerCameraSpace;
-        programObject->setUniform(cornerNames[i], vec3(cornerCameraSpace));
+        programObject->setUniform(cornerUniformLocations[i], vec3(cornerCameraSpace));
 
     }
 
@@ -467,20 +517,19 @@ void ChunkRenderer::renderChunkLocally(const Chunk& chunk, const RenderData& dat
             cornersModelSpace[Quad::NORTH_EAST] -
             cornersModelSpace[Quad::SOUTH_WEST]));
 
-    programObject->setUniform("patchNormalModelSpace", patchNormalModelSpace);
-    programObject->setUniform("patchNormalCameraSpace", patchNormalCameraSpace);
-    programObject->setUniform(
-        "projectionTransform",
+    programObject->setUniform(uniformCache.patchNormalModelSpace, patchNormalModelSpace);
+    programObject->setUniform(uniformCache.patchNormalCameraSpace, patchNormalCameraSpace);
+    programObject->setUniform(uniformCache.projectionTransform,
         data.camera.sgctInternal.projectionMatrix()
     );
 
     if (_layerManager->layerGroup(layergroupid::HeightLayers).activeLayers().size() > 0) {
         // Apply an extra scaling to the height if the object is scaled
         programObject->setUniform(
-            "heightScale", static_cast<float>(data.modelTransform.scale));
+            uniformCache.heightScale, static_cast<float>(data.modelTransform.scale));
     }
 
-    setCommonUniforms(*programObject, chunk, data);
+    setCommonUniforms(*programEnv, chunk, data);
 
     if (chunk.owner().ellipsoid().hasEclipseShadows()) {
         calculateEclipseShadows(chunk, programObject, data);

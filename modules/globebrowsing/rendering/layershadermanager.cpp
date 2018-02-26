@@ -142,16 +142,16 @@ LayerShaderManager::LayerShaderManager(const std::string& shaderName,
 {}
 
 LayerShaderManager::~LayerShaderManager() {
-    if (_programObject) {
+    if (_programEnv.program) {
         RenderEngine& renderEngine = OsEng.renderEngine();
-        renderEngine.removeRenderProgram(_programObject);
-        _programObject = nullptr;
+        renderEngine.removeRenderProgram(_programEnv.program);
+        _programEnv.program = nullptr;
     }
 }
 
-ghoul::opengl::ProgramObject* LayerShaderManager::programObject() const {
+ChunkProgramEnv* LayerShaderManager::programEnv() {
     ghoul_assert(_programObject, "Program does not exist. Needs to be compiled!");
-    return _programObject.get();
+    return &_programEnv;
 }
 
 void LayerShaderManager::recompileShaderProgram(
@@ -230,9 +230,9 @@ void LayerShaderManager::recompileShaderProgram(
     }
 
     // Remove old program
-    OsEng.renderEngine().removeRenderProgram(_programObject);
+    OsEng.renderEngine().removeRenderProgram(_programEnv.program);
 
-    _programObject = OsEng.renderEngine().buildRenderProgram(
+    _programEnv.program = OsEng.renderEngine().buildRenderProgram(
         _shaderName,
         absPath(_vsPath),
         absPath(_fsPath),
@@ -241,8 +241,8 @@ void LayerShaderManager::recompileShaderProgram(
 
     ghoul_assert(_programObject != nullptr, "Failed to initialize programObject!");
     using IgnoreError = ghoul::opengl::ProgramObject::ProgramObject::IgnoreError;
-    _programObject->setIgnoreSubroutineUniformLocationError(IgnoreError::Yes);
-    _programObject->setIgnoreUniformLocationError(IgnoreError::Yes);
+    _programEnv.program->setIgnoreSubroutineUniformLocationError(IgnoreError::Yes);
+    _programEnv.program->setIgnoreUniformLocationError(IgnoreError::Yes);
     _updatedSinceLastCall = true;
 }
 

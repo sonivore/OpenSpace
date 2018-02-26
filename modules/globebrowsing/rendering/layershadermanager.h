@@ -37,6 +37,46 @@ namespace openspace::globebrowsing {
 
 class RenderableGlobe;
 
+struct ChunkProgramEnv {
+    struct ChunkUniformCache {
+        int calculateEclipseShadows = -1;
+        int cameraPosition = -1;
+        int chunkLevel = -1;
+        int deltaTheta0 = -1;
+        int deltaTheta1 = -1;
+        int deltaPhi0 = -1;
+        int deltaPhi1 = -1;
+        int distanceScaleFactor = -1;
+        int hardShadows = -1;
+        int heightScale = -1;
+        int inverseViewTransform = -1;
+        int invViewModelTransform = -1;
+        int lightDirectionCameraSpace = -1;
+        int lonLatScalingFactor = -1;
+        int modelTransform = -1;
+        int modelViewProjectionTransform = -1;
+        int modelViewTransform = -1;
+        int minLatLon = -1;
+        int orenNayarRoughness = -1;
+        int p00 = -1;
+        int p01 = -1;
+        int p10 = -1;
+        int p11 = -1;
+        int patchNormalModelSpace = -1;
+        int patchNormalCameraSpace = -1;
+        int projectionTransform = -1;
+        int radiiSquared = -1;
+        int skirtLength = -1;
+        int tileDelta = -1;
+        int vertexResolution = -1;
+        int xSegments = -1;
+    };
+
+    std::unique_ptr<ghoul::opengl::ProgramObject> program;
+    ChunkUniformCache uniformCache;
+};
+
+
 /**
  * This class has ownership of an updated shader program for rendering tiles.
  */
@@ -80,16 +120,16 @@ public:
     ~LayerShaderManager();
 
     /**
-     * Returns a pointer to a <code>ProgramObject</code> for rendering tiles.
+     * Returns a pointer to a <code>ChunkProgramEnv</code> for rendering tiles.
      */
-    ghoul::opengl::ProgramObject* programObject() const;
+    ChunkProgramEnv* programEnv();
 
     bool updatedSinceLastCall();
 
     void recompileShaderProgram(LayerShaderPreprocessingData preprocessingData);
 
 private:
-    std::unique_ptr<ghoul::opengl::ProgramObject> _programObject;
+    ChunkProgramEnv _programEnv;
     LayerShaderPreprocessingData _preprocessingData;
 
     const std::string _shaderName;
