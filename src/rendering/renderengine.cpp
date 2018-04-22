@@ -563,7 +563,12 @@ void RenderEngine::render(const glm::mat4& sceneMatrix, const glm::mat4& viewMat
 
     bool masterEnabled = wrapper.isMaster() ? !_disableMasterRendering : true;
     if (masterEnabled && !wrapper.isGuiWindow() && _globalBlackOutFactor > 0.f) {
-        _renderer->render(_globalBlackOutFactor, _performanceManager != nullptr);
+        _renderer->render(
+            _scene,
+            _camera,
+            _globalBlackOutFactor,
+            _performanceManager != nullptr
+        );
     }
 
     if (_showFrameNumber) {
@@ -743,16 +748,10 @@ DeferredcasterManager& RenderEngine::deferredcasterManager() {
 
 void RenderEngine::setScene(Scene* scene) {
     _scene = scene;
-    if (_renderer) {
-        _renderer->setScene(scene);
-    }
 }
 
 void RenderEngine::setCamera(Camera* camera) {
     _camera = camera;
-    if (_renderer) {
-        _renderer->setCamera(camera);
-    }
 }
 
 const Renderer& RenderEngine::renderer() const {
@@ -913,8 +912,6 @@ void RenderEngine::setRenderer(std::unique_ptr<Renderer> renderer) {
     _renderer->setNAaSamples(_nAaSamples);
     _renderer->setHDRExposure(_hdrExposure);
     _renderer->initialize();
-    _renderer->setCamera(_camera);
-    _renderer->setScene(_scene);
 }
 
 scripting::LuaLibrary RenderEngine::luaLibrary() {
