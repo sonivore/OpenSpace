@@ -1112,6 +1112,16 @@ void OpenSpaceEngine::initializeGL() {
         });
     }
 
+    try {
+        bool initSuccess = ghoul::fontrendering::FontRenderer::initialize();
+        if (!initSuccess) {
+            LERROR("Error initializing default font renderer");
+        }
+    }
+    catch (const ghoul::RuntimeError& err) {
+        LERRORC(err.component, err.message);
+    }
+
     LDEBUG("Initializing Rendering Engine");
     _renderEngine->initializeGL();
 
@@ -1198,6 +1208,15 @@ void OpenSpaceEngine::postSynchronizationPreDraw() {
 
     bool master = _windowWrapper->isMaster();
     _syncEngine->postSynchronization(SyncEngine::IsMaster(master));
+
+    // This probably doesn't have to be done here every frame, but doing it earlier gives
+    // weird results when using side_by_side stereo --- abock
+    using FR = ghoul::fontrendering::FontRenderer;
+    FR::defaultRenderer().setFramebufferSize(_renderEngine->fontResolution());
+
+    FR::defaultProjectionRenderer().setFramebufferSize(
+        _renderEngine->renderingResolution()
+    );
 
     if (_shutdown.inShutdown) {
         if (_shutdown.timer <= 0.f) {
