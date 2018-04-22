@@ -35,7 +35,6 @@ uniform sampler1D colorTexture;
 uniform float magnitudeExponent;
 uniform float colorContribution;
 uniform int colorOption;
-uniform vec3 eyePosition;
 
 in vec4 vs_position;
 flat in vec3 ge_brightness;
