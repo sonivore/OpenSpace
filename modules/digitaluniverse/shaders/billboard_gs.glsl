@@ -104,9 +104,9 @@ void main() {
 
         if (!enabledRectSizeControl) {
             double distCamera = length(cameraPosition - dpos.xyz);
-            float expVar = float(-distCamera) / pow(10.f, correctionSizeEndDistance);
+            float expVar = float(-distCamera / double(pow(10.f, correctionSizeEndDistance)));
             double factorVar = double(pow(10, correctionSizeFactor));
-            scaleMultiply *= 1.0 / (1.0 + factorVar * double(exp(expVar)));
+            scaleMultiply *= double(1E10 / double(1E10 + factorVar * double(exp(expVar))));
         }
 
         scaledRight    = scaleMultiply * newRight * 0.5f;
@@ -115,8 +115,7 @@ void main() {
     
     if (enabledRectSizeControl) {
         initialPosition = z_normalization(vec4(cameraViewProjectionMatrix * 
-                        dvec4(dpos.xyz - scaledRight - scaledUp, dpos.w)));
-        vs_screenSpaceDepth = initialPosition.w;
+                            dvec4(dpos.xyz - scaledRight - scaledUp, dpos.w)));
         crossCorner = z_normalization(vec4(cameraViewProjectionMatrix * 
                             dvec4(dpos.xyz + scaledUp + scaledRight, dpos.w)));
         
@@ -158,6 +157,7 @@ void main() {
                         dvec4(dpos.xyz + scaledUp + scaledRight, dpos.w)));
     thirdPosition = z_normalization(vec4(cameraViewProjectionMatrix *
                         dvec4(dpos.xyz + scaledUp - scaledRight, dpos.w)));
+    vs_screenSpaceDepth = initialPosition.w;
 
 
     // Build primitive
