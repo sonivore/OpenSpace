@@ -184,7 +184,7 @@ RenderableGlobe::RenderableGlobe(const ghoul::Dictionary& dictionary)
         BoolProperty(ResetTileProviderInfo, false),
         BoolProperty(CollectStatsInfo, false),
         BoolProperty(LimitLevelInfo, true),
-        IntProperty(ModelSpaceRenderingInfo, 10, 1, 22)
+        IntProperty(ModelSpaceRenderingInfo, 10, 1, 35)
     })
     , _generalProperties({
         BoolProperty(PerformShadingInfo, true),

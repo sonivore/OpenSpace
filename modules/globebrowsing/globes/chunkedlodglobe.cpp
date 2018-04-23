@@ -60,7 +60,7 @@ ChunkedLodGlobe::ChunkedLodGlobe(const RenderableGlobe& owner, size_t segmentsPe
                                  Ellipsoid& ellipsoid)
     : Renderable({ { "Identifier", owner.identifier() }, { "Name", owner.guiName() } })
     , minSplitDepth(2)
-    , maxSplitDepth(22)
+    , maxSplitDepth(35)
     , stats(StatsCollector(absPath("test_stats"), 1, StatsCollector::Enabled::No))
     , _owner(owner)
     , _leftRoot(std::make_unique<ChunkNode>(Chunk(owner, LEFT_HEMISPHERE_INDEX)))
