@@ -168,6 +168,8 @@ void GdalRawTileDataReader::initialize() {
         _cached._maxLevel += numOverviews - 1;
     }
     _cached._maxLevel = std::max(_cached._maxLevel, 2);
+
+    _cached._maxLevel = 35;
 }
 
 RawTile::ReadError GdalRawTileDataReader::rasterRead(
