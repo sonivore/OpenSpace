@@ -247,7 +247,7 @@ RenderEngine::RenderEngine()
     , _showCameraInfo(ShowCameraInfo, true)
     , _takeScreenshot(TakeScreenshotInfo)
     , _applyWarping(ApplyWarpingInfo, false)
-    , _showFrameNumber(ShowFrameNumberInfo, false)
+    , _showFrameNumber(ShowFrameNumberInfo, true)
     , _showGlobeBrowsingDebug(ShowGlobeBrowsingDebugInfo, false)
     , _disableMasterRendering(DisableMasterInfo, false)
     , _disableSceneTranslationOnMaster(DisableTranslationInfo, false)
@@ -507,8 +507,7 @@ glm::ivec2 RenderEngine::renderingResolution() const {
 glm::ivec2 RenderEngine::fontResolution() const {
     const std::string& value = OsEng.configuration().onScreenTextScaling;
     if (value == "framebuffer") {
-        return OsEng.windowWrapper().getCurrentViewportSize();
-        //return OsEng.windowWrapper().currentWindowResolution();
+        return OsEng.windowWrapper().currentWindowResolution();
     }
     else {
         return OsEng.windowWrapper().currentWindowSize();
@@ -579,16 +578,23 @@ void RenderEngine::render(const glm::mat4& sceneMatrix, const glm::mat4& viewMat
         );
     }
 
-    if (_showFrameNumber) {
+    if (_showFrameNumber ) {
         const glm::vec2 penPosition = glm::vec2(
             fontResolution().x / 2 - 50,
             fontResolution().y / 3
         );
-
-        RenderFont(*_fontBig, penPosition, "%i", _frameNumber);
+        
+        if( _frameNumber % 2 == 0 ) {
+            ++_frameNumber;
+            std::chrono::high_resolution_clock::time_point _t_now = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double, std::milli> time_span = _t_now - _t_prev;
+            frameTime = time_span.count();
+        } else {
+            _t_prev = std::chrono::high_resolution_clock::now();
+        }
+        
+        RenderFont(*_fontBig, penPosition, "frame %i, %f", _frameNumber, frameTime);
     }
-
-    ++_frameNumber;
 
     if (_showGlobeBrowsingDebug) {
         const glm::vec2 penPosition = glm::vec2(

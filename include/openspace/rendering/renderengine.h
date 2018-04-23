@@ -212,6 +212,8 @@ private:
     properties::FloatProperty _gamma;
 
     uint64_t _frameNumber = 0;
+    std::chrono::high_resolution_clock::time_point _t_prev;
+    double frameTime;
 
     std::vector<ghoul::opengl::ProgramObject*> _programs;
     properties::PropertyOwner _screenSpaceOwner;
