@@ -172,6 +172,12 @@ namespace {
         "If this value is enabled, the current frame number is rendered into the window."
     };
 
+    static const openspace::properties::Property::PropertyInfo ShowGlobeBrowsingDebugInfo = {
+        "ShowGlobeBrowsingDebug",
+        "Show Globe Browsing Debug",
+        "If this value is enabled, the globe browsing debug info is rendered into the window."
+    };
+
     static const openspace::properties::Property::PropertyInfo DisableMasterInfo = {
         "DisableMasterRendering",
         "Disable Master Rendering",
@@ -242,6 +248,7 @@ RenderEngine::RenderEngine()
     , _takeScreenshot(TakeScreenshotInfo)
     , _applyWarping(ApplyWarpingInfo, false)
     , _showFrameNumber(ShowFrameNumberInfo, false)
+    , _showGlobeBrowsingDebug(ShowGlobeBrowsingDebugInfo, false)
     , _disableMasterRendering(DisableMasterInfo, false)
     , _disableSceneTranslationOnMaster(DisableTranslationInfo, false)
     , _nAaSamples(AaSamplesInfo, 4, 1, 16)
@@ -307,6 +314,7 @@ RenderEngine::RenderEngine()
     addProperty(_takeScreenshot);
 
     addProperty(_showFrameNumber);
+    addProperty(_showGlobeBrowsingDebug);
 
     addProperty(_disableSceneTranslationOnMaster);
     addProperty(_disableMasterRendering);
@@ -581,6 +589,16 @@ void RenderEngine::render(const glm::mat4& sceneMatrix, const glm::mat4& viewMat
     }
 
     ++_frameNumber;
+
+    if (_showGlobeBrowsingDebug) {
+        const glm::vec2 penPosition = glm::vec2(
+            fontResolution().x / 2 - 50,
+            fontResolution().y / 3 + 100
+        );
+        RenderFont(*_fontBig, penPosition, "%i", nGlobeBrowsingChunksRendered);    
+    }
+
+    OsEng.renderEngine().nGlobeBrowsingChunksRendered = 0;
 
     for (std::unique_ptr<ScreenSpaceRenderable>& ssr : _screenSpaceRenderables) {
         if (ssr->isEnabled() && ssr->isReady()) {

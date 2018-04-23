@@ -162,6 +162,8 @@ public:
 
     properties::PropertyOwner& screenSpaceOwner();
 
+    unsigned int nGlobeBrowsingChunksRendered = 0;
+
 private:
     void setRenderer(std::unique_ptr<Renderer> renderer);
     RendererImplementation rendererFromString(const std::string& method) const;
@@ -196,6 +198,7 @@ private:
     bool _shouldTakeScreenshot = false;
     properties::BoolProperty _applyWarping;
     properties::BoolProperty _showFrameNumber;
+    properties::BoolProperty _showGlobeBrowsingDebug;
     properties::BoolProperty _disableMasterRendering;
     properties::BoolProperty _disableSceneTranslationOnMaster;
 

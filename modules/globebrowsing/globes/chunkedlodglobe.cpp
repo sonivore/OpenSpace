@@ -22,6 +22,7 @@
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                         *
  ****************************************************************************************/
 
+#include <openspace/engine/openspaceengine.h>
 #include <modules/globebrowsing/globes/chunkedlodglobe.h>
 
 #include <modules/globebrowsing/chunk/chunk.h>
@@ -309,6 +310,7 @@ void ChunkedLodGlobe::render(const RenderData& data, RendererTasks&) {
             stats.i["leafs chunk nodes"]++;
             if (chunk.isVisible()) {
                 stats.i["rendered chunks"]++;
+                OsEng.renderEngine().nGlobeBrowsingChunksRendered++;
                 _renderer->renderChunk(chunkNode.getChunk(), data);
                 debugRenderChunk(chunk, mvp);
             }
