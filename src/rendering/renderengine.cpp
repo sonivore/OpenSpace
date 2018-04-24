@@ -584,8 +584,7 @@ void RenderEngine::render(const glm::mat4& sceneMatrix, const glm::mat4& viewMat
             fontResolution().y / 3
         );
         
-        if( _frameNumber % 2 == 0 ) {
-            ++_frameNumber;
+        if( _frameNumber++ % 2 == 0 ) {
             std::chrono::high_resolution_clock::time_point _t_now = std::chrono::high_resolution_clock::now();
             std::chrono::duration<double, std::milli> time_span = _t_now - _t_prev;
             frameTime = time_span.count();
