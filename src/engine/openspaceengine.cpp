@@ -228,6 +228,10 @@ OpenSpaceEngine::OpenSpaceEngine(std::string programName,
     TransformationManager::initialize();
 
     _syncEngine->addSyncable(_scriptEngine.get());
+    
+    //To be concluded
+    _documentationJson = "";
+    _documentationJson += "{\"documentation\":[";
 }
 
 OpenSpaceEngine& OpenSpaceEngine::ref() {
@@ -760,19 +764,27 @@ void OpenSpaceEngine::deinitialize() {
 
 void OpenSpaceEngine::writeStaticDocumentation() {
     // If a LuaDocumentationFile was specified, generate it now
-    if (!_configuration->documentation.lua.empty()) {
-        _scriptEngine->writeDocumentation(absPath(_configuration->documentation.lua));
-    }
+    std::string path = _configuration->documentation.path;
+    if (!path.empty()) {
+        
+        DocEng.addHandlebarTemplates(_scriptEngine->templatesToRegister());
+        DocEng.addHandlebarTemplates(FactoryManager::ref().templatesToRegister());
+        DocEng.addHandlebarTemplates(DocEng.templatesToRegister());
 
-    // If a general documentation was specified, generate it now
-    if (!_configuration->documentation.documentation.empty()) {
-        DocEng.writeDocumentation(absPath(_configuration->documentation.documentation));
-    }
+        _documentationJson += "{\"name\":\"Scripting\",";
+        _documentationJson += "\"identifier\":\"" + _scriptEngine->jsonName();
+        _documentationJson += "\",\"data\":" + _scriptEngine->generateJson();
+        _documentationJson += "},";
 
-    if (!_configuration->documentation.factory.empty()) {
-        FactoryManager::ref().writeDocumentation(
-            absPath(_configuration->documentation.factory)
-        );
+        _documentationJson += "{\"name\":\"Top Level\",";
+        _documentationJson += "\"identifier\":\"" + DocEng.jsonName();
+        _documentationJson += "\",\"data\":" + DocEng.generateJson();
+        _documentationJson += "},";
+
+        _documentationJson += "{\"name\":\"Factory\",";
+        _documentationJson += "\"identifier\":\"" + FactoryManager::ref().jsonName();
+        _documentationJson += "\",\"data\":" + FactoryManager::ref().generateJson();
+        _documentationJson += "},";
     }
 }
 
@@ -929,29 +941,50 @@ void OpenSpaceEngine::configureLogging(bool consoleLog) {
 }
 
 void OpenSpaceEngine::writeSceneDocumentation() {
-    // Write keyboard documentation.
-    if (!_configuration->documentation.keyboard.empty()) {
-        keyBindingManager().writeDocumentation(
-            absPath(_configuration->documentation.keyboard)
-        );
-    }
+    // Write documentation to json files if config file supplies path for doc files to be placed.
 
-    if (!_configuration->documentation.license.empty()) {
-        _scene->writeSceneLicenseDocumentation(
-            absPath(_configuration->documentation.license)
-        );
-    }
+    std::string path = _configuration->documentation.path;
+    if (!path.empty()) {
+        path = absPath(path) + "/";
+        _documentationJson += "{\"name\":\"Keybindings\",\"identifier\":\"";
+        _documentationJson += keyBindingManager().jsonName() + "\",";
+        _documentationJson += "\"data\":";
+        _documentationJson += keyBindingManager().generateJson();
+        _documentationJson += "},";
+        _documentationJson += "{\"name\":\"Scene License Information\",";
+        _documentationJson += "\"identifier\":\"sceneLicense";
+        _documentationJson += "\",\"data\":";
+        _documentationJson += _scene->generateSceneLicenseDocumentationJson();
+        _documentationJson += "},";
+        _documentationJson += "{\"name\":\"Scene Properties\",";
+        _documentationJson += "\"identifier\":\"propertylist";// + _scene->jsonName();
+        _documentationJson += "\",\"data\":" + _rootPropertyOwner->generateJson();
+        _documentationJson += "},";
+        _documentationJson += "{\"name\":\"Scene Graph Information\",";
+        _documentationJson += "\"identifier\":\"propertylist";
+        _documentationJson += "\",\"data\":" + _scene->generateJson();
+        _documentationJson += "}";
+        
+        //add templates for the jsons we just registered
+        DocEng.addHandlebarTemplates(keyBindingManager().templatesToRegister());
+        //TODO this is in efficaiant, here i am just instaning the class to get
+        //at a member variable which is staticly defined. How do i just get that
+        const std::vector<SceneLicense> licenses;
+        SceneLicenseWriter writer(licenses);
+        DocEng.addHandlebarTemplates(writer.templatesToRegister());
+        DocEng.addHandlebarTemplates(_rootPropertyOwner->templatesToRegister());
 
-    if (!_configuration->documentation.sceneProperty.empty()) {
-        _scene->writeDocumentation(absPath(_configuration->documentation.sceneProperty));
+        //the static documentation shoudl be finished already
+        //so now that we wrote the static and secene json files
+        //we should write the html file that uses them.
+        _documentationJson += "]}";
+        
+        DocEng.writeDocumentationHtml(path, _documentationJson);
     }
-
-    if (!_configuration->documentation.property.empty()) {
-        _rootPropertyOwner->writeDocumentation(
-            absPath(_configuration->documentation.property)
-        );
-    }
+    //no else, if path was empty, that means that no documentation is requested
 }
+    
+
 
 void OpenSpaceEngine::initializeGL() {
     LTRACE("OpenSpaceEngine::initializeGL(begin)");

@@ -76,6 +76,7 @@
 
 namespace {
     constexpr const char* _loggerCat = "GlobeBrowsingModule";
+    constexpr const char* _factoryName = "TileProvider";
 
 #ifdef GLOBEBROWSING_USE_GDAL
     openspace::GlobeBrowsingModule::Capabilities
@@ -217,7 +218,7 @@ void GlobeBrowsingModule::internalInitialize(const ghoul::Dictionary&) {
             layergroupid::TypeID::ByIndexTileLayer
         )]);
 
-    FactoryManager::ref().addFactory(std::move(fTileProvider));
+    FactoryManager::ref().addFactory(std::move(fTileProvider), _factoryName);
 }
 
 globebrowsing::cache::MemoryAwareTileCache* GlobeBrowsingModule::tileCache() {

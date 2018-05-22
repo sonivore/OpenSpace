@@ -245,7 +245,9 @@ private:
 
     bool _hasScheduledAssetLoading = false;
     std::string _scheduledAssetPathToLoad;
-
+    //grabs json from each module to pass to the documentation engine.
+    std::string _documentationJson;
+    
     struct {
         std::vector<std::function<void()>> initialize;
         std::vector<std::function<void()>> deinitialize;

@@ -94,6 +94,8 @@ public:
 
     static std::string OpenSpaceLibraryName;
 
+    std::string generateJson() const override;
+
 private:
     bool registerLuaLibrary(lua_State* state, LuaLibrary& library);
     void addLibraryFunctions(lua_State* state, LuaLibrary& library, bool replace);
@@ -102,8 +104,6 @@ private:
 
     void addBaseLibrary();
     void remapPrintFunction();
-
-    std::string generateJson() const override;
 
     ghoul::lua::LuaState _state;
     std::vector<LuaLibrary> _registeredLibraries;

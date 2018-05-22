@@ -145,12 +145,11 @@ public:
     const std::vector<SceneGraphNode*>& allSceneGraphNodes() const;
 
     /**
-     * Write information about the license information for the scenegraph nodes that are
+     * Generate JSON about the license information for the scenegraph nodes that are
      * contained in this scene
-     * \param path The file path that will contain the documentation about the licenses
-     * used in this scene
+     * \return a JSON string containing the license information
      */
-    void writeSceneLicenseDocumentation(const std::string& path) const;
+    std::string generateSceneLicenseDocumentationJson();
 
     /**
      * Returns a map from identifier to scene graph node.

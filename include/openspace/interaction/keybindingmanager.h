@@ -78,8 +78,9 @@ public:
     // Callback functions
     void keyboardCallback(Key key, KeyModifier modifier, KeyAction action);
 
-private:
     std::string generateJson() const override;
+
+private:
 
     std::multimap<KeyWithModifier, KeyInformation> _keyLua;
 };

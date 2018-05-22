@@ -26,23 +26,15 @@
 
 #include <sstream>
 
-namespace {
-    const char* MainTemplateFilename = "${WEB}/scenelicense/main.hbs";
-    const char* SceneLicenseTemplateFilename = "${WEB}/scenelicense/scenelicense.hbs";
-    const char* JsFilename = "${WEB}/scenelicense/script.js";
-} // namespace
-
 namespace openspace {
 
 SceneLicenseWriter::SceneLicenseWriter(const std::vector<SceneLicense>& licenses)
     : DocumentationGenerator(
-        "Documentation",
-        "sceneLicenses",
+        "Scene Licenses",
+        "sceneLicense",
         {
-            { "sceneLicenseTemplate",  SceneLicenseTemplateFilename },
-            { "mainTemplate", MainTemplateFilename }
-        },
-        JsFilename
+            { "sceneLicenseTemplate",  "${WEB}/documentation/scenelicense.hbs"}
+        }
     )
     , _licenses(licenses)
 {}

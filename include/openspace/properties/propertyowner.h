@@ -273,6 +273,7 @@ public:
      */
     void removeTag(const std::string& tag);
 
+    std::string generateJson() const override;
 
 protected:
     /// The unique identifier of this PropertyOwner
@@ -283,7 +284,6 @@ protected:
     std::string _description;
 
 private:
-    std::string generateJson() const override;
 
     /// The owner of this PropertyOwner
     PropertyOwner* _owner;

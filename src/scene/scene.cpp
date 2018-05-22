@@ -546,10 +546,10 @@ void Scene::updateInterpolations() {
         _interpolationInfos.end()
     );
 }
-
-void Scene::writeSceneLicenseDocumentation(const std::string& path) const {
+    
+std::string Scene::generateSceneLicenseDocumentationJson() {
     SceneLicenseWriter writer(_licenses);
-    writer.writeDocumentation(path);
+    return writer.generateJson();
 }
 
 scripting::LuaLibrary Scene::luaLibrary() {

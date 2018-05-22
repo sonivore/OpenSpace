@@ -25,6 +25,7 @@
 #include <openspace/properties/propertyowner.h>
 
 #include <openspace/properties/property.h>
+#include <openspace/scene/scene.h>
 #include <ghoul/fmt.h>
 #include <ghoul/logging/logmanager.h>
 #include <ghoul/misc/assert.h>
@@ -40,23 +41,13 @@ namespace openspace::properties {
 
 PropertyOwner::PropertyOwner(PropertyOwnerInfo info)
     : DocumentationGenerator(
-        "Documented",
+        "Property Owners",
         "propertyOwners",
         {
-            {
-                "mainTemplate",
-                "${WEB}/properties/main.hbs"
-            },
-            {
-                "propertyOwnerTemplate",
-                "${WEB}/properties/propertyowner.hbs"
-            },
-            {
-                "propertyTemplate",
-                "${WEB}/properties/property.hbs"
-            }
-        },
-        "${WEB}/properties/script.js"
+            {"propertyOwnersTemplate","${WEB}/documentation/propertyowners.hbs"},
+            {"propertyTemplate","${WEB}/documentation/property.hbs"},
+            {"propertylistTemplate","${WEB}/documentation/propertylist.hbs"}
+        }
     )
     , _identifier(std::move(info.identifier))
     , _guiName(std::move(info.guiName))
@@ -402,7 +393,9 @@ std::string PropertyOwner::generateJson() const {
             subOwners.end(),
             createJson(*subOwners.begin()),
             [createJson](std::string a, PropertyOwner* n) {
-            return a + "," + createJson(n);
+                //TODO figure out how to ignore scene when its not the root
+                //right now will be done on client side
+                return a + "," + createJson(n);
         }
         );
     }

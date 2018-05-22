@@ -44,13 +44,11 @@ namespace openspace::interaction {
 
 KeyBindingManager::KeyBindingManager()
     : DocumentationGenerator(
-        "Documentation",
-        "keybindings",
+        "Keybindings",
+        "keybinding",
         {
-            { "keybindingTemplate", "${WEB}/keybindings/keybinding.hbs" },
-            { "mainTemplate", "${WEB}/keybindings/main.hbs" }
-        },
-        "${WEB}/keybindings/script.js"
+            { "keybindingTemplate", "${WEB}/documentation/keybinding.hbs" },
+        }
     )
 { }
 
