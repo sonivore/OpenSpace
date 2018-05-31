@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { toggleActivated } from '../../api/Actions/dataLoaderActions';
+import { setActivated } from '../../api/Actions/dataLoaderActions';
 
 import styles from './ToggleDataLoader.scss';
 
@@ -9,7 +9,7 @@ let ToggleDataLoader = (props) => {
   const { activated } = props;
 
   return (
-    <div className={`${styles.loader}`} onClick={() => props.toggleActivated(!activated)}>
+    <div className={`${styles.loader}`} onClick={() => props.setActivated(!activated)}>
       { activated ? 'Hide data loader' : 'Show data loader'}
     </div>
   );
@@ -28,8 +28,8 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = dispatch => ({
-  toggleActivated: (activated) => {
-    dispatch(toggleActivated(activated));
+  setActivated: (activated) => {
+    dispatch(setActivated(activated));
   }
 });
 
