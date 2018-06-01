@@ -1,8 +1,15 @@
 import { actionTypes } from './actionTypes';
 
-export const toggleActivated = (activated) => ({
-  type: actionTypes.toggleDataLoaderActivated,
+export const setActivated = (isActivated) => ({
+  type: actionTypes.setDataLoaderActivated,
   payload: {
-    activated
+    activated: isActivated
+  }
+});
+
+export const setFilePaths = (filePaths) => ({
+  type: actionTypes.setSelectedFilesPathName,
+  payload: {
+    filePaths: filePaths
   }
 });

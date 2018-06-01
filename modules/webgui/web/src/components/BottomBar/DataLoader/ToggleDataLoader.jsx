@@ -1,8 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { toggleActivated } from '../../../api/Actions/dataLoaderActions';
-
+import { setActivated } from '../../../api/Actions/dataLoaderActions';
 import TabMenuItem from '../../common/TabMenu/TabMenuItem';
 import Label from '../../common/Label/Label';
 
@@ -12,7 +11,7 @@ let ToggleDataLoader = (props) => {
   const { activated } = props;
 
   return (
-    <TabMenuItem active={activated} onClick={() => props.toggleActivated(!activated)}>
+    <TabMenuItem active={activated} onClick={() => props.setActivated(!activated)}>
       <div className={`${styles.container}`}>
         <Label size='medium'>DATA LOADER</Label>
       </div>
@@ -33,8 +32,8 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = dispatch => ({
-  toggleActivated: (activated) => {
-    dispatch(toggleActivated(activated));
+  setActivated: (activated) => {
+    dispatch(setActivated(activated));
   }
 });
 
