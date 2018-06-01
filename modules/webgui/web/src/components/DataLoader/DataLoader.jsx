@@ -6,7 +6,7 @@ import styles from './DataLoader.scss';
 import Window from '../common/Window/Window';
 import { setActivated, setFilePaths } from '../../api/Actions/dataLoaderActions';
 import Button from '../common/Input/Button/Button';
-import SmallLabel from '../common/SmallLabel/SmallLabel';
+import Label from '../common/Label/Label';
 
 class DataLoader extends Component {
   constructor(props) {
@@ -26,15 +26,15 @@ class DataLoader extends Component {
     let dataTypeButtons = () => {
       return(
         <section className={styles.dataButtons}>
-          <SmallLabel>
+          <Label>
             Select data type you wish to load
-          </SmallLabel>
+          </Label>
           <div>
             {buttonArray.map((element) => 
               <Button 
                 key={element} 
                 onClick={() => this.setState({activeDataType: element})}>
-                <SmallLabel>{element}</SmallLabel>
+                <Label>{element}</Label>
               </Button>
             )}
           </div>
