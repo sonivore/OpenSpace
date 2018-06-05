@@ -550,6 +550,59 @@ void ScreenSpaceRenderable::draw(glm::mat4 modelTransform) {
     defer { unbindTexture(); };
     _shader->setUniform(_uniformCache.texture, unit);
 
+    const Camera * const camera = OsEng.renderEngine().camera();
+
+    glm::dmat4 modelViewMatrix = camera->combinedViewMatrix() * glm::dmat4(modelTransform);
+    glm::mat4 projectionMatrix = camera->projectionMatrix();
+
+    glm::dmat4 modelViewProjectionMatrix = glm::dmat4(projectionMatrix) *
+        modelViewMatrix;
+
+    glm::dvec3 cameraViewDirectionWorld = -camera->viewDirectionWorldSpace();
+    glm::dvec3 cameraUpDirectionWorld = camera->lookUpVectorWorldSpace();
+    glm::dvec3 orthoRight = glm::normalize(
+        glm::cross(cameraUpDirectionWorld, cameraViewDirectionWorld)
+    );
+    if (orthoRight == glm::dvec3(0.0)) {
+        glm::dvec3 otherVector(
+            cameraUpDirectionWorld.y,
+            cameraUpDirectionWorld.x,
+            cameraUpDirectionWorld.z
+        );
+        orthoRight = glm::normalize(glm::cross(otherVector, cameraViewDirectionWorld));
+    }
+    glm::dvec3 orthoUp = glm::normalize(
+        glm::cross(cameraViewDirectionWorld, orthoRight)
+    );
+
+    //_shader->setUniform(_uniformCache.cameraPos, camera->positionVec3());
+    //_shader->setUniform(_uniformCache.cameraLookup, camera->lookUpVectorWorldSpace());
+    //_shader->setUniform(_uniformCache.renderOption, _renderOption.value());
+    //_shader->setUniform(_uniformCache.modelMatrix, modelMatrix);
+    //_shader->setUniform(_uniformCache.cameraViewProjectionMatrix,
+    //    glm::dmat4(camera->projectionMatrix()) * camera->combinedViewMatrix());
+    //_shader->setUniform(_uniformCache.minBillboardSize, _billboardMinSize); // in pixels
+    //_shader->setUniform(_uniformCache.maxBillboardSize, _billboardMaxSize); // in pixels
+    //_shader->setUniform(_uniformCache.color, _pointColor);
+    //_shader->setUniform(_uniformCache.alphaValue, _alphaValue);
+    //_shader->setUniform(_uniformCache.scaleFactor, _scaleFactor);
+    //_shader->setUniform(_uniformCache.up, orthoUp);
+    //_shader->setUniform(_uniformCache.right, orthoRight);
+
+    _shader->setUniform("cameraPos", camera->positionVec3());
+    _shader->setUniform("cameraLookup", camera->lookUpVectorWorldSpace());
+    //_shader->setUniform("renderOption", _renderOption.value());
+    _shader->setUniform("modelMatrix", modelTransform);
+    _shader->setUniform("cameraViewProjectionMatrix",
+        glm::dmat4(camera->projectionMatrix()) * camera->combinedViewMatrix());
+    //_shader->setUniform("minBillboardSize", _billboardMinSize); // in pixels
+    //_shader->setUniform("maxBillboardSize", _billboardMaxSize); // in pixels
+    //_shader->setUniform("color", _pointColor);
+    //_shader->setUniform("alphaValue", _alphaValue);
+    _shader->setUniform("scaleFactor", 10.0);
+    _shader->setUniform("up", orthoUp);
+    _shader->setUniform("right", orthoRight);
+
     glBindVertexArray(_quad);
     glDrawArrays(GL_TRIANGLES, 0, 6);
 

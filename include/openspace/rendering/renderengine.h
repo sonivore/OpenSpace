@@ -133,6 +133,10 @@ public:
      */
     void setCamera(Camera* camera);
 
+    /**
+     * Camera accessor.
+     **/
+    const Camera * camera() const;
 
     void setRendererFromString(const std::string& method);
 
