@@ -28,6 +28,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <string>
+#include <regex>
+
 namespace {
     constexpr const char* _loggerCat = "Reader";
 } // namespace
@@ -35,8 +38,14 @@ namespace {
 namespace {
     static const openspace::properties::Property::PropertyInfo VolumesInfo = {
         "Volumes",
-        "List of volumes stored internally and ready to load",
+        "List of volume items stored internally and ready to load",
         "This list contains names of volume data files converted from the CDF format"
+    };
+
+    static const openspace::properties::Property::PropertyInfo FieldlinesInfo = {
+        "Fieldlines",
+        "List of fieldline items stored internally and ready to load",
+        "This list contains names of fieldline data files converted from the CDF format"
     };
 
     static const openspace::properties::Property::PropertyInfo ReadVolumesTriggerInfo = {
@@ -45,10 +54,16 @@ namespace {
         "If this property is triggered it will call the function to load volume data"
     };
 
+    static const openspace::properties::Property::PropertyInfo ReadFieldlinesTriggerInfo = {
+        "ReadFieldlinesTrigger",
+        "Trigger load fieldline data files",
+        "If this property is triggered it will call the function to load fieldline data"
+    };
+
     static const openspace::properties::Property::PropertyInfo LoadDataTriggerInfo = {
-      "LoadDataTrigger",
-      "Trigger load data files",
-      "If this property is triggered it will call the function to load data"
+        "LoadDataTrigger",
+        "Trigger load data files",
+        "If this property is triggered it will call the function to load data"
     };
 }
 
@@ -56,7 +71,7 @@ namespace openspace::dataloader {
 
 Reader::Reader()
     : PropertyOwner({ "Reader" })
-    , _volumes(VolumesInfo) 
+    , _volumeItems(VolumesInfo) 
     , _readVolumesTrigger(ReadVolumesTriggerInfo) 
     , _loadDataTrigger(LoadDataTriggerInfo)
 {
@@ -73,7 +88,7 @@ Reader::Reader()
         loadData();
     });
 
-    addProperty(_volumes);
+    addProperty(_volumeItems);
     addProperty(_readVolumesTrigger);
     addProperty(_loadDataTrigger);
 }
@@ -82,23 +97,34 @@ void Reader::readVolumeDataItems() {
     ghoul::filesystem::Directory volumeDir(
         _topDir.path() +
         ghoul::filesystem::FileSystem::PathSeparator +
-        "CDF" 
+        "volumes_from_cdf" 
     );
 
-    std::vector<std::string> files = volumeDir.readFiles(
-      ghoul::filesystem::Directory::Recursive::Yes,
+    _volumeItems = volumeDir.readDirectories(
+      ghoul::filesystem::Directory::Recursive::No,
       ghoul::filesystem::Directory::Sort::Yes
     );
 
-    // Print vector
-    // for (auto el : files) {
-    //   LINFO("A file: " + el);
+    // for (auto el : volumeItems) {
+    //     LINFO("A dir: " + el);
     // }
 
-    // For each folder
-      // Take first part of file name
-      // Add to list
-      // Store a reference somehow if necessary 
+    // Take out leaves of uri:s
+    // std::regex dirLeaf_regex("([^/]+)/?$");
+    // std::smatch dirLeaf_match;
+    // std::vector<std::string> itemDirLeaves;
+
+    // // Add each directory uri leaf to list
+    // for (const std::string dir : itemDirectories) {
+    //     if (std::regex_search(dir, dirLeaf_match, dirLeaf_regex)) {
+    //         itemDirLeaves.push_back(dirLeaf_match[0].str());
+    //     } else {
+    //         LWARNING("Looked for match in " + dir + " but found none.");
+    //     }
+
+    // }
+
+    // Store a reference somehow if necessary 
 }
 
 void Reader::loadData() {

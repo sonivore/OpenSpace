@@ -41,7 +41,7 @@ class Reader : public properties::PropertyOwner {
     void loadData();
 
   private:
-    properties::StringListProperty _volumes;
+    properties::StringListProperty _volumeItems;
     properties::TriggerProperty _readVolumesTrigger;
     properties::TriggerProperty _loadDataTrigger;
     
