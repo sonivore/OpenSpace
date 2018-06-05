@@ -138,7 +138,7 @@ void Reader::readVolumeDataItems() {
 
 void Reader::loadData() {
 
-  char filePath = "";
+  // char filePath = "";
   // Linux
   #ifdef _linux
   system("thunar /home/mberg");
