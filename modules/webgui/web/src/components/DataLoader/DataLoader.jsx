@@ -20,16 +20,25 @@ class DataLoader extends Component {
     this.dataTypesToLoad = ['Volumes', 'Fieldlines'];
 
     this.handleDataTypeList = this.handleDataTypeList.bind(this);
+    this.handleFilepaths = this.handleFilepaths.bind(this);
+
 
     this.state = {
       activeDataType: '',
       dataToLoadUri: '',
+      filePath: ''
     };
   }
 
-  // handleChange(event) {
-  //   let filePathString = event.target.value;
-  // };
+
+  handleClick() {
+    this.subscribeToFilepaths();
+    this.triggerFilesToLoad();
+  }
+
+  handleFilepaths(data) {
+    this.setState({filePath:data.value});
+  }
 
   shouldComponentUpdate(nextProps, nextState) {
     const { activeDataType, dataToLoadUri } = this.state;
@@ -62,12 +71,20 @@ class DataLoader extends Component {
     DataManager.trigger(`Modules.DataLoader.Reader.Read${dataType}Trigger`)
   }
 
+  triggerFilesToLoad() {
+    DataManager.trigger(`Modules.DataLoader.Reader.LoadDataTrigger`)
+  }
+
   handleDataTypeList(data) {
     this.setState({dataItems: stringListToArray(data.Value)});
   }
 
   subscribeToActiveUri(uri = '') {
     DataManager.subscribe(uri || this.state.dataToLoadUri, this.handleDataTypeList);
+  }
+
+  subscribeToFilepaths() {
+    DataManager.subscribe('Modules.DataLoader.Reader.LoadDataTrigger', this.handleFilepaths);
   }
 
   render() {
@@ -96,17 +113,9 @@ class DataLoader extends Component {
     let uploadDataButton = () => {
       return(
         <div>
-          <label>
-            <input 
-              type="file"
-              style={{opacity: 0}} 
-              // onChange={(event) => this.handleChange(event)}
-              // accept=".cdf, .osfls"/>
-              multiple
-              />    
-            Upload Data
-            {/* Style above - Or replace with <Button/> */}
-          </label>
+          <Button onClick={() => this.handleClick()}>
+            Load Data
+          </Button>
         </div>
       );
     };
