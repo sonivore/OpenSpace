@@ -25,6 +25,8 @@
 #include <modules/dataloader/reader.h>
 #include <ghoul/logging/logmanager.h>
 #include <ghoul/filesystem/filesystem.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 namespace {
     constexpr const char* _loggerCat = "Reader";
@@ -42,6 +44,12 @@ namespace {
         "Trigger load volume data files",
         "If this property is triggered it will call the function to load volume data"
     };
+
+    static const openspace::properties::Property::PropertyInfo LoadDataTriggerInfo = {
+      "LoadDataTrigger",
+      "Trigger load data files",
+      "If this property is triggered it will call the function to load data"
+    };
 }
 
 namespace openspace::dataloader {
@@ -50,6 +58,7 @@ Reader::Reader()
     : PropertyOwner({ "Reader" })
     , _volumes(VolumesInfo) 
     , _readVolumesTrigger(ReadVolumesTriggerInfo) 
+    , _loadDataTrigger(LoadDataTriggerInfo)
 {
     _topDir = ghoul::filesystem::Directory(
       "${DATA}/.internal",
@@ -60,8 +69,13 @@ Reader::Reader()
         readVolumeDataItems();
     });
 
+    _loadDataTrigger.onChange([this](){
+        loadData();
+    });
+
     addProperty(_volumes);
     addProperty(_readVolumesTrigger);
+    addProperty(_loadDataTrigger);
 }
 
 void Reader::readVolumeDataItems() {
@@ -85,6 +99,11 @@ void Reader::readVolumeDataItems() {
       // Take first part of file name
       // Add to list
       // Store a reference somehow if necessary 
+}
+
+void Reader::loadData() {
+  LINFO("Reader::loadData() function has fired");
+  system("nautilus /home/");
 }
 
 }

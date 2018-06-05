@@ -38,10 +38,12 @@ class Reader : public properties::PropertyOwner {
     Reader();
 
     void readVolumeDataItems();
+    void loadData();
 
   private:
     properties::StringListProperty _volumes;
     properties::TriggerProperty _readVolumesTrigger;
+    properties::TriggerProperty _loadDataTrigger;
     
     ghoul::filesystem::Directory _topDir;
 };
