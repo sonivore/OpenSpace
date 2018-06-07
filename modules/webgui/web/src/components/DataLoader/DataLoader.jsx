@@ -20,7 +20,7 @@ class DataLoader extends Component {
     this.dataTypesToLoad = ['Volumes', 'Fieldlines'];
 
     this.handleDataTypeList = this.handleDataTypeList.bind(this);
-    this.handleFilepaths = this.handleFilepaths.bind(this);
+    this.handleUploadedFiles = this.handleUploadedFiles.bind(this);
 
 
     this.state = {
@@ -33,10 +33,10 @@ class DataLoader extends Component {
 
   handleClick() {
     this.subscribeToFilepaths();
-    this.triggerFilesToLoad();
+    this.triggerFilesToUpload();
   }
 
-  handleFilepaths(data) {
+  handleUploadedFiles(data) {
     this.setState({filePath:data.Value});
   }
 
@@ -71,8 +71,8 @@ class DataLoader extends Component {
     DataManager.trigger(`Modules.DataLoader.Reader.Read${dataType}Trigger`)
   }
 
-  triggerFilesToLoad() {
-    DataManager.trigger(`Modules.DataLoader.Reader.LoadDataTrigger`)
+  triggerFilesToUpload() {
+    DataManager.trigger(`Modules.DataLoader.Loader.UploadDataTrigger`)
   }
 
   handleDataTypeList(data) {
@@ -84,7 +84,7 @@ class DataLoader extends Component {
   }
 
   subscribeToFilepaths() {
-    DataManager.subscribe('Modules.DataLoader.Reader.SelectedFiles', this.handleFilepaths);
+    DataManager.subscribe('Modules.DataLoader.Loader.SelectedFiles', this.handleUploadedFiles);
   }
 
   render() {
