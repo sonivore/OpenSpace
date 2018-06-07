@@ -37,7 +37,7 @@ class DataLoader extends Component {
   }
 
   handleFilepaths(data) {
-    this.setState({filePath:data.value});
+    this.setState({filePath:data.Value});
   }
 
   shouldComponentUpdate(nextProps, nextState) {
@@ -84,13 +84,13 @@ class DataLoader extends Component {
   }
 
   subscribeToFilepaths() {
-    DataManager.subscribe('Modules.DataLoader.Reader.LoadDataTrigger', this.handleFilepaths);
+    DataManager.subscribe('Modules.DataLoader.Reader.SelectedFiles', this.handleFilepaths);
   }
 
   render() {
     const {setActivated, activated } = this.props
 
-    let dataTypeButtons = () => {
+    let DataTypeButtons = () => {
       return(
         <section className={styles.dataButtons}>
           <Label>
@@ -110,7 +110,7 @@ class DataLoader extends Component {
       );
     };
 
-    let uploadDataButton = () => {
+    let UploadDataButton = () => {
       return(
         <div>
           <Button onClick={() => this.handleClick()}>
@@ -131,9 +131,9 @@ class DataLoader extends Component {
               position={{ x:470, y:-370 }}
               closeCallback={() => setActivated(false)}
             >
-              { dataTypeButtons() }
+              <DataTypeButtons/>
               <DataItemList items={this.state.dataItems} />
-              { uploadDataButton() }
+              <UploadDataButton/>
             </Window>
           </div>
         )}
