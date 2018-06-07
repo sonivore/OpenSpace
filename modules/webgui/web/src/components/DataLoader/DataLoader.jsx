@@ -12,6 +12,7 @@ import Window from '../common/Window/Window';
 import { setActivated, setFilePaths } from '../../api/Actions/dataLoaderActions';
 import Button from '../common/Input/Button/Button';
 import Label from '../common/Label/Label';
+import UploadDataButton from './UploadDataButton';
 
 class DataLoader extends Component {
   constructor(props) {
@@ -20,23 +21,11 @@ class DataLoader extends Component {
     this.dataTypesToLoad = ['Volumes', 'Fieldlines'];
 
     this.handleDataTypeList = this.handleDataTypeList.bind(this);
-    this.handleUploadedFiles = this.handleUploadedFiles.bind(this);
-
 
     this.state = {
       activeDataType: '',
       dataToLoadUri: '',
     };
-  }
-
-
-  handleClick() {
-    this.subscribeToFilepaths();
-    this.triggerFilesToUpload();
-  }
-
-  handleUploadedFiles(data) {
-    this.props.setFilePaths(data.Value);
   }
 
   shouldComponentUpdate(nextProps, nextState) {
@@ -70,20 +59,12 @@ class DataLoader extends Component {
     DataManager.trigger(`Modules.DataLoader.Reader.Read${dataType}Trigger`)
   }
 
-  triggerFilesToUpload() {
-    DataManager.trigger(`Modules.DataLoader.Loader.UploadDataTrigger`)
-  }
-
   handleDataTypeList(data) {
     this.setState({dataItems: stringListToArray(data.Value)});
   }
 
   subscribeToActiveUri(uri = '') {
     DataManager.subscribe(uri || this.state.dataToLoadUri, this.handleDataTypeList);
-  }
-
-  subscribeToFilepaths() {
-    DataManager.subscribe('Modules.DataLoader.Loader.SelectedFiles', this.handleUploadedFiles);
   }
 
   render() {
@@ -106,16 +87,6 @@ class DataLoader extends Component {
             )}
           </div>
         </section>
-      );
-    };
-
-    let UploadDataButton = () => {
-      return(
-        <div>
-          <Button onClick={() => this.handleClick()}>
-            Load Data
-          </Button>
-        </div>
       );
     };
 
