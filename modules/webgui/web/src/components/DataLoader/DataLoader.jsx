@@ -26,7 +26,6 @@ class DataLoader extends Component {
     this.state = {
       activeDataType: '',
       dataToLoadUri: '',
-      filePaths: ''
     };
   }
 
