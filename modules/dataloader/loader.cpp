@@ -25,6 +25,8 @@
 #include <modules/dataloader/loader.h>
 #include <ghoul/logging/logmanager.h>
 #include <iostream>
+#include <ghoul/filesystem/file.h>
+#include <ghoul/misc/dictionary.h>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -65,14 +67,14 @@ Loader::Loader()
 
 void Loader::uploadData() {
 
-  char filepath[ MAX_PATH ];
-
   // Linux
   #ifdef _linux
   system("thunar /home/mberg");
 
   // Windows 
   #elif _WIN32
+
+  char filepath[ MAX_PATH ];
 
   OPENFILENAME ofn;
     ZeroMemory( &filepath, sizeof( filepath ) );
@@ -122,7 +124,6 @@ void Loader::uploadData() {
   // Still to do
   #endif
 
-  // _filePaths = filepath;
 ;
 }
 
@@ -138,6 +139,34 @@ void Loader::addInternalDataItemProperties() {
 // addDataItemProperty();
 // removeDataItemProperties();
 // loadDataItem(std::string absPathToItem);
-// createVolumeDataItem(std::string absPath);
+void createVolumeDataItem(std::string absPath) {
+
+}
+
+// Will require dataItem rather than just filePath
+ghoul::Dictionary createTaskDictionary(std::string filePath) {
+
+  const int dimensions[3] = {100, 100, 128};
+  const int lowerDomainBound[3] = {1, -90, 0};
+  const int upperDomainBound[3] = {15, 90, 360};
+
+  std::string filename = ghoul::filesystem::File(filePath).filename();
+  std::string RawVolumeOutput = "${DATA}/dataloader/" + filename;
+  std::string DictionaryOutput = "${DATA}/dataloader/" + filename + ".dictionary";
+
+  std::initializer_list<std::pair<std::string, ghoul::any>> list = {
+    std::make_pair( "Type", "KameleonVolumeToRawTask" ),
+    std::make_pair( "Input", filePath ),
+    std::make_pair( "Dimensions", dimensions ),
+    std::make_pair( "Variable", "rho"),
+    std::make_pair( "FactorRSquared", "true" ),
+    std::make_pair( "LowerDomainBound", lowerDomainBound ),
+    std::make_pair( "UpperDomainBound", upperDomainBound ),
+    std::make_pair( "RawVolumeOutput", RawVolumeOutput ),
+    std::make_pair( "DictionaryOutput", DictionaryOutput)
+  };
+
+  return ghoul::Dictionary(list);
+}
 
 }
