@@ -23,27 +23,94 @@
  ****************************************************************************************/
 
 #include <modules/dataloader/dataloadermodule.h>
-#include <modules/dataloader/reader.h>
-#include <modules/dataloader/loader.h>
-#include <openspace/util/factorymanager.h>
+#include <modules/dataloader/operators/reader.h>
+#include <modules/dataloader/operators/loader.h>
+#include <openspace/engine/moduleengine.h>
+#include <openspace/engine/openspaceengine.h>
 
+#include <ghoul/logging/logmanager.h>
 #include <ghoul/misc/assert.h>
+
+namespace {
+    constexpr const char* _loggerCat = "DataLoaderModule";
+}
+
+namespace {
+    static const openspace::properties::Property::PropertyInfo ShowInternalVolumesInfo = {
+        "ShowInternalVolumesTrigger",
+        "Trigger load volume data files",
+        "If this property is triggered it will call the function to load and show volume data"
+    };
+
+    static const openspace::properties::Property::PropertyInfo VolumesInfo = {
+        "Volumes",
+        "List of volume items stored internally and ready to load",
+        "This list contains names of volume data files converted from the CDF format"
+    };
+
+    static const openspace::properties::Property::PropertyInfo FieldlinesInfo = {
+        "Fieldlines",
+        "List of fieldline items stored internally and ready to load",
+        "This list contains names of fieldline data files converted from the CDF format"
+    };
+}
 
 namespace openspace {
 
-using namespace dataloader;
+DataLoaderModule::DataLoaderModule() 
+    : OpenSpaceModule(Name)
+    , _showInternalVolumesTrigger(ShowInternalVolumesInfo)
+    , _volumeDataItems(VolumesInfo)
+{
+    _showInternalVolumesTrigger.onChange([this](){
+        // showInternalDataType(DataTypes.volume);
+        validateDataDirectory();
+        _loader->createInternalDataItemProperties();
+    });
 
-DataLoaderModule::DataLoaderModule() : OpenSpaceModule(Name) {}
+    addProperty(_volumeDataItems);
+    addProperty(_showInternalVolumesTrigger);
+}
+
+DataLoaderModule::~DataLoaderModule() {}
 
 void DataLoaderModule::internalInitialize(const ghoul::Dictionary&) {
-    // auto rFactory = FactoryManager::ref().factory<Renderable>();
-    // ghoul_assert(rFactory, "No renderable factory existed");
-    // rFactory->registerClass<RenderableTimeVaryingVolume>("RenderableTimeVaryingVolume");
+    OsEng.registerModuleCallback(OpenSpaceEngine::CallbackOption::Initialize, [&] {
+        _reader = std::make_unique<openspace::dataloader::Reader>();
+        _loader = std::make_unique<openspace::dataloader::Loader>();
+        addPropertySubOwner(*_reader);
+        addPropertySubOwner(*_loader);
+    });
+}
 
-    _reader = std::make_unique<openspace::dataloader::Reader>();
-    _loader = std::make_unique<openspace::dataloader::Loader>(); 
-    addPropertySubOwner(*_reader);
-    addPropertySubOwner(*_loader);
+void DataLoaderModule::setDataDirectoryRead(bool isRead) {
+    LDEBUG("Called a module function");
+    _dataDirectoryIsRead = isRead;
+}
+
+void DataLoaderModule::validateDataDirectory() {
+    if(_dataDirectoryIsRead == false) {
+
+        // TODO: generalize
+        _reader->readVolumeDataItems();
+    }
+}
+
+std::vector<std::string> DataLoaderModule::volumeDataItems() {
+    validateDataDirectory();
+    return _volumeDataItems;
+}
+
+void DataLoaderModule::setVolumeDataItems(std::vector<std::string> items) {
+    _volumeDataItems = items;
+}
+
+openspace::dataloader::Reader* DataLoaderModule::reader() {
+    return _reader.get();
+}
+
+openspace::dataloader::Loader* DataLoaderModule::loader() {
+    return _loader.get();
 }
 
 } // namespace openspace

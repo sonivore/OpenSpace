@@ -7,7 +7,7 @@ import DataItemList from './presentational/DataItemList';
 import { stringListToArray } from './utils/helpers';
 
 import DataManager from '../../api/DataManager';
-import styles from './DataLoader.scss';
+import styles from './DataLoader';
 import Window from '../common/Window/Window';
 import { setActivated } from '../../api/Actions/dataLoaderActions';
 import Button from '../common/Input/Button/Button';
@@ -44,7 +44,7 @@ class DataLoader extends Component {
   }
 
   getUriForDataToLoad(dataType) {
-    let uri = 'Modules.DataLoader.Reader.';
+    let uri = 'Modules.DataLoader.';
 
     for (const type of this.dataTypesToLoad) {
       if (dataType == type) {
@@ -56,7 +56,7 @@ class DataLoader extends Component {
   }
 
   triggerDataToLoad(dataType) {
-    DataManager.trigger(`Modules.DataLoader.Reader.Read${dataType}Trigger`)
+    DataManager.trigger(`Modules.DataLoader.ShowInternal${dataType}Trigger`)
   }
 
   handleDataTypeList(data) {

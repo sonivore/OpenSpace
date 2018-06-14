@@ -25,25 +25,26 @@
 #ifndef __OPENSPACE_MODULE_DATALOADER___READER___H__
 #define __OPENSPACE_MODULE_DATALOADER___READER___H__
 
+#include <modules/dataloader/operators/operator.h>
 #include <openspace/properties/propertyowner.h>
 #include <openspace/properties/property.h> // do we need this
-#include <openspace/properties/stringlistproperty.h>
 #include <openspace/properties/triggerproperty.h>
 #include <ghoul/filesystem/directory.h>
 
 namespace openspace::dataloader {
 
-class Reader : public properties::PropertyOwner {
+using properties::PropertyOwner;
+
+class Reader : public PropertyOwner, public Operator {
   public:
     Reader();
 
     void readVolumeDataItems();
 
   private:
-    properties::StringListProperty _volumeItems;
-    properties::TriggerProperty _readVolumesTrigger;
-    
     ghoul::filesystem::Directory _topDir;
+
+    // properties::TriggerProperty _readVolumesTrigger;
 };
 
 }

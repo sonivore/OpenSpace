@@ -22,11 +22,15 @@
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                         *
  ****************************************************************************************/
 
-#include <modules/dataloader/loader.h>
-#include <ghoul/logging/logmanager.h>
 #include <iostream>
 #include <ghoul/filesystem/file.h>
 #include <ghoul/misc/dictionary.h>
+#include <string>
+#include <modules/dataloader/operators/loader.h>
+#include <modules/dataloader/dataloadermodule.h>
+#include <ghoul/logging/logmanager.h>
+#include <openspace/properties/triggerproperty.h>
+#include <modules/dataloader/helpers.cpp>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -34,7 +38,7 @@
 
 namespace {
   constexpr const char* _loggerCat = "Loader";
-} // namespace
+} 
 
 namespace {
   static const openspace::properties::Property::PropertyInfo SelectedFilesInfo = {
@@ -127,19 +131,47 @@ void Loader::uploadData() {
 ;
 }
 
-void Loader::addInternalDataItemProperties() {
-  // Get list of internal data items
+void Loader::createInternalDataItemProperties() {
+    getModule()->validateDataDirectory();
+    std::vector<std::string> volumeItems = getModule()->volumeDataItems();
 
-  // Iterate data items
-    // Initialize trigger property with data item name (are they unique?)
-    // Set onChange method to call loadDataItem with the path as argument
-    // addProperty()
+    LDEBUG("volume items vec size " + std::to_string(volumeItems.size()));
+
+    int step = 0;
+    for (auto item : volumeItems) {
+        const std::string dirLeaf = openspace::dataloader::helpers::getDirLeaf(item);
+        static const openspace::properties::Property::PropertyInfo info = {
+            "ItemTrigger_" + dirLeaf + std::to_string(step),
+            dirLeaf + std::to_string(step),
+            ""
+        };
+
+        step++;
+
+        // Initialize trigger property with data item name (are they unique?)
+        auto volumeItemTrigger = properties::TriggerProperty(info);
+
+        // Set onChange method to call loadDataItem with the path as argument
+        volumeItemTrigger.onChange([this](){
+            // loadDataItem(item);
+        });
+
+        addProperty(volumeItemTrigger);
+        LDEBUG("Added property " + dirLeaf);
+    }
 }
 
 // addDataItemProperty();
 // removeDataItemProperties();
 // loadDataItem(std::string absPathToItem);
+
 void createVolumeDataItem(std::string absPath) {
+
+// loadDataItem(std::string absPathToItem) {
+//     LINFO("Load item " + absPathToItem);
+// }
+
+// createVolumeDataItem(std::string absPath);
 
 }
 
