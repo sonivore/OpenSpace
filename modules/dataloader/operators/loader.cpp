@@ -162,18 +162,18 @@ void Loader::createInternalDataItemProperties() {
 // removeDataItemProperties();
 // loadDataItem(std::string absPathToItem);
 
-void createVolumeDataItem(std::string absPath) {
+// void Loader::createVolumeDataItem(std::string absPath) {}
 
-// loadDataItem(std::string absPathToItem) {
-//     LINFO("Load item " + absPathToItem);
-// }
-
-// createVolumeDataItem(std::string absPath);
-
+void Loader::loadDataItem(std::string absPathToItem) {
+    LINFO("Load item " + absPathToItem);
 }
 
+// void Loader::createVolumeDataItem(std::string absPath);
+
+// }
+
 // Will require dataItem rather than just filePath
-ghoul::Dictionary createTaskDictionary(std::string filePath) {
+ghoul::Dictionary Loader::createTaskDictionary(std::string filePath) {
 
   const int dimensions[3] = {100, 100, 128};
   const int lowerDomainBound[3] = {1, -90, 0};
