@@ -25,6 +25,7 @@
 #include <iostream>
 #include <ghoul/filesystem/file.h>
 #include <ghoul/misc/dictionary.h>
+#include <ghoul/lua/lua_helper.h>
 #include <string>
 #include <modules/dataloader/operators/loader.h>
 #include <modules/dataloader/dataloadermodule.h>
@@ -132,8 +133,8 @@ void Loader::uploadData() {
 }
 
 void Loader::createInternalDataItemProperties() {
-    getModule()->validateDataDirectory();
-    std::vector<std::string> volumeItems = getModule()->volumeDataItems();
+    module()->validateDataDirectory();
+    std::vector<std::string> volumeItems = module()->volumeDataItems();
 
     LDEBUG("volume items vec size " + std::to_string(volumeItems.size()));
 
@@ -153,8 +154,8 @@ void Loader::createInternalDataItemProperties() {
             // loadDataItem(item);
         });
 
-        addProperty(volumeItemTrigger);
-        LDEBUG("Added property " + dirLeaf);
+        // addProperty(volumeItemTrigger);
+        // LDEBUG("Added property " + dirLeaf);
     }
 }
 
@@ -166,6 +167,34 @@ void Loader::createInternalDataItemProperties() {
 
 void Loader::loadDataItem(std::string absPathToItem) {
     LINFO("Load item " + absPathToItem);
+
+    std::string stateFile = openspace::dataloader::helpers::findStateFile(absPathToItem);
+    
+    // extract as dictionary
+    ghoul::Dictionary stateDict = ghoul::lua::loadDictionaryFromFile(stateFile);
+
+    // Renderable
+    // Set Type = RenderableTimeVaryingVolume
+    // Set transferfunction directory
+    // Set source directory to absPathToItem
+    // ?? that's it
+
+    // Make renderable
+        // timevaryingvolume instance?
+        // is the renderable displayed at this point?
+
+    // create rest of, more complete, dictionary for scene graph node
+    const std::string dirLeaf = openspace::dataloader::helpers::getDirLeaf(absPathToItem);
+    const std::string identifier = dirLeaf;
+    const std::string parent = "";
+
+    // create node
+        // SceneGraphNode node = createFromDictionary(?)
+
+    // get scene, add node to scene graph
+        // getScene()->
+
+    // great success
 }
 
 // void Loader::createVolumeDataItem(std::string absPath);
@@ -197,5 +226,9 @@ ghoul::Dictionary Loader::createTaskDictionary(std::string filePath) {
 
   return ghoul::Dictionary(list);
 }
+
+// ghoul::Dictionary Loader::createVolumeItemDictionary(std::string dataDictionaryPath, std::string dataStatePath) {
+
+// }
 
 }

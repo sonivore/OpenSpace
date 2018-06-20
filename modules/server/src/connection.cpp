@@ -27,7 +27,6 @@
 #include <modules/server/include/authorizationtopic.h>
 #include <modules/server/include/getpropertytopic.h>
 #include <modules/server/include/luascripttopic.h>
-#include <modules/server/include/loaddataitemtopic.h>
 #include <modules/server/include/setpropertytopic.h>
 #include <modules/server/include/subscriptiontopic.h>
 #include <modules/server/include/timetopic.h>
@@ -44,7 +43,6 @@ namespace {
     constexpr const char* AuthenticationTopicKey = "authorize";
     constexpr const char* GetPropertyTopicKey = "get";
     constexpr const char* LuaScriptTopicKey = "luascript";
-    constexpr const char* LoadDataItemTopicKey = "loaddataitem";
     constexpr const char* SetPropertyTopicKey = "set";
     constexpr const char* SubscriptionTopicKey = "subscribe";
     constexpr const char* TimeTopicKey = "time";
@@ -64,7 +62,6 @@ Connection::Connection(std::shared_ptr<ghoul::io::Socket> s, const std::string &
     _topicFactory.registerClass<AuthorizationTopic>(AuthenticationTopicKey);
     _topicFactory.registerClass<GetPropertyTopic>(GetPropertyTopicKey);
     _topicFactory.registerClass<LuaScriptTopic>(LuaScriptTopicKey);
-    _topicFactory.registerClass<LoadDataItemTopic>(LoadDataItemTopicKey);
     _topicFactory.registerClass<SetPropertyTopic>(SetPropertyTopicKey);
     _topicFactory.registerClass<SubscriptionTopic>(SubscriptionTopicKey);
     _topicFactory.registerClass<TimeTopic>(TimeTopicKey);
