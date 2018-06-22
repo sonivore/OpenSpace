@@ -63,6 +63,41 @@ namespace {
       "Trigger load data files",
       "If this property is triggered it will call the function to load data"
   };
+
+  static const openspace::properties::Property::PropertyInfo UploadedDataDimensionsInfo = {
+      "UploadedDataDimensions",
+      "The Dimensions of an uploaded data set",
+      "This property contains a three dimensional vector with the dimensional "
+      "values of the data that is to be uploaded"
+  };
+
+  static const openspace::properties::Property::PropertyInfo UploadedDataVariableInfo = {
+      "UploadedDataVariable",
+      "The variable from the volume data that is to be processed for visualization",
+      "This property says what variable is to be read from the volume data "
+      "to process for visualization in the engine."
+  };
+
+  static const openspace::properties::Property::PropertyInfo UploadedDataFactorRSquaredInfo = {
+      "UploadedDataFactorRSquared",
+      "Whether or not to factor the uploaded data with the radial component squared",
+      "This property says whether or not the processing of the data should "
+      "multiply each variable value with the radius squared"
+  };
+
+  static const openspace::properties::Property::PropertyInfo UploadedDataLowerDomainBoundsInfo = {
+      "UploadedDataLowerDomainBounds",
+      "Lower domain bounds for data to be uploaded.",
+      "This property contains a vector of the lower domain bounds for the data "
+      "that is to be uploaded and processed for visualization."
+  };
+
+  static const openspace::properties::Property::PropertyInfo UploadedDataHigherDomainBoundsInfo = {
+      "UploadedDataHigherDomainBounds",
+      "Higher domain bounds for data to be uploaded.",
+      "This property contains a vector of the higher domain bounds for the data "
+      "that is to be uploaded and processed for visualization."
+  };
 }
 
 namespace openspace::dataloader {
@@ -71,6 +106,11 @@ Loader::Loader()
     : PropertyOwner({ "Loader" })
     , _filePaths(SelectedFilesInfo)
     , _uploadDataTrigger(UploadDataTriggerInfo)
+    , _uploadedDataDimensions(UploadedDataDimensionsInfo)
+    , _uploadedDataVariable(UploadedDataVariableInfo)
+    , _uploadedDataFactorRSquared(UploadedDataFactorRSquaredInfo)
+    , _uploadedDataLowerDomainBounds(UploadedDataLowerDomainBoundsInfo)
+    , _uploadedDataHigherDomainBounds(UploadedDataHigherDomainBoundsInfo)
 {
     _uploadDataTrigger.onChange([this](){
         uploadData();
@@ -78,6 +118,12 @@ Loader::Loader()
 
     addProperty(_filePaths);
     addProperty(_uploadDataTrigger);
+
+    addProperty(_uploadedDataDimensions);
+    addProperty(_uploadedDataVariable);
+    addProperty(_uploadedDataFactorRSquared);
+    addProperty(_uploadedDataLowerDomainBounds);
+    addProperty(_uploadedDataHigherDomainBounds);
 }
 
 void Loader::uploadData() {
@@ -244,34 +290,54 @@ void Loader::goToFirstTimeStep(std::string absPathToItem) {
     time().setTime(firstTimeStep);
 }
 
-// void Loader::createVolumeDataItem(std::string absPath);
+void Loader::processCurrentlySelectedUploadData() {
+    // Case 1: _filePaths is a string of a single path to a single CDF file
 
-// }
+    // Determine path to new volume item
+    std::string itemPathBase = "${DATA}/.internal/volumes_from_cdf/";
 
-// Will require dataItem rather than just filePath
-ghoul::Dictionary Loader::createTaskDictionary(std::string filePath) {
+    // Create dictionary with properties as values
+    ghoul::Dictionary conversionDictionary = createTaskDictionaryForOneVolumeItem(_filePaths, itemPathBase);
 
-  const int dimensions[3] = {100, 100, 128};
-  const int lowerDomainBound[3] = {1, -90, 0};
-  const int upperDomainBound[3] = {15, 90, 360};
+    // Schedule tasks? How to loop through several CDF timesteps and run VolumeToRaw for each
+    // Create instance of KameleonVolumeToRaw and run
+    // KameleonVolumeToRawTask kameleonVolumeToRawTask(conversionDictionary);
+    // kameleonVolumeToRawTask.perform();
 
-  std::string filename = ghoul::filesystem::File(filePath).filename();
-  std::string RawVolumeOutput = "${DATA}/dataloader/" + filename;
-  std::string DictionaryOutput = "${DATA}/dataloader/" + filename + ".dictionary";
+    // Create state file, transferfunction file in volume item directory
+}
 
-  std::initializer_list<std::pair<std::string, ghoul::any>> list = {
-    std::make_pair( "Type", "KameleonVolumeToRawTask" ),
-    std::make_pair( "Input", filePath ),
-    std::make_pair( "Dimensions", dimensions ),
-    std::make_pair( "Variable", "rho"),
-    std::make_pair( "FactorRSquared", "true" ),
-    std::make_pair( "LowerDomainBound", lowerDomainBound ),
-    std::make_pair( "UpperDomainBound", upperDomainBound ),
-    std::make_pair( "RawVolumeOutput", RawVolumeOutput ),
-    std::make_pair( "DictionaryOutput", DictionaryOutput)
-  };
+// void Loader::createVolumeDataItem(std::string absPath) {}
 
-  return ghoul::Dictionary(list);
+ghoul::Dictionary Loader::createTaskDictionaryForOneVolumeItem(std::string inputPath, std::string outputBasePath) {
+
+    // defaults
+    // const int dimensions[3] = {100, 100, 128};
+    // const int lowerDomainBound[3] = {1, -90, 0};
+    // const int upperDomainBound[3] = {15, 90, 360};
+
+    // Set item dirLeaf as name
+    const std::string itemName = openspace::dataloader::helpers::getDirLeaf(inputPath);
+    const std::string itemOutputFilePath = outputBasePath + 
+        ghoul::filesystem::FileSystem::PathSeparator +
+        itemName;
+
+    const std::string RawVolumeOutput = itemOutputFilePath + ".rawvolume";
+    const std::string DictionaryOutput = itemOutputFilePath + ".dictionary";
+
+    std::initializer_list<std::pair<std::string, ghoul::any>> list = {
+        std::make_pair( "Type", "KameleonVolumeToRawTask" ),
+        std::make_pair( "Input", inputPath ),
+        std::make_pair( "Dimensions", _uploadedDataDimensions ),
+        std::make_pair( "Variable", _uploadedDataVariable),
+        std::make_pair( "FactorRSquared", _uploadedDataFactorRSquared ),
+        std::make_pair( "LowerDomainBound", _uploadedDataLowerDomainBounds ),
+        std::make_pair( "UpperDomainBound", _uploadedDataHigherDomainBounds ),
+        std::make_pair( "RawVolumeOutput", RawVolumeOutput ),
+        std::make_pair( "DictionaryOutput", DictionaryOutput)
+    };
+
+    return ghoul::Dictionary(list);
 }
 
 // ghoul::Dictionary Loader::createVolumeItemDictionary(std::string dataDictionaryPath, std::string dataStatePath) {

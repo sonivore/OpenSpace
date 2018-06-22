@@ -29,6 +29,8 @@
 #include <openspace/properties/propertyowner.h>
 #include <openspace/properties/stringproperty.h>
 #include <openspace/properties/triggerproperty.h>
+#include <openspace/properties/vector/dvec3property.h>
+#include <openspace/properties/scalar/boolproperty.h>
 
 #include <openspace/util/taskloader.h>
 
@@ -63,7 +65,9 @@ class Loader : public PropertyOwner, public Operator {
 
     // void createVolumeDataItem(std::string absPath);
 
-    ghoul::Dictionary createTaskDictionary(std::string filePath);
+    void processCurrentlySelectedUploadData();
+
+    ghoul::Dictionary createTaskDictionaryForOneVolumeItem(std::string inputPath, std::string outputBasePath);
 
     // Perfom tasks that create dictionaries and converts
     // .CDF formatted volume files into .rawvolume
@@ -73,6 +77,16 @@ class Loader : public PropertyOwner, public Operator {
     properties::StringProperty _filePaths;
     properties::TriggerProperty _uploadDataTrigger;
   
+    // Volume specific. 
+    // Put in structs for different data types? Different file?
+    properties::DVec3Property _uploadedDataDimensions;
+    properties::StringProperty _uploadedDataVariable;
+    properties::BoolProperty _uploadedDataFactorRSquared;
+    properties::DVec3Property _uploadedDataLowerDomainBounds;
+    properties::DVec3Property _uploadedDataHigherDomainBounds;
+
+    // State properties
+
     TaskLoader taskLoader;
     std::vector<std::unique_ptr<Task>> tasks;
 
